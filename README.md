@@ -6,10 +6,10 @@ Et moderne banebookingsystem for klubber og medlemmer, bygget med .NET 8 og Reac
 
 ## 🧱 Teknologi
 
-- **Backend**: ASP.NET Core Web API (.NET 8)
-- **Frontend**: React 18 + Vite
-- **Database**: PostgreSQL (hostet via Supabase)
-- **Deploy**: Fly.io (kommende)
+* **Backend**: ASP.NET Core Web API (.NET 8)
+* **Frontend**: React 18 + Vite
+* **Database**: PostgreSQL (hostet via Supabase)
+* **Deploy**: Fly.io (CI/CD via Azure DevOps)
 
 ---
 
@@ -90,11 +90,11 @@ Legg til følgende i `appsettings.Development.json` eller som miljøvariabler:
 
 ## 📌 TODO
 
-- [ ] Opprette database og kjøre første migrasjon
-- [ ] API-endepunkter for booking
-- [ ] Autentisering via login provider
-- [ ] Varsling ved ikke oppmøte
-- [ ] Fly.io-deploy
+* [x] Oppsett av Fly.io-deploy via pipeline
+* [ ] Opprette database og kjøre første migrasjon
+* [ ] API-endepunkter for booking
+* [ ] Autentisering via login provider
+* [ ] Varsling ved ikke oppmøte
 
 ---
 
