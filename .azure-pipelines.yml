@@ -18,7 +18,13 @@ steps:
     versionSpec: '20.x'
 
 - checkout: self
-
+- script: |
+    cd Banebooking.Api/ClientApp
+    npm install
+    npm run build
+    xcopy dist ..\wwwroot /E /Y
+  displayName: Bygg frontend med Vite
+  
 - script: |
     curl -L https://fly.io/install.sh | sh
     export PATH="$HOME/.fly/bin:$PATH"
