@@ -3,8 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                      ?? Environment.GetEnvironmentVariable("SUPABASE_CONNECTIONSTRING");
+builder.Configuration.AddEnvironmentVariables();
+
+var connectionString =
+    builder.Configuration["ConnectionStrings:DefaultConnection"]
+    ?? builder.Configuration["SUPABASE_CONNECTIONSTRING"];
 
 builder.Services.AddDbContext<BanebookingDbContext>(options =>
     options.UseNpgsql(connectionString));
