@@ -1,0 +1,30 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: FlyDeploySecrets
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+
+- script: |
+    npm install -g flyctl
+  displayName: 'Install Flyctl'
+
+- checkout: self
+
+- script: |
+    flyctl deploy --remote-only --config fly.toml
+  env:
+    FLY_API_TOKEN: $(FLY_API_TOKEN)
+  displayName: 'Deploy to Fly.io'
