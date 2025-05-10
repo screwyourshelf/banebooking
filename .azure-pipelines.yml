@@ -19,6 +19,14 @@ steps:
 
 - checkout: self
 
+- task: Cache@2
+  inputs:
+    key: 'npm | "$(Agent.OS)" | Banebooking.Api/ClientApp/package-lock.json'
+    restoreKeys: |
+      npm | "$(Agent.OS)"
+    path: 'Banebooking.Api/ClientApp/node_modules'
+  displayName: 'Cache node_modules'
+
 - script: |
     cd Banebooking.Api/ClientApp
     npm install
