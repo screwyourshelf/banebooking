@@ -54,3 +54,12 @@ steps:
     FLY_API_TOKEN: $(FLY_API_TOKEN)
     SUPABASE_CONNECTIONSTRING: $(SUPABASE_CONNECTIONSTRING)
   displayName: 'Deploy to Fly.io'
+  
+- script: |
+    echo "Venter litt før healthcheck..."
+    sleep 10
+
+    echo "Kaller /api/health/db"
+    curl -f https://banebooking.fly.dev/api/health/db
+  displayName: 'Verifiser at app kjører og har DB-tilkobling'
+

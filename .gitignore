@@ -403,7 +403,6 @@ FodyWeavers.xsd
 #################################
 # Supabase / miljøavhengige filer
 #################################
-
 .env
 .env.local
 .supabase/
@@ -411,5 +410,5 @@ FodyWeavers.xsd
 #################################
 # Miljøspesifikke appsettings-filer
 #################################
-appsettings.*.json
+appsettings.Development.json
 secrets.json
