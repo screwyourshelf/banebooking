@@ -34,7 +34,12 @@ steps:
     mkdir -p ../../wwwroot
     cp -r dist/* ../../wwwroot/
   displayName: Bygg frontend med Vite
-  
+ 
+- script: |
+    dotnet tool install --global dotnet-ef
+    export PATH="$PATH:/root/.dotnet/tools"
+  displayName: 'Installer dotnet-ef'
+ 
 - script: |
     dotnet ef database update --project Banebooking.Api/Banebooking.Api.csproj --startup-project Banebooking.Api/Banebooking.Api.csproj
   displayName: 'Kjør EF migrasjoner mot prod DB'
