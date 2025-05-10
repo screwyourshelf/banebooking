@@ -22,7 +22,7 @@ steps:
     cd Banebooking.Api/ClientApp
     npm install
     npm run build
-    xcopy dist ..\wwwroot /E /Y
+    cp -r dist/* ../../wwwroot/
   displayName: Bygg frontend med Vite
   
 - script: |
