@@ -18,10 +18,12 @@ steps:
     versionSpec: '20.x'
 
 - checkout: self
+
 - script: |
     cd Banebooking.Api/ClientApp
     npm install
     npm run build
+    mkdir -p ../../wwwroot
     cp -r dist/* ../../wwwroot/
   displayName: Bygg frontend med Vite
   
