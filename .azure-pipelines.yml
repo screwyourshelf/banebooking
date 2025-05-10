@@ -5,7 +5,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-- group: FlyDeploySecrets
+- group: BanebookingSecrets
 
 steps:
 - task: UseDotNet@2
