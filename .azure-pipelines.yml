@@ -52,4 +52,5 @@ steps:
     flyctl deploy --remote-only --config fly.toml
   env:
     FLY_API_TOKEN: $(FLY_API_TOKEN)
+    SUPABASE_CONNECTIONSTRING: $(SUPABASE_CONNECTIONSTRING)
   displayName: 'Deploy to Fly.io'
