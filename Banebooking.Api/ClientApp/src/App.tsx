@@ -4,7 +4,7 @@ import { Hello } from './components/Hello'
 function App() {
     return (
         <div className="App">
-            <h1>Banebooking Voyager</h1>
+            <h1>Banebooking Voyager ;)</h1>
             <Hello />
         </div>
     )
