@@ -60,6 +60,6 @@ steps:
     sleep 10
 
     echo "Kaller /api/health/db"
-    curl -f https://banebooking.fly.dev/api/health/db
+    curl -f https://banebooking-voyager.fly.dev/api/health/db
   displayName: 'Verifiser at app kjører og har DB-tilkobling'
 
