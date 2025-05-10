@@ -411,6 +411,5 @@ FodyWeavers.xsd
 #################################
 # Miljøspesifikke appsettings-filer
 #################################
-appsettings.Development.json
-appsettings.Local.json
+appsettings.*.json
 secrets.json

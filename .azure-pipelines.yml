@@ -36,6 +36,12 @@ steps:
   displayName: Bygg frontend med Vite
   
 - script: |
+    dotnet ef database update --project Banebooking.Api/Banebooking.Api.csproj --startup-project Banebooking.Api/Banebooking.Api.csproj
+  displayName: 'Kjør EF migrasjoner mot prod DB'
+  env:
+    ConnectionStrings__DefaultConnection: $(SUPABASE_CONNECTIONSTRING)
+
+- script: |
     curl -L https://fly.io/install.sh | sh
     export PATH="$HOME/.fly/bin:$PATH"
     flyctl deploy --remote-only --config fly.toml
