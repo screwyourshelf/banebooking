@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "publish": "npm run build && xcopy dist ..\\wwwroot /E /Y"
   },
   "dependencies": {
     "react": "^19.1.0",
