@@ -3,7 +3,7 @@ namespace Banebooking.Api.Models;
 public class BestemmelseForBooking
 {
     public Guid KlubbId { get; set; }
-    public Klubb Klubb { get; set; }
+    public Klubb Klubb { get; set; } = null!;
 
     public TimeOnly Åpningstid { get; set; } = new(7, 0);
     public TimeOnly Stengetid { get; set; } = new(22, 0);

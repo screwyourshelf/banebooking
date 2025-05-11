@@ -22,33 +22,67 @@ namespace Banebooking.Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // BookingRegel (1:1 til Klubb)
             modelBuilder.Entity<BestemmelseForBooking>()
                 .HasKey(b => b.KlubbId);
 
             modelBuilder.Entity<BestemmelseForBooking>()
-                 .HasOne(b => b.Klubb)
-                 .WithOne(k => k.BookingRegel)
-                 .HasForeignKey<BestemmelseForBooking>(b => b.KlubbId)
-                 .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(b => b.Klubb)
+                .WithOne(k => k.BookingRegel)
+                .HasForeignKey<BestemmelseForBooking>(b => b.KlubbId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
 
-            modelBuilder.Entity<RolleITilgang>()
-                .HasIndex(r => new { r.KlubbId, r.Epost })
+            // Unik bane-navn per klubb
+            modelBuilder.Entity<Bane>()
+                .HasIndex(b => new { b.KlubbId, b.Navn })
                 .IsUnique();
 
+            modelBuilder.Entity<Bane>()
+                .HasOne(b => b.Klubb)
+                .WithMany(k => k.Baner)
+                .HasForeignKey(b => b.KlubbId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
+
+            // Unik booking-slot per bane/dato/starttid
             modelBuilder.Entity<Booking>()
                 .HasIndex(b => new { b.BaneId, b.Dato, b.StartTid })
                 .IsUnique();
 
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Bane)
+                .WithMany(bn => bn.Bookinger)
+                .HasForeignKey(b => b.BaneId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Bruker)
+                .WithMany(u => u.Bookinger)
+                .HasForeignKey(b => b.BrukerId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
+
+            // FraværsRapporter
             modelBuilder.Entity<RapportertFravær>()
                 .HasOne(r => r.Booking)
                 .WithMany(b => b.FraværsRapporter)
-                .HasForeignKey(r => r.BookingId);
+                .HasForeignKey(r => r.BookingId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
 
             modelBuilder.Entity<RapportertFravær>()
                 .HasOne(r => r.RapportertAv)
                 .WithMany(b => b.RapporterteFravær)
-                .HasForeignKey(r => r.RapportertAvBrukerId);
+                .HasForeignKey(r => r.RapportertAvBrukerId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
 
+            // RolleITilgang
+            modelBuilder.Entity<RolleITilgang>()
+                .HasIndex(r => new { r.KlubbId, r.Epost })
+                .IsUnique();
+
+            modelBuilder.Entity<RolleITilgang>()
+                .HasOne(r => r.Klubb)
+                .WithMany(k => k.Roller)
+                .HasForeignKey(r => r.KlubbId)
+                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
         }
     }
 }

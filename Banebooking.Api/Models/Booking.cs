@@ -3,8 +3,9 @@ namespace Banebooking.Api.Models;
 public class Booking
 {
     public Guid Id { get; set; }
+
     public Guid BaneId { get; set; }
-    public Bane Bane { get; set; }
+    public Bane Bane { get; set; } = null!; // Settes av EF
 
     public Guid? BrukerId { get; set; }
     public Bruker? Bruker { get; set; }
@@ -21,7 +22,7 @@ public class Booking
     public bool FraværVarsletTilBruker { get; set; }
     public string? Kommentar { get; set; }
 
-    public virtual ICollection<RapportertFravær> FraværsRapporter { get; set; }
+    public virtual ICollection<RapportertFravær> FraværsRapporter { get; set; } = new List<RapportertFravær>();
 }
 
 public enum BookingType

@@ -24,6 +24,8 @@ if (app.Environment.IsDevelopment())
     {
         var db = scope.ServiceProvider.GetRequiredService<BanebookingDbContext>();
         db.Database.Migrate();
+        
+        Tesdata.Seed(db);
     }
 
     app.UseSwagger();

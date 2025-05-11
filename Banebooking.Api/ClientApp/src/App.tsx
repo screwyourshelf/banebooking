@@ -1,13 +1,16 @@
-import './App.css'
-import { Hello } from './components/Hello'
 
-function App() {
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from './layouts/Layout';
+import IndexPage from './pages/IndexPage';
+
+export default function App() {
     return (
-        <div className="App">
-            <h1>Banebooking Voyager ;)</h1>
-            <Hello />
-        </div>
-    )
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<IndexPage />} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    );
 }
-
-export default App
