@@ -55,7 +55,7 @@ steps:
     curl -L https://fly.io/install.sh | sh
     export PATH="$HOME/.fly/bin:$PATH"
     flyctl --version
-    flyctl deploy --config fly.toml
+    flyctl deploy --local-only --config fly.toml
   env:
     FLY_API_TOKEN: $(FLY_API_TOKEN)
     SUPABASE_CONNECTIONSTRING: $(SUPABASE_CONNECTIONSTRING)
