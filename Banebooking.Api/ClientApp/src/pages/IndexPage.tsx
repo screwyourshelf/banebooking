@@ -1,90 +1,132 @@
 import { useEffect, useState } from 'react';
-import { Form, ListGroup, InputGroup } from 'react-bootstrap';
+import { ListGroup, Nav, Button } from 'react-bootstrap';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { nb } from 'date-fns/locale';
-import { FaCalendar } from 'react-icons/fa';
 import 'react-datepicker/dist/react-datepicker.css';
+import { InputGroup } from 'react-bootstrap';
+import { FaChevronLeft, FaChevronRight, FaCalendar } from 'react-icons/fa';
+
 
 registerLocale('nb', nb);
 
-const mockBaner = [
-    { id: '1', navn: 'Bane 1' },
-    { id: '2', navn: 'Bane 2' }
-];
+type BookingSlot = {
+    startTid: string;
+    sluttTid: string;
+    booketAv?: string | null;
+};
 
-function genererMockSlots() {
-    const brukere = ['ola.langemailadresse@bruker.no', 'kari@kort.no', 'noeheltvanvittiglangt@eksempel.no'];
-    const slots = [];
-    for (let hour = 7; hour < 22; hour++) {
-        const start = `${hour.toString().padStart(2, '0')}:00`;
-        const slutt = `${(hour + 1).toString().padStart(2, '0')}:00`;
-        const booketAv = Math.random() < 0.4 ? brukere[Math.floor(Math.random() * brukere.length)] : null;
-        slots.push({ startTid: start, sluttTid: slutt, booketAv });
-    }
-    return slots;
-}
+type Bane = {
+    id: string;
+    navn: string;
+};
 
 export default function IndexPage() {
-    const [valgtBaneId, setValgtBaneId] = useState<string>('1');
-    const [valgtDato, setValgtDato] = useState<string>(() =>
+    const [baner, setBaner] = useState<Bane[]>([]);
+    const [valgtBaneId, setValgtBaneId] = useState('');
+    const [valgtDato, setValgtDato] = useState<string>(
         new Date().toISOString().split('T')[0]
     );
-    const [slots, setSlots] = useState(genererMockSlots());
+    const [slots, setSlots] = useState<BookingSlot[]>([]);
 
     useEffect(() => {
-        setSlots(genererMockSlots());
+        fetch('/api/baner')
+            .then((res) => res.json())
+            .then((data) => {
+                setBaner(data);
+                if (data.length > 0 && !valgtBaneId) {
+                    setValgtBaneId(data[0].id);
+                }
+            });
+    }, []);
+
+    useEffect(() => {
+        if (!valgtBaneId || !valgtDato) return;
+
+        fetch(`/api/bookinger?baneId=${valgtBaneId}&dato=${valgtDato}`)
+            .then((res) => res.json())
+            .then((data) => setSlots(data))
+            .catch(() => setSlots([]));
     }, [valgtBaneId, valgtDato]);
+
+    const gaTilNesteDag = () => {
+        const neste = new Date(valgtDato);
+        neste.setDate(neste.getDate() + 1);
+        setValgtDato(neste.toISOString().split('T')[0]);
+    };
+
+    const gaTilForrigeDag = () => {
+        const forrige = new Date(valgtDato);
+        forrige.setDate(forrige.getDate() - 1);
+        setValgtDato(forrige.toISOString().split('T')[0]);
+    };
 
     return (
         <div className="w-100">
-            <div className="bg-light w-100 px-2 py-2 mt-2 mb-2">
-                <div className="row gx-2">
-                    <div className="col-auto">
-                        <Form.Select
-                            value={valgtBaneId}
-                            onChange={(e) => setValgtBaneId(e.target.value)}
-                            className="form-select form-select-sm"
-                        >
-                            {mockBaner.map((bane) => (
-                                <option key={bane.id} value={bane.id}>
-                                    {bane.navn}
-                                </option>
-                            ))}
-                        </Form.Select>
-                    </div>
+            {/* Banevalg som pills */}
+            <Nav
+                variant="pills"
+                activeKey={valgtBaneId}
+                onSelect={(baneId) => setValgtBaneId(baneId || '')}
+                className="pt-1 overflow-auto flex-nowrap"
+                style={{ whiteSpace: 'nowrap' }}
+            >
+                {baner.map((bane) => (
+                    <Nav.Item key={bane.id}>
+                        <Nav.Link eventKey={bane.id}>{bane.navn}</Nav.Link>
+                    </Nav.Item>
+                ))}
+            </Nav>
 
-                    <div className="col-auto">
-                        <InputGroup size="sm">
-                            <DatePicker
-                                selected={new Date(valgtDato)}
-                                onChange={(date) => setValgtDato(date?.toISOString().split('T')[0] || valgtDato)}
-                                locale="nb"
-                                dateFormat="dd.MM.yyyy"
-                                className="form-control"
-                            />
-                            <InputGroup.Text><FaCalendar /></InputGroup.Text>
-                        </InputGroup>
-                    </div>
-                </div>
+            {/* Bookingliste */}
+            <div className="w-100 py-1">
+                <ListGroup className="w-100">
+                    {slots.map((slot, index) => (
+                        <ListGroup.Item
+                            key={index}
+                            className={`w-100 py-1 px-1 m-0 ${index % 2 === 0 ? 'bg-light' : 'bg-white'
+                                }`}
+                        >
+                            <div className="d-flex flex-nowrap align-items-start">
+                                <div
+                                    className="fw-semibold text-nowrap border-end pe-1"
+                                >
+                                    {slot.startTid.slice(0, 2)} - {slot.sluttTid.slice(0, 2)}
+                                </div>
+                                <div className="ps-2 text-break">{slot.booketAv ?? ''}</div>
+                            </div>
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
             </div>
 
-            <ListGroup className="w-100 m-0">
-                {slots.map((slot, index) => (
-                    <ListGroup.Item
-                        key={index}
-                        className={`w-100 py-1 px-2 m-0 ${index % 2 === 0 ? 'bg-light' : 'bg-white'}`}
-                    >
-                        <div className="d-flex flex-nowrap align-items-start">
-                            <div className="fw-semibold text-nowrap border-end pe-2" style={{ minWidth: '60px' }}>
-                                {slot.startTid.slice(0, 2)} - {slot.sluttTid.slice(0, 2)}
-                            </div>
-                            <div className="ps-2 text-break">
-                                {slot.booketAv ?? ''}
-                            </div>
-                        </div>
-                    </ListGroup.Item>
-                ))}
-            </ListGroup>
+            {/* Fast datovelger nederst */}
+            <div className="bg-light border-top px-3 py-2 position-fixed bottom-0 start-0 w-100">
+                <InputGroup size="sm">
+                  
+
+                    <DatePicker
+                        selected={new Date(valgtDato)}
+                        onChange={(date) =>
+                            setValgtDato(date?.toISOString().split('T')[0] ?? valgtDato)
+                        }
+                        locale="nb"
+                        dateFormat="dd.MM.yyyy"
+                        className="form-control form-control-sm"
+                        popperPlacement="top-start"
+                    />
+
+                    <InputGroup.Text>
+                        <FaCalendar />
+                    </InputGroup.Text>
+
+                    <Button variant="outline-secondary" className="border-secondary border-opacity-50 ms-1 me-1 " onClick={gaTilForrigeDag}>
+                        <FaChevronLeft />
+                    </Button>
+                    <Button variant="outline-secondary" className="border-secondary border-opacity-50" onClick={gaTilNesteDag}>
+                        <FaChevronRight />
+                    </Button>
+                </InputGroup>
+            </div>
         </div>
     );
 }
