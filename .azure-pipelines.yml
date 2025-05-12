@@ -29,8 +29,6 @@ steps:
 
 - script: |
     cd Banebooking.Api/ClientApp
-    export VITE_SUPABASE_URL=$(VITE_SUPABASE_URL)
-    export VITE_SUPABASE_ANON_KEY=$(VITE_SUPABASE_ANON_KEY)
     npm install
     npm run build
     mkdir -p ../../wwwroot
@@ -54,6 +52,7 @@ steps:
 - script: |
     curl -L https://fly.io/install.sh | sh
     export PATH="$HOME/.fly/bin:$PATH"
+    flyctl --version
     flyctl deploy --remote-only --config fly.toml
   env:
     FLY_API_TOKEN: $(FLY_API_TOKEN)
@@ -61,9 +60,20 @@ steps:
   displayName: 'Deploy to Fly.io'
 
 - script: |
-    echo "Venter litt før healthcheck..."
-    sleep 10
+    echo "Venter 15 sek før healthcheck..."
+    sleep 15
 
-    echo "Kaller /api/health/db"
-    curl -f https://banebooking-voyager.fly.dev/api/health/db
+    echo "Prøver maks 5 ganger på å få OK respons..."
+    for i in {1..5}; do
+      if curl -fsS https://banebooking-voyager.fly.dev/api/health/db; then
+        echo "OK!"
+        exit 0
+      else
+        echo "Healthcheck feilet – prøver igjen om 5 sek..."
+        sleep 5
+      fi
+    done
+
+    echo "Feilet etter 5 forsøk."
+    exit 1
   displayName: 'Verifiser at app kjører og har DB-tilkobling'
