@@ -120,7 +120,7 @@ export default function IndexPage() {
                                 <div
                                     className="fw-semibold text-nowrap border-end pe-1"
                                 >
-                                    {slot.startTid.slice(0, 2)} - {slot.sluttTid.slice(0, 2)}
+                                    {slot.startTid.slice(0, 2)}-{slot.sluttTid.slice(0, 2)}
                                 </div>
                                 <div className="ps-2 text-break">{slot.booketAv ?? ''}</div>
                             </div>

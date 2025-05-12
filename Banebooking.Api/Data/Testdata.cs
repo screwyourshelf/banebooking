@@ -39,14 +39,14 @@ public static class Tesdata
             {
                 Id = Guid.NewGuid(),
                 Epost = "admin@eksempelklubb.no",
-                LoginProvider = "local"
+                Provider = "local"
             };
 
             var bruker2 = new Bruker
             {
                 Id = Guid.NewGuid(),
                 Epost = "bruker@eksempelklubb.no",
-                LoginProvider = "local"
+                Provider = "local"
             };
 
             context.Brukere.AddRange(bruker1, bruker2);
