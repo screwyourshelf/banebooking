@@ -64,10 +64,10 @@ export default function IndexPage() {
         <div className="w-100">
             {/* Banevalg som pills */}
             <Nav
-                variant="pills"
+                variant="tabs"
                 activeKey={valgtBaneId}
                 onSelect={(baneId) => setValgtBaneId(baneId || '')}
-                className="pt-1 overflow-auto flex-nowrap"
+                className="pt-1 flex-nowrap"
                 style={{ whiteSpace: 'nowrap' }}
             >
                 {baner.map((bane) => (
@@ -76,6 +76,36 @@ export default function IndexPage() {
                     </Nav.Item>
                 ))}
             </Nav>
+
+            {/* Datovelger  */}
+            <div className="bg-white mt-1 w-100">
+                <InputGroup size="sm">
+
+                    <DatePicker
+                        selected={new Date(valgtDato)}
+                        onChange={(date) =>
+                            setValgtDato(date?.toISOString().split('T')[0] ?? valgtDato)
+                        }
+                        locale="nb"
+                        dateFormat="dd.MM.yyyy"
+                        className="form-control form-control-sm"
+                        popperPlacement="top-start"
+                    />
+
+                    <InputGroup.Text>
+                        <FaCalendar />
+                    </InputGroup.Text>
+
+                    <Button variant="outline-secondary" className="border-secondary border-opacity-50 ms-1 me-1 " onClick={gaTilForrigeDag}>
+                        <FaChevronLeft />
+                    </Button>
+
+                    <Button variant="outline-secondary" className="border-secondary border-opacity-50" onClick={gaTilNesteDag}>
+                        <FaChevronRight />
+                    </Button>
+
+                </InputGroup>
+            </div>
 
             {/* Bookingliste */}
             <div className="w-100 py-1">
@@ -97,36 +127,7 @@ export default function IndexPage() {
                         </ListGroup.Item>
                     ))}
                 </ListGroup>
-            </div>
-
-            {/* Fast datovelger nederst */}
-            <div className="bg-light border-top px-3 py-2 position-fixed bottom-0 start-0 w-100">
-                <InputGroup size="sm">
-                  
-
-                    <DatePicker
-                        selected={new Date(valgtDato)}
-                        onChange={(date) =>
-                            setValgtDato(date?.toISOString().split('T')[0] ?? valgtDato)
-                        }
-                        locale="nb"
-                        dateFormat="dd.MM.yyyy"
-                        className="form-control form-control-sm"
-                        popperPlacement="top-start"
-                    />
-
-                    <InputGroup.Text>
-                        <FaCalendar />
-                    </InputGroup.Text>
-
-                    <Button variant="outline-secondary" className="border-secondary border-opacity-50 ms-1 me-1 " onClick={gaTilForrigeDag}>
-                        <FaChevronLeft />
-                    </Button>
-                    <Button variant="outline-secondary" className="border-secondary border-opacity-50" onClick={gaTilNesteDag}>
-                        <FaChevronRight />
-                    </Button>
-                </InputGroup>
-            </div>
+            </div>      
         </div>
     );
 }
