@@ -28,6 +28,8 @@ steps:
   displayName: 'Cache node_modules'
 
 - script: |
+    echo "VITE_SUPABASE_URL is $VITE_SUPABASE_URL"
+    echo "VITE_SUPABASE_ANON_KEY is $VITE_SUPABASE_ANON_KEY"
     cd Banebooking.Api/ClientApp
     npm install
     npm run build
