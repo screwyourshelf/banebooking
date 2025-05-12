@@ -29,17 +29,22 @@ steps:
 
 - script: |
     cd Banebooking.Api/ClientApp
+    export VITE_SUPABASE_URL=$(VITE_SUPABASE_URL)
+    export VITE_SUPABASE_ANON_KEY=$(VITE_SUPABASE_ANON_KEY)
     npm install
     npm run build
     mkdir -p ../../wwwroot
     cp -r dist/* ../../wwwroot/
   displayName: Bygg frontend med Vite
- 
+  env:
+    VITE_SUPABASE_URL: $(VITE_SUPABASE_URL)
+    VITE_SUPABASE_ANON_KEY: $(VITE_SUPABASE_ANON_KEY)
+
 - script: |
     dotnet tool install --global dotnet-ef
     export PATH="$PATH:/root/.dotnet/tools"
   displayName: 'Installer dotnet-ef'
- 
+
 - script: |
     dotnet ef database update --project Banebooking.Api/Banebooking.Api.csproj --startup-project Banebooking.Api/Banebooking.Api.csproj
   displayName: 'Kjør EF migrasjoner mot prod DB'
@@ -54,7 +59,7 @@ steps:
     FLY_API_TOKEN: $(FLY_API_TOKEN)
     SUPABASE_CONNECTIONSTRING: $(SUPABASE_CONNECTIONSTRING)
   displayName: 'Deploy to Fly.io'
-  
+
 - script: |
     echo "Venter litt før healthcheck..."
     sleep 10
@@ -62,4 +67,3 @@ steps:
     echo "Kaller /api/health/db"
     curl -f https://banebooking-voyager.fly.dev/api/health/db
   displayName: 'Verifiser at app kjører og har DB-tilkobling'
-
