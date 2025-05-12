@@ -16,6 +16,14 @@ RUN dotnet restore ./Banebooking.Api/Banebooking.Api.csproj
 # Copy entire repo
 COPY . .
 
+# Gjør VITE_ miljøvariabler tilgjengelig for Vite under build
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+
+
 # Build React (Vite)
 WORKDIR /app/Banebooking.Api/ClientApp
 RUN npm install && npm run build
