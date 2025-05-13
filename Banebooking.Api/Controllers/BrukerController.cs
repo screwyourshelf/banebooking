@@ -1,8 +1,9 @@
 ﻿using Banebooking.Api.Data;
 using Microsoft.AspNetCore.Mvc;
-using Banebooking.Api.Dto;
 using Banebooking.Api.Controllers;
 using Microsoft.AspNetCore.Authorization;
+using Banebooking.Api.Dtos.Bruker;
+using Banebooking.Api.Dtos.Booking;
 
 [Authorize]
 [ApiController]

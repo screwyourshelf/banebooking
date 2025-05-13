@@ -11,7 +11,7 @@ import {
 } from 'react-bootstrap';
 import { supabase } from '../supabase';
 import { FcGoogle } from 'react-icons/fc';
-import { FaFacebook } from 'react-icons/fa';
+import { FaFacebook, FaSignInAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import type { User } from '@supabase/supabase-js';
 
 export default function Layout() {
@@ -84,7 +84,16 @@ export default function Layout() {
                 <Navbar.Collapse id="nav-collapse">
                     <Nav className="ms-auto px-1 py-0">
                         {!currentUser ? (
-                            <NavDropdown title="Logg inn" align="end" id="login-dropdown">
+                            <NavDropdown
+                                title={
+                                    <>
+                                        <FaSignInAlt className="me-2" />
+                                        Logg inn
+                                    </>
+                                }
+                                align="end"
+                                id="login-dropdown"
+                            >
                                 <div className="px-2 py-1">
                                     <Nav.Item>
                                         <Nav.Link
@@ -156,7 +165,10 @@ export default function Layout() {
                             </NavDropdown>
                         ) : (
                             <NavDropdown title={currentUser.email} align="end" id="user-dropdown">
-                                <NavDropdown.Item href="/minside">Min side</NavDropdown.Item>
+                                <NavDropdown.Item href="/minside">
+                                    <FaUser className="me-2" />
+                                    Min side
+                                </NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item
                                     onClick={async () => {
@@ -164,6 +176,7 @@ export default function Layout() {
                                         setCurrentUser(null);
                                     }}
                                 >
+                                    <FaSignOutAlt className="me-2" />
                                     Logg ut
                                 </NavDropdown.Item>
                             </NavDropdown>

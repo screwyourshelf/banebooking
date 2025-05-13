@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Banebooking.Api.Dtos.Booking;
+using System;
 using System.Collections.Generic;
 
-namespace Banebooking.Api.Dto;
+namespace Banebooking.Api.Dtos.Bruker;
 
 public class BrukerDto
 {

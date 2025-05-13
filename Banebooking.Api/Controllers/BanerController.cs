@@ -1,21 +1,26 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Banebooking.Api.Data;
 
 namespace Banebooking.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BanerController : ControllerBase
+public class BanerController(BanebookingDbContext db) : ControllerBase
 {
     [HttpGet]
-    public IActionResult HentBaner()
+    public async Task<IActionResult> HentBaner()
     {
-        var mock = new List<object>
-        {
-            new { id = Guid.NewGuid(), navn = "Bane A" },
-            new { id = Guid.NewGuid(), navn = "Bane B" },
-            new { id = Guid.NewGuid(), navn = "Bane C" }
-        };
+        var baner = await db.Baner
+            .Where(b => b.Aktiv)
+            .OrderBy(b => b.Navn)
+            .Select(b => new
+            {
+                id = b.Id,
+                navn = b.Navn
+            })
+            .ToListAsync();
 
-        return Ok(mock);
+        return Ok(baner);
     }
 }

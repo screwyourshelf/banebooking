@@ -1,4 +1,4 @@
-﻿namespace Banebooking.Api.Dto;
+﻿namespace Banebooking.Api.Dtos.Booking;
 
 public class BookingDto
 {
