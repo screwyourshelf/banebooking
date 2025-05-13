@@ -30,9 +30,7 @@ steps:
 - script: |
     cd Banebooking.Api/ClientApp
 
-    echo ">>> Bygger med Vite med env:"
-    echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL"
-    echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY"
+    echo ">>> Bygger med Vite (hardkodet supabase.ts)"
 
     echo ">>> Starter npm install"
     npm install
@@ -47,9 +45,6 @@ steps:
     mkdir -p ../../wwwroot
     cp -r dist/* ../../wwwroot/
   displayName: 'Bygg frontend med Vite'
-  env:
-    VITE_SUPABASE_URL: $(VITE_SUPABASE_URL)
-    VITE_SUPABASE_ANON_KEY: $(VITE_SUPABASE_ANON_KEY)
     
 - script: |
     dotnet tool install --global dotnet-ef
