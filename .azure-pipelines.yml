@@ -29,6 +29,9 @@ steps:
 
 - script: |
     cd Banebooking.Api/ClientApp
+    
+    export VITE_SUPABASE_URL="$(VITE_SUPABASE_URL)"
+    export VITE_SUPABASE_ANON_KEY="$(VITE_SUPABASE_ANON_KEY)"
 
     echo ">>> Starter npm install"
     npm install
