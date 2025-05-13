@@ -29,15 +29,11 @@ steps:
 
 - script: |
     cd Banebooking.Api/ClientApp
-    
-    echo ">>> Setter miljøvariabler manuelt"
-    export VITE_SUPABASE_URL="$(VITE_SUPABASE_URL)"
-    export VITE_SUPABASE_ANON_KEY="$(VITE_SUPABASE_ANON_KEY)"
 
-    echo "Bygger med env:"
+    echo ">>> Bygger med Vite med env:"
     echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL"
     echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY"
-    
+
     echo ">>> Starter npm install"
     npm install
 
