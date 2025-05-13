@@ -29,16 +29,27 @@ steps:
 
 - script: |
     cd Banebooking.Api/ClientApp
-    echo ">>> Lager .env-fil til Vite"
-    echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" > .env.production
-    echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env.production
+
+    echo ">>> Lager .env.production"
+    echo "VITE_SUPABASE_URL=$(VITE_SUPABASE_URL)" > .env.production
+    echo "VITE_SUPABASE_ANON_KEY=$(VITE_SUPABASE_ANON_KEY)" >> .env.production
+
+    echo ">>> Innhold i .env.production:"
     cat .env.production
 
+    echo ">>> Starter npm install"
     npm install
+
+    echo ">>> Kjører vite build"
     npm run build
+
+    echo ">>> Sjekker om Supabase-verdier er med i bundlet kode:"
+    grep SUPABASE dist/assets/*.js || echo "VITE_SUPABASE_* ikke funnet i output!"
+
+    echo ">>> Kopierer til wwwroot"
     mkdir -p ../../wwwroot
     cp -r dist/* ../../wwwroot/
-  displayName: Bygg frontend med Vite
+  displayName: 'Bygg frontend med Vite'
   env:
     VITE_SUPABASE_URL: $(VITE_SUPABASE_URL)
     VITE_SUPABASE_ANON_KEY: $(VITE_SUPABASE_ANON_KEY)
