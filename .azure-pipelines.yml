@@ -30,21 +30,14 @@ steps:
 - script: |
     cd Banebooking.Api/ClientApp
 
-    echo ">>> Lager .env.production"
-    echo "VITE_SUPABASE_URL=$(VITE_SUPABASE_URL)" > .env.production
-    echo "VITE_SUPABASE_ANON_KEY=$(VITE_SUPABASE_ANON_KEY)" >> .env.production
-
-    echo ">>> Innhold i .env.production:"
-    cat .env.production
-
     echo ">>> Starter npm install"
     npm install
 
-    echo ">>> Kjører vite build"
+    echo ">>> Bygger med Vite"
     npm run build
 
-    echo ">>> Sjekker om Supabase-verdier er med i bundlet kode:"
-    grep SUPABASE dist/assets/*.js || echo "VITE_SUPABASE_* ikke funnet i output!"
+    echo ">>> Sjekker om Supabase-URL finnes i bundle:"
+    grep "supabase" dist/assets/*.js || echo "Ikke funnet!"
 
     echo ">>> Kopierer til wwwroot"
     mkdir -p ../../wwwroot
