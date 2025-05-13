@@ -32,7 +32,7 @@ steps:
     echo ">>> Lager .env-fil til Vite"
     echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" > .env.production
     echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env.production
-    cat .env
+    cat .env.production
 
     npm install
     npm run build
