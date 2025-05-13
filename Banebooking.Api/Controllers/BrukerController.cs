@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Banebooking.Api.Dto;
 using Banebooking.Api.Controllers;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize]
 [ApiController]
 [Route("api/bruker")]
 public class BrukerController : ControllerBase

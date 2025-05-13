@@ -1,5 +1,6 @@
 ﻿using Banebooking.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Banebooking.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ var connectionString =
 builder.Services.AddDbContext<BanebookingDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+builder.Services.AddSupabaseAuthentication(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,7 +26,7 @@ if (app.Environment.IsDevelopment())
     {
         var db = scope.ServiceProvider.GetRequiredService<BanebookingDbContext>();
         db.Database.Migrate();
-        
+
         Tesdata.Seed(db);
     }
 
@@ -36,10 +38,10 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapFallbackToFile("index.html");
 
 app.Run();

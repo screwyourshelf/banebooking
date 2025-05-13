@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { supabase } from '../supabase';
 
 type BookingDto = {
     id: string;
@@ -18,13 +19,43 @@ export default function MinSide() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch('/api/bruker/meg')
-            .then(async (res) => {
-                if (!res.ok) throw new Error(await res.text());
-                return res.json();
-            })
-            .then(setBruker)
-            .catch((err) => setError(err.message));
+        const hentBruker = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            console.log("Access token som sendes:", token);
+
+            if (!token) {
+                setError("Ingen tilgangstoken – du er ikke logget inn.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/bruker/meg', {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                });
+
+                console.log("Responsstatus fra /api/bruker/meg:", res.status);
+
+                if (!res.ok) {
+                    throw new Error(await res.text());
+                }
+
+                const data: BrukerDto = await res.json();
+                setBruker(data);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("Ukjent feil ved henting av brukerdata.");
+                }
+            }
+        };
+
+        hentBruker();
     }, []);
 
     if (error) return <div className="alert alert-danger">Feil: {error}</div>;
@@ -37,7 +68,7 @@ export default function MinSide() {
 
             <h5 className="mt-4">Mine bookinger</h5>
             {bruker.bookinger.length === 0 ? (
-                <p>Du har ingen bookinger enn�.</p>
+                <p>Du har ingen bookinger ennå.</p>
             ) : (
                 <table className="table table-sm table-striped">
                     <thead>
