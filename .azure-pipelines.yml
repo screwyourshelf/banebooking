@@ -61,9 +61,6 @@ steps:
     SUPABASE_ADMIN_CONNECTIONSTRING: $(SUPABASE_ADMIN_CONNECTIONSTRING)
 
 - script: |
-    echo "Installerer psql-klient"
-    apt-get update && apt-get install -y postgresql-client
-
     echo "Kjører init_rls.sql for å sette RLS-policyer"
     export PGPASSWORD=$(SUPABASE_ADMIN_PASSWORD)
 
