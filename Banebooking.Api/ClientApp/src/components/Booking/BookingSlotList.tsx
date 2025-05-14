@@ -22,11 +22,11 @@ export default function BookingSlotList({
     onReportNoShow,
 }: Props) {
     if (!slots.length) {
-        return <div className="px-2 pt-2 text-muted">Ingen bookinger funnet</div>;
+        return <div className="px-1 pt-1 text-muted">Ingen bookinger funnet</div>;
     }
 
     return (
-        <div className="d-flex flex-column gap-2 w-100">
+        <div className="d-flex flex-column gap-1 w-100">
             {slots.map((slot, index) => (
                 <BookingSlotItem
                     key={index}

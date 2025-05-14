@@ -26,23 +26,33 @@ public class BookingerController : ControllerBase
         var mock = new List<BookingSlotDto>();
         var brukere = new[] { null, null, "ola@eksempel.no", "kari@eksempel.no" };
 
+        // Simuler innlogget bruker
+        var currentUserEmail = User.Identity?.Name?.ToLower() ?? "ola@eksempel.no"; // fallback for lokal testing
+        var erAdmin = currentUserEmail == "admin@eksempelklubb.no";
+
+        var nå = DateTime.UtcNow;
+        var iDag = DateOnly.FromDateTime(nå.Date);
+        var nåTid = TimeOnly.FromDateTime(nå);
+
         for (int time = 7; time < 22; time++)
         {
             var start = new TimeOnly(time, 0);
             var slutt = new TimeOnly(time + 1, 0);
             var booketAv = brukere[Random.Shared.Next(brukere.Length)];
 
-            var nå = DateTime.UtcNow;
-
-            var erFremtid = dato > DateOnly.FromDateTime(nå.Date)
-                || (dato == DateOnly.FromDateTime(nå.Date) && start >= TimeOnly.FromDateTime(nå));
+            var erPassert = dato < iDag || (dato == iDag && start < nåTid);
+            var erEier = booketAv != null &&
+                         booketAv.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase);
 
             var slot = new BookingSlotDto
             {
                 StartTid = $"{start:HH\\:mm}",
                 SluttTid = $"{slutt:HH\\:mm}",
                 BooketAv = booketAv,
-                KanBookes = booketAv == null && erFremtid
+                KanBookes = booketAv == null && !erPassert,
+                KanAvbestille = booketAv != null && erEier && !erPassert,
+                KanSlette = booketAv != null && !erEier && erAdmin && !erPassert,
+                KanRapportereFravaer = booketAv != null && !erEier && erPassert
             };
 
             mock.Add(slot);
@@ -50,7 +60,6 @@ public class BookingerController : ControllerBase
 
         return Ok(mock);
     }
-
 
     [HttpPost]
     [Authorize]

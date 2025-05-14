@@ -3,4 +3,7 @@ export type BookingSlot = {
     sluttTid: string;
     booketAv?: string | null;
     kanBookes: boolean;
+    kanAvbestille: boolean;
+    kanSlette: boolean;
+    kanRapportereFravaer: boolean;
 };

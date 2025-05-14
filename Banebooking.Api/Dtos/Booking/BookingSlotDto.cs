@@ -1,9 +1,11 @@
-﻿namespace Banebooking.Api.Dtos.Booking;
-
-public class BookingSlotDto
+﻿public class BookingSlotDto
 {
-    public string StartTid { get; set; } = null!;
-    public string SluttTid { get; set; } = null!;
+    public string StartTid { get; set; }
+    public string SluttTid { get; set; }
     public string? BooketAv { get; set; }
-    public bool KanBookes { get; internal set; }
+
+    public bool KanBookes { get; set; }
+    public bool KanAvbestille { get; set; }
+    public bool KanSlette { get; set; }
+    public bool KanRapportereFravaer { get; set; }
 }
