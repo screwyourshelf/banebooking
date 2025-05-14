@@ -52,10 +52,13 @@ steps:
   displayName: 'Installer dotnet-ef'
 
 - script: |
-    dotnet ef database update --project Banebooking.Api/Banebooking.Api.csproj --startup-project Banebooking.Api/Banebooking.Api.csproj
-  displayName: 'Kjør EF migrasjoner mot prod DB'
+    dotnet ef database update \
+      --project Banebooking.Api/Banebooking.Api.csproj \
+      --startup-project Banebooking.Api/Banebooking.Api.csproj \
+      --connection "$SUPABASE_ADMIN_CONNECTIONSTRING"
+  displayName: 'Kjør EF migrasjoner med admin-bruker'
   env:
-    ConnectionStrings__DefaultConnection: $(SUPABASE_CONNECTIONSTRING)
+    SUPABASE_ADMIN_CONNECTIONSTRING: $(SUPABASE_ADMIN_CONNECTIONSTRING)
 
 - script: |
     echo "Installerer psql-klient"
