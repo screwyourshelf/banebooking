@@ -7,17 +7,16 @@ BEGIN
     FROM pg_tables
     WHERE schemaname = 'public'
   LOOP
-    -- Logg hvilken tabell som behandles
     RAISE NOTICE 'Behandler tabell: %', r.tablename;
 
     -- Aktiver RLS
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', r.tablename);
 
-    -- Forsøk å fjerne tidligere policy
+    -- fjerne tidligere policy
     BEGIN
       EXECUTE format('DROP POLICY IF EXISTS "API-policy" ON public.%I;', r.tablename);
     EXCEPTION WHEN OTHERS THEN
-      RAISE NOTICE 'Klarte ikke å droppe policy på %', r.tablename;
+      RAISE NOTICE 'Klarte ikke droppe policy %', r.tablename;
     END;
 
     -- Lag ny policy
