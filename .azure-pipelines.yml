@@ -45,7 +45,7 @@ steps:
     mkdir -p ../../wwwroot
     cp -r dist/* ../../wwwroot/
   displayName: 'Bygg frontend med Vite'
-    
+
 - script: |
     dotnet tool install --global dotnet-ef
     export PATH="$PATH:/root/.dotnet/tools"
@@ -56,6 +56,17 @@ steps:
   displayName: 'Kjør EF migrasjoner mot prod DB'
   env:
     ConnectionStrings__DefaultConnection: $(SUPABASE_CONNECTIONSTRING)
+
+- script: |
+    echo "Installerer psql-klient"
+    apt-get update && apt-get install -y postgresql-client
+
+    echo "Kjører init_rls.sql for å sette RLS-policyer"
+    export PGPASSWORD=$(SUPABASE_ADMIN_PASSWORD)
+
+    psql "host=$(SUPABASE_HOST) port=5432 user=$(SUPABASE_ADMIN_USER) dbname=postgres sslmode=require" \
+      -f Banebooking.Api/_build/init_rls.sql
+  displayName: 'Initier RLS-policy for alle tabeller'
 
 - script: |
     curl -L https://fly.io/install.sh | sh
