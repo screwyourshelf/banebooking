@@ -21,30 +21,36 @@ public class BookingerController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult HentBookinger([FromQuery] Guid baneId, [FromQuery] DateOnly dato)
+    public async Task<IActionResult> HentBookinger([FromQuery] Guid baneId, [FromQuery] DateOnly dato)
     {
-        // Mocket liste for 07:00–22:00
         var mock = new List<BookingSlotDto>();
-
-        var brukere = new[]
-        {
-            (string?)null,
-            null,
-            "ola@eksempel.no",
-            "kari@eksempel.no"
-        };
+        var brukere = new[] { null, null, "ola@eksempel.no", "kari@eksempel.no" };
 
         for (int time = 7; time < 22; time++)
         {
-            mock.Add(new BookingSlotDto
+            var start = new TimeOnly(time, 0);
+            var slutt = new TimeOnly(time + 1, 0);
+            var booketAv = brukere[Random.Shared.Next(brukere.Length)];
+
+            var nå = DateTime.UtcNow;
+
+            var erFremtid = dato > DateOnly.FromDateTime(nå.Date)
+                || (dato == DateOnly.FromDateTime(nå.Date) && start >= TimeOnly.FromDateTime(nå));
+
+            var slot = new BookingSlotDto
             {
-                StartTid = $"{time:00}:00",
-                SluttTid = $"{time + 1:00}:00",
-                BooketAv = brukere[Random.Shared.Next(brukere.Length)]
-            });
+                StartTid = $"{start:HH\\:mm}",
+                SluttTid = $"{slutt:HH\\:mm}",
+                BooketAv = booketAv,
+                KanBookes = booketAv == null && erFremtid
+            };
+
+            mock.Add(slot);
         }
+
         return Ok(mock);
     }
+
 
     [HttpPost]
     [Authorize]

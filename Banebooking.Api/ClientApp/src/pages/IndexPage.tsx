@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ListGroup } from 'react-bootstrap';
 import 'react-datepicker/dist/react-datepicker.css';
 import BaneTabs from '../components/BaneTabs';
 import DatoVelger from '../components/DatoVelger';
+import BookingSlotList from '../components/Booking/BookingSlotList';
 import { useBaner } from '../hooks/useBaner';
+import { supabase } from '../supabase';
+import type { User } from '@supabase/supabase-js';
 import type { BookingSlot } from '../types';
 
 export default function IndexPage() {
@@ -13,23 +15,68 @@ export default function IndexPage() {
         new Date().toISOString().split('T')[0]
     );
     const [slots, setSlots] = useState<BookingSlot[]>([]);
-    
-    // Når baner er lastet, velg første
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+    // auth
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setCurrentUser(user);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setCurrentUser(session?.user ?? null);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, []);
+
+    const erAdmin = currentUser?.email === 'admin@eksempelklubb.no';
+
+    // Velg fÃ¸rste bane nÃ¥r tilgjengelig
     useEffect(() => {
         if (!valgtBaneId && baner.length > 0) {
             setValgtBaneId(baner[0].id);
         }
     }, [baner]);
 
-    // Hent slots når bane eller dato endres
-    useEffect(() => {
+    // Hent slots ved endringer
+    const hentBookinger = () => {
         if (!valgtBaneId) return;
-
         fetch(`/api/bookinger?baneId=${valgtBaneId}&dato=${valgtDato}`)
             .then((res) => res.ok ? res.json() : [])
             .then((data) => setSlots(Array.isArray(data) ? data : []))
             .catch(() => setSlots([]));
+    };
+
+    useEffect(() => {
+        hentBookinger();
     }, [valgtBaneId, valgtDato]);
+
+    const onBook = async (slot: BookingSlot) => {
+        if (!valgtBaneId) return;
+
+        const nyBooking = {
+            baneId: valgtBaneId,
+            dato: valgtDato,
+            startTid: slot.startTid,
+            sluttTid: slot.sluttTid
+        };
+
+        const response = await fetch('/api/bookinger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nyBooking)
+        });
+
+        if (response.ok) {
+            hentBookinger();
+        } else {
+            const error = await response.json();
+            alert(error.melding || 'Kunne ikke booke slot.');
+        }
+    };
 
     if (loading || !valgtBaneId) {
         return <div className="px-2 py-2">Laster baner...</div>;
@@ -45,24 +92,16 @@ export default function IndexPage() {
 
             <DatoVelger valgtDato={valgtDato} onVelgDato={setValgtDato} />
 
-            {/* Slotliste */}
             <div className="w-100 py-1">
-                {slots.length > 0 ? (
-                    <ListGroup className="w-100">
-                        {slots.map((slot, index) => (
-                            <ListGroup.Item key={index} className={`w-100 py-1 px-1 m-0 ${index % 2 === 0 ? 'bg-light' : 'bg-white'}`}>
-                                <div className="d-flex flex-nowrap align-items-start">
-                                    <div className="fw-semibold text-nowrap border-end pe-1">
-                                        {slot.startTid.slice(0, 2)}-{slot.sluttTid.slice(0, 2)}
-                                    </div>
-                                    <div className="ps-2 text-break">{slot.booketAv ?? ''}</div>
-                                </div>
-                            </ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                ) : (
-                    <div className="px-2 pt-2 text-muted">Ingen bookinger funnet</div>
-                )}
+                <BookingSlotList
+                    slots={slots}
+                    currentUser={currentUser}
+                    isAdmin={!!erAdmin}
+                    onBook={onBook}
+                    onCancel={(slot) => console.log('Kanseller', slot)}
+                    onDelete={(slot) => console.log('Slett', slot)}
+                    onReportNoShow={(slot) => console.log('Ikke mÃ¸tt', slot)}
+                />
             </div>
         </div>
     );

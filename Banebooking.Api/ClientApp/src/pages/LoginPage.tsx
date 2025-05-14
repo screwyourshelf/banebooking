@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');  // Legg til state for email
+    const [email, setEmail] = useState('');
     const [redirecting, setRedirecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -13,46 +13,46 @@ export default function LoginPage() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (user) {
-                setRedirecting(true);  // Hvis brukeren er logget inn, sett flagget for omdirigering
+                setRedirecting(true); // Hvis brukeren er logget inn, omdiriger
             }
         };
 
-        checkUser();  // Sjekk om bruker er logget inn
+        checkUser();
     }, []);
 
-    // Hvis vi er i ferd med å omdirigere, vis brukeren MinSide
+    // Hvis vi er i ferd med Ã¥ omdirigere, vis MinSide
     if (redirecting) {
-        return <Navigate to="/minside" replace />;  // Bruk Navigate for å gjøre omdirigeringen til MinSide
+        return <Navigate to="/minside" replace />;
     }
 
-    // Funksjon for å håndtere Google login
+    // HÃ¥ndter Google-login
     const handleGoogleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
         });
         if (error) {
-            setError(error.message);  // Hvis det er en feil under login, vis feilmeldingen
+            setError(error.message);
         }
     };
 
-    // Funksjon for å håndtere e-post login med magic link
+    // HÃ¥ndter e-post login med magisk lenke
     const handleEmailLogin = async () => {
         const { error } = await supabase.auth.signInWithOtp({
             email,
         });
         if (error) {
-            setError(error.message);  // Hvis det er en feil, vis feilmelding
+            setError(error.message);
         } else {
-            setRedirecting(true);  // Sett omdirigeringsflagget hvis alt går bra
+            setRedirecting(true);
         }
     };
 
     return (
         <div className="container mt-5">
-            <h2>Du må logge inn</h2>
-            <p>For å få tilgang til Min Side, vennligst logg inn med Google, Facebook, eller e-post.</p>
+            <h2>Du mÃ¥ logge inn</h2>
+            <p>For Ã¥ fÃ¥ tilgang til Min Side, vennligst logg inn med Google eller e-post.</p>
 
-            {/* Google Login Button */}
+            {/* Google Login */}
             <button onClick={handleGoogleLogin} className="btn btn-danger mt-3">
                 <i className="fab fa-google"></i> Logg inn med Google
             </button>
@@ -62,8 +62,8 @@ export default function LoginPage() {
                 <input
                     type="email"
                     placeholder="Din e-post"
-                    value={email}  // Bind inputen til state
-                    onChange={(e) => setEmail(e.target.value)}  // Oppdaterer email state
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="form-control"
                 />
                 <button onClick={handleEmailLogin} className="btn btn-primary mt-3">

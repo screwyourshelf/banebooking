@@ -21,6 +21,9 @@ public class BrukerHjelper
         string? email = HentEpost(principal);
 
         if (string.IsNullOrWhiteSpace(sub) || string.IsNullOrWhiteSpace(email))
+            return null;
+
+        if (string.IsNullOrWhiteSpace(sub) || string.IsNullOrWhiteSpace(email))
             throw new UnauthorizedAccessException("Mangler sub eller email i token");
 
         // Prøv å finne bruker via sub
