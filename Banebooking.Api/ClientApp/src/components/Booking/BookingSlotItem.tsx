@@ -14,6 +14,8 @@ type Props = {
     slot: BookingSlot;
     currentUser: User | null;
     isAdmin: boolean;
+    isOpen: boolean;
+    onToggle: () => void;
     onBook: (slot: BookingSlot) => void;
     onCancel: (slot: BookingSlot) => void;
     onDelete: (slot: BookingSlot) => void;
@@ -23,19 +25,18 @@ type Props = {
 export default function BookingSlotItem({
     slot,
     currentUser,
+    isOpen,
+    onToggle,
     onBook,
     onCancel,
     onDelete,
     onReportNoShow,
 }: Props) {
-    const [visValg, setVisValg] = useState(false);
     const [erBekreftet, setErBekreftet] = useState(false);
-
     const time = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
 
     const reset = () => {
         setErBekreftet(false);
-        setVisValg(false);
     };
 
     const harHandlinger =
@@ -51,25 +52,29 @@ export default function BookingSlotItem({
                     </span>
                 </div>
 
-                {currentUser && harHandlinger && (
-                    <button
-                        className="btn btn-link btn-sm text-secondary"
-                        onClick={() => {
-                            setVisValg(!visValg);
-                            setErBekreftet(false);
-                        }}
-                        aria-label="Vis alternativer"
-                        style={{
-                            transform: visValg ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.2s',
-                        }}
-                    >
-                        <FaChevronDown />
-                    </button>
+                {currentUser && (
+                    harHandlinger ? (
+                        <button
+                            className="btn btn-link btn-sm text-secondary p-0"
+                            onClick={() => {
+                                onToggle();
+                                setErBekreftet(false);
+                            }}
+                            aria-label="Vis alternativer"
+                            style={{
+                                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.2s',
+                            }}
+                        >
+                            <FaChevronDown />
+                        </button>
+                    ) : (
+                        <div style={{ width: '2rem', height: '1.5rem' }} />
+                    )
                 )}
             </div>
 
-            {visValg && (
+            {isOpen && (
                 <div className="mt-2 w-100 border rounded p-1 bg-light d-flex flex-column align-items-end">
                     {slot.kanBookes && (
                         <>
