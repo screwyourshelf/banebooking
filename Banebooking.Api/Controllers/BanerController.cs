@@ -8,18 +8,20 @@ namespace Banebooking.Api.Controllers;
 [Route("api/[controller]")]
 public class BanerController(BanebookingDbContext db) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> HentBaner()
+    [HttpGet("/api/klubb/{slug}/baner")]
+    public async Task<IActionResult> HentBaner(string slug)
     {
         var baner = await db.Baner
-            .Where(b => b.Aktiv)
-            .OrderBy(b => b.Navn)
-            .Select(b => new
-            {
-                id = b.Id,
-                navn = b.Navn
-            })
-            .ToListAsync();
+        .Where(b => b.Aktiv && b.Klubb.Slug == slug)
+        .OrderBy(b => b.Navn)
+        .Select(b => new
+        {
+            id = b.Id,
+            navn = b.Navn,
+            slug = b.Slug,
+            beskrivelse = b.Beskrivelse
+        })
+        .ToListAsync();
 
         return Ok(baner);
     }

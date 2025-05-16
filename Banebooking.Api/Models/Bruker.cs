@@ -10,5 +10,4 @@ public class Bruker
     public DateTime OpprettetTid { get; set; } = DateTime.UtcNow;
 
     public virtual ICollection<Booking> Bookinger { get; set; } = [];
-    public virtual ICollection<RapportertFravær> RapporterteFravær { get; set; } = [];
 }

@@ -10,27 +10,35 @@ public static class Tesdata
             var klubb = new Klubb
             {
                 Id = Guid.NewGuid(),
-                Navn = "Eksempel Tennisklubb",
-                KontaktEpost = "kontakt@eksempelklubb.no",
-                AdminEpost = "admin@eksempelklubb.no",
-                Baner = new List<Bane>
-                {
-                    new() { Id = Guid.NewGuid(), Navn = "Bane 1", Aktiv = true },
-                    new() { Id = Guid.NewGuid(), Navn = "Bane 2", Aktiv = true }
-                },
+                Navn = "Ås tennisklubb",
+                Slug = "aas-tennisklubb",
+                KontaktEpost = "andreas.lotarev@gmail.com",
+                AdminEpost = "andreas.lotarev@gmail.com",
+                Baner =
+                [
+                   new() { Id = Guid.NewGuid(), Navn = "Bane A", Beskrivelse = "Bane A - mot klubbhuset", Slug = "bane-a",  Aktiv = true },
+                   new() { Id = Guid.NewGuid(), Navn = "Bane B", Beskrivelse = "Bane B - i mitten", Slug = "bane-b",  Aktiv = true },
+                   new() { Id = Guid.NewGuid(), Navn = "Bane C", Beskrivelse = "Bane C - lengst bort fra klubbhuset", Slug = "bane-c",  Aktiv = true },
+                   new() { Id = Guid.NewGuid(), Navn = "Padel", Beskrivelse = "Padelbane", Slug = "padel",  Aktiv = true }
+                ],
                 BookingRegel = new BestemmelseForBooking
                 {
                     Åpningstid = new TimeOnly(7, 0),
                     Stengetid = new TimeOnly(22, 0),
-                    MaksTimerPerDagPerBruker = 2,
+                    MaksBookingerPerDagPerBruker = 2,
                     SlotLengde = TimeSpan.FromMinutes(60)
                 },
-                Roller = new List<RolleITilgang>
-                {
-                    new() { Id = Guid.NewGuid(), Epost = "admin@eksempelklubb.no", Rolle = RolleType.Admin },
-                    new() { Id = Guid.NewGuid(), Epost = "bruker@eksempelklubb.no", Rolle = RolleType.Medlem }
-                }
+                Roller =
+                [
+                    new() { Id = Guid.NewGuid(), Epost = "andreas.lotarev@gmail.com", Rolle = RolleType.Admin }
+                ]
             };
+
+            foreach (var bane in klubb.Baner)
+            {
+                bane.KlubbId = klubb.Id;
+                bane.Klubb = klubb;
+            }
 
             context.Klubber.Add(klubb);
 
@@ -38,31 +46,11 @@ public static class Tesdata
             var bruker1 = new Bruker
             {
                 Id = Guid.NewGuid(),
-                Epost = "admin@eksempelklubb.no",
+                Epost = "andreas.lotarev@gmail.com",
                 Provider = "local"
             };
 
-            var bruker2 = new Bruker
-            {
-                Id = Guid.NewGuid(),
-                Epost = "bruker@eksempelklubb.no",
-                Provider = "local"
-            };
-
-            context.Brukere.AddRange(bruker1, bruker2);
-
-            // Bookinger
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            context.Bookinger.Add(new Booking
-            {
-                Id = Guid.NewGuid(),
-                Bane = klubb.Baner.First(),
-                Bruker = bruker2,
-                Dato = today,
-                StartTid = new TimeOnly(17, 0),
-                SluttTid = new TimeOnly(18, 0),
-                Type = BookingType.Medlem
-            });
+            context.Brukere.AddRange(bruker1);
 
             context.SaveChanges();
         }

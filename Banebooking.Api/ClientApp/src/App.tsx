@@ -8,7 +8,7 @@ export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Layout />}>
+                <Route path=":slug" element={<Layout />}>
                     <Route index element={<IndexPage />} />
                     <Route
                         path="minside"
@@ -18,6 +18,10 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     />
+                </Route>
+                {/* Hvis du fortsatt vil ha en root-side uten slug, kan du legge til denne: */}
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<div>Velkommen! Velg klubb.</div>} />
                 </Route>
             </Routes>
         </BrowserRouter>

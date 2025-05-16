@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Banebooking.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/klubb/{slug}/bookinger")]
 public class BookingerController : ControllerBase
 {
     private readonly BrukerHjelper _brukerHjelper;
@@ -21,14 +21,30 @@ public class BookingerController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> HentBookinger([FromQuery] Guid baneId, [FromQuery] DateOnly dato)
+    public async Task<IActionResult> HentBookinger(
+        string slug,
+        [FromQuery] Guid baneId,
+        [FromQuery] DateOnly dato)
     {
+        // Hent klubb basert på slug
+        var klubb = await _db.Klubber
+            .Include(k => k.Baner)
+            .FirstOrDefaultAsync(k => k.Slug == slug);
+
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet");
+
+        // Sjekk at banen tilhører klubben
+        var bane = klubb.Baner.FirstOrDefault(b => b.Id == baneId);
+        if (bane == null)
+            return NotFound("Bane ikke funnet i denne klubben");
+
+        // Mock-data (bytt ut med ekte booking-henting etter behov)
         var mock = new List<BookingSlotDto>();
         var brukere = new[] { null, null, "ola@eksempel.no", "kari@eksempel.no" };
 
-        // Simuler innlogget bruker
-        var currentUserEmail = User.Identity?.Name?.ToLower() ?? "ola@eksempel.no"; // fallback for lokal testing
-        var erAdmin = currentUserEmail == "admin@eksempelklubb.no";
+        var currentUserEmail = User.Identity?.Name?.ToLower() ?? "ola@eksempel.no";
+        var erAdmin = currentUserEmail == klubb.AdminEpost?.ToLower();
 
         var nå = DateTime.UtcNow;
         var iDag = DateOnly.FromDateTime(nå.Date);
@@ -63,22 +79,30 @@ public class BookingerController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> OpprettBooking([FromBody] NyBookingDto dto)
+    public async Task<IActionResult> OpprettBooking(
+        string slug,
+        [FromBody] NyBookingDto dto)
     {
         var bruker = await _brukerHjelper.HentEllerOpprettBrukerAsync(User);
 
+        // Hent klubb basert på slug
+        var klubb = await _db.Klubber
+            .Include(k => k.Baner)
+            .Include(k => k.BookingRegel)
+            .FirstOrDefaultAsync(k => k.Slug == slug);
+
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet");
+
+        // Sjekk at banen tilhører klubben
+        var bane = klubb.Baner.FirstOrDefault(b => b.Id == dto.BaneId);
+        if (bane == null)
+            return NotFound("Bane ikke funnet i denne klubben");
+
+        var regel = klubb.BookingRegel;
+
         if (dto.Dato < DateOnly.FromDateTime(DateTime.UtcNow.Date))
             return BadRequest(new { status = "Feil", melding = "Kan ikke booke tilbake i tid." });
-
-        var bane = await _db.Baner
-            .Include(b => b.Klubb)
-            .ThenInclude(k => k.BookingRegel)
-            .FirstOrDefaultAsync(b => b.Id == dto.BaneId);
-
-        if (bane == null)
-            return NotFound("Bane ikke funnet");
-
-        var regel = bane.Klubb.BookingRegel;
 
         if (dto.StartTid < regel.Åpningstid || dto.SluttTid > regel.Stengetid)
             return BadRequest(new { status = "Feil", melding = "Tid utenfor åpningstid" });
@@ -94,7 +118,6 @@ public class BookingerController : ControllerBase
         if (eksisterende)
             return Conflict(new { status = "Feil", melding = "Slot er allerede booket" });
 
-        // Beregn brukt tid i minnet (siden vi ikke kan bruke DateDiffMinute i PostgreSQL)
         var dagensBookinger = await _db.Bookinger
             .Where(b => b.BrukerId == bruker.Id && b.Dato == dto.Dato && !b.Kansellert)
             .ToListAsync();
@@ -104,7 +127,7 @@ public class BookingerController : ControllerBase
 
         var ønsketTidIMinutter = (dto.SluttTid - dto.StartTid).TotalMinutes;
 
-        if (bruktTidIMinutter + ønsketTidIMinutter > regel.MaksTimerPerDagPerBruker * 60)
+        if (bruktTidIMinutter + ønsketTidIMinutter > regel.MaksBookingerPerDagPerBruker * 60)
             return BadRequest(new { status = "Feil", melding = "Du har nådd maks tillatt tid for dagen" });
 
         var booking = new Booking

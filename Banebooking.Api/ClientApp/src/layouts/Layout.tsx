@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Outlet } from 'react-router-dom';
 import {
     Nav,
     Navbar,
@@ -14,12 +14,16 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook, FaSignInAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import type { User } from '@supabase/supabase-js';
 
+export const SlugContext = React.createContext<string | undefined>(undefined);
+
 export default function Layout() {
+    const { slug } = useParams<{ slug: string }>();
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
-    const redirectTo = window.location.origin + '/';
+    const slugFromUrl = window.location.pathname.split('/')[1];
+    const redirectTo = window.location.origin + (slugFromUrl ? `/${slugFromUrl}` : '/');
 
     useEffect(() => {
         supabase.auth.getUser().then(({ data: { user } }) => {
@@ -73,7 +77,7 @@ export default function Layout() {
     };
 
     return (
-        <>
+        <SlugContext.Provider value={slug}>
             <Navbar bg="light" expand="sm" className="border-bottom w-100 p-1 m-0">
                 <div className="w-100 d-flex justify-content-between align-items-center px-0">
                     <Navbar.Brand href="/" className="fw-bold py-0 px-2 m-0">
@@ -188,6 +192,6 @@ export default function Layout() {
             <main className="w-100 px-2">
                 <Outlet />
             </main>
-        </>
+        </SlugContext.Provider>
     );
 }

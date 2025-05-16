@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import BaneTabs from '../components/BaneTabs';
 import DatoVelger from '../components/DatoVelger';
@@ -7,6 +7,7 @@ import { useBaner } from '../hooks/useBaner';
 import { supabase } from '../supabase';
 import type { User } from '@supabase/supabase-js';
 import type { BookingSlot } from '../types';
+import { SlugContext } from '../layouts/Layout';
 
 export default function IndexPage() {
     const { baner, loading } = useBaner();
@@ -16,6 +17,9 @@ export default function IndexPage() {
     );
     const [slots, setSlots] = useState<BookingSlot[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [apenSlotTid, setApenSlotTid] = useState<string | null>(null);
+
+    const slug = useContext(SlugContext);
 
     // auth
     useEffect(() => {
@@ -34,17 +38,19 @@ export default function IndexPage() {
 
     const erAdmin = currentUser?.email === 'admin@eksempelklubb.no';
 
-    // Velg første bane når tilgjengelig
     useEffect(() => {
         if (!valgtBaneId && baner.length > 0) {
             setValgtBaneId(baner[0].id);
         }
     }, [baner]);
 
-    // Hent slots ved endringer
+    useEffect(() => {
+        setApenSlotTid(null); // nullstill ekspandert slot ved navigasjon
+    }, [valgtDato, valgtBaneId]);
+
     const hentBookinger = () => {
-        if (!valgtBaneId) return;
-        fetch(`/api/bookinger?baneId=${valgtBaneId}&dato=${valgtDato}`)
+        if (!valgtBaneId || !slug) return;
+        fetch(`/api/klubb/${slug}/bookinger?baneId=${valgtBaneId}&dato=${valgtDato}`)
             .then((res) => res.ok ? res.json() : [])
             .then((data) => setSlots(Array.isArray(data) ? data : []))
             .catch(() => setSlots([]));
@@ -52,10 +58,11 @@ export default function IndexPage() {
 
     useEffect(() => {
         hentBookinger();
-    }, [valgtBaneId, valgtDato]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [valgtBaneId, valgtDato, slug]);
 
     const onBook = async (slot: BookingSlot) => {
-        if (!valgtBaneId) return;
+        if (!valgtBaneId || !slug) return;
 
         const nyBooking = {
             baneId: valgtBaneId,
@@ -64,7 +71,7 @@ export default function IndexPage() {
             sluttTid: slot.sluttTid
         };
 
-        const response = await fetch('/api/bookinger', {
+        const response = await fetch(`/api/klubb/${slug}/bookinger`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nyBooking)
@@ -84,19 +91,19 @@ export default function IndexPage() {
 
     return (
         <div className="w-100">
+            <DatoVelger valgtDato={valgtDato} onVelgDato={setValgtDato} />
             <BaneTabs
                 baner={baner}
                 valgtBaneId={valgtBaneId}
                 onVelgBane={setValgtBaneId}
             />
-
-            <DatoVelger valgtDato={valgtDato} onVelgDato={setValgtDato} />
-
             <div className="w-100 py-1">
                 <BookingSlotList
                     slots={slots}
                     currentUser={currentUser}
                     isAdmin={!!erAdmin}
+                    apenSlotTid={apenSlotTid}
+                    setApenSlotTid={setApenSlotTid}
                     onBook={onBook}
                     onCancel={(slot) => console.log('Kanseller', slot)}
                     onDelete={(slot) => console.log('Slett', slot)}

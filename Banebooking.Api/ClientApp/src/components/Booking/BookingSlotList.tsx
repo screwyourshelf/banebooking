@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { BookingSlot } from '../../types';
 import type { User } from '@supabase/supabase-js';
 import BookingSlotItem from './BookingSlotItem';
@@ -7,6 +6,8 @@ type Props = {
     slots: BookingSlot[];
     currentUser: User | null;
     isAdmin: boolean;
+    apenSlotTid: string | null;
+    setApenSlotTid: React.Dispatch<React.SetStateAction<string | null>>;
     onBook: (slot: BookingSlot) => void;
     onCancel: (slot: BookingSlot) => void;
     onDelete: (slot: BookingSlot) => void;
@@ -17,13 +18,13 @@ export default function BookingSlotList({
     slots,
     currentUser,
     isAdmin,
+    apenSlotTid,
+    setApenSlotTid,
     onBook,
     onCancel,
     onDelete,
     onReportNoShow,
 }: Props) {
-    const [apenSlotTid, setApenSlotTid] = useState<string | null>(null);
-
     if (!slots.length) {
         return <div className="px-1 pt-1 text-muted">Ingen bookinger funnet</div>;
     }
@@ -38,7 +39,7 @@ export default function BookingSlotList({
                     isAdmin={isAdmin}
                     isOpen={apenSlotTid === slot.startTid}
                     onToggle={() =>
-                        setApenSlotTid((prev) =>
+                        setApenSlotTid((prev: string | null) =>
                             prev === slot.startTid ? null : slot.startTid
                         )
                     }

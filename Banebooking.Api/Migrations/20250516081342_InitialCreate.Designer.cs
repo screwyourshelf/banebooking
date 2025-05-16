@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Banebooking.Api.Data.Migrations
+namespace Banebooking.Api.Migrations
 {
     [DbContext(typeof(BanebookingDbContext))]
-    [Migration("20250512114100_LeggTilSubOgProviderPåBruker")]
-    partial class LeggTilSubOgProviderPåBruker
+    [Migration("20250516081342_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,6 +44,10 @@ namespace Banebooking.Api.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("KlubbId", "Navn")
@@ -57,7 +61,7 @@ namespace Banebooking.Api.Data.Migrations
                     b.Property<Guid>("KlubbId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("MaksTimerPerDagPerBruker")
+                    b.Property<int>("MaksBookingerPerDagPerBruker")
                         .HasColumnType("integer");
 
                     b.Property<TimeSpan>("SlotLengde")
@@ -88,9 +92,6 @@ namespace Banebooking.Api.Data.Migrations
 
                     b.Property<DateOnly>("Dato")
                         .HasColumnType("date");
-
-                    b.Property<bool>("FraværVarsletTilBruker")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("Kansellert")
                         .HasColumnType("boolean");
@@ -173,36 +174,13 @@ namespace Banebooking.Api.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Klubber");
-                });
-
-            modelBuilder.Entity("Banebooking.Api.Models.RapportertFravær", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Kommentar")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RapportertAvBrukerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("RapportertTidspunkt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("RapportertAvBrukerId");
-
-                    b.ToTable("FraværsRapporter");
                 });
 
             modelBuilder.Entity("Banebooking.Api.Models.RolleITilgang", b =>
@@ -269,25 +247,6 @@ namespace Banebooking.Api.Data.Migrations
                     b.Navigation("Bruker");
                 });
 
-            modelBuilder.Entity("Banebooking.Api.Models.RapportertFravær", b =>
-                {
-                    b.HasOne("Banebooking.Api.Models.Booking", "Booking")
-                        .WithMany("FraværsRapporter")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Banebooking.Api.Models.Bruker", "RapportertAv")
-                        .WithMany("RapporterteFravær")
-                        .HasForeignKey("RapportertAvBrukerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("RapportertAv");
-                });
-
             modelBuilder.Entity("Banebooking.Api.Models.RolleITilgang", b =>
                 {
                     b.HasOne("Banebooking.Api.Models.Klubb", "Klubb")
@@ -304,16 +263,9 @@ namespace Banebooking.Api.Data.Migrations
                     b.Navigation("Bookinger");
                 });
 
-            modelBuilder.Entity("Banebooking.Api.Models.Booking", b =>
-                {
-                    b.Navigation("FraværsRapporter");
-                });
-
             modelBuilder.Entity("Banebooking.Api.Models.Bruker", b =>
                 {
                     b.Navigation("Bookinger");
-
-                    b.Navigation("RapporterteFravær");
                 });
 
             modelBuilder.Entity("Banebooking.Api.Models.Klubb", b =>

@@ -7,7 +7,7 @@ public class BestemmelseForBooking
 
     public TimeOnly Åpningstid { get; set; } = new(7, 0);
     public TimeOnly Stengetid { get; set; } = new(22, 0);
-    public int MaksTimerPerDagPerBruker { get; set; } = 2;
+    public int MaksBookingerPerDagPerBruker { get; set; } = 2;
 
     public TimeSpan SlotLengde { get; set; } = TimeSpan.FromHours(1);
 }

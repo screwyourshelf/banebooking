@@ -15,7 +15,6 @@ namespace Banebooking.Api.Data
         public DbSet<Bruker> Brukere { get; set; }
         public DbSet<Booking> Bookinger { get; set; }
         public DbSet<BestemmelseForBooking> BookingRegler { get; set; }
-        public DbSet<RapportertFravær> FraværsRapporter { get; set; }
         public DbSet<RolleITilgang> Roller { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -58,19 +57,6 @@ namespace Banebooking.Api.Data
                 .HasOne(b => b.Bruker)
                 .WithMany(u => u.Bookinger)
                 .HasForeignKey(b => b.BrukerId)
-                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
-
-            // FraværsRapporter
-            modelBuilder.Entity<RapportertFravær>()
-                .HasOne(r => r.Booking)
-                .WithMany(b => b.FraværsRapporter)
-                .HasForeignKey(r => r.BookingId)
-                .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
-
-            modelBuilder.Entity<RapportertFravær>()
-                .HasOne(r => r.RapportertAv)
-                .WithMany(b => b.RapporterteFravær)
-                .HasForeignKey(r => r.RapportertAvBrukerId)
                 .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
 
             // RolleITilgang

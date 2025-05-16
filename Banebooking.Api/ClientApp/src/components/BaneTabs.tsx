@@ -13,12 +13,11 @@ export default function BaneTabs({ baner, valgtBaneId, onVelgBane }: Props) {
             variant="tabs"
             activeKey={valgtBaneId}
             onSelect={(baneId) => baneId && onVelgBane(baneId)}
-            className="pt-1 flex-nowrap"
-            style={{ whiteSpace: 'nowrap' }}
+            className="mt-2 mb-1 flex-nowrap"
         >
             {baner.map((bane) => (
                 <Nav.Item key={bane.id}>
-                    <Nav.Link eventKey={bane.id}>{bane.navn}</Nav.Link>
+                    <Nav.Link eventKey={bane.id} className="py-1 px-2">{bane.navn}</Nav.Link>
                 </Nav.Item>
             ))}
         </Nav>
