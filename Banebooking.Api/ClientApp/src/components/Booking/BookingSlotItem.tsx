@@ -3,10 +3,10 @@ import { Button, Form } from 'react-bootstrap';
 import {
     FaChevronDown,
     FaCalendarPlus,
-    FaUserSlash,
     FaTimesCircle,
     FaTrashAlt
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import type { BookingSlot } from '../../types';
 import type { User } from '@supabase/supabase-js';
 
@@ -19,7 +19,6 @@ type Props = {
     onBook: (slot: BookingSlot) => void;
     onCancel: (slot: BookingSlot) => void;
     onDelete: (slot: BookingSlot) => void;
-    onReportNoShow: (slot: BookingSlot) => void;
 };
 
 export default function BookingSlotItem({
@@ -30,7 +29,6 @@ export default function BookingSlotItem({
     onBook,
     onCancel,
     onDelete,
-    onReportNoShow,
 }: Props) {
     const [erBekreftet, setErBekreftet] = useState(false);
     const time = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
@@ -40,7 +38,7 @@ export default function BookingSlotItem({
     };
 
     const harHandlinger =
-        slot.kanBookes || slot.kanAvbestille || slot.kanSlette || slot.kanRapportereFravaer;
+        slot.kanBookes || slot.kanAvbestille || slot.kanSlette;
 
     return (
         <div className="border rounded shadow-sm p-1 w-100 bg-white">
@@ -81,17 +79,19 @@ export default function BookingSlotItem({
                             <Form.Check
                                 id={`book-${time}`}
                                 type="checkbox"
-                                label="Jeg bekrefter at jeg er medlem for inneværende år"
+                                label={`Jeg (og de jeg spiller sammen med) har betalt medlemskap for ${new Date().getFullYear()}`}
                                 checked={erBekreftet}
                                 onChange={(e) => setErBekreftet(e.target.checked)}
                                 className="mb-2 small"
                             />
+
                             <Button
                                 size="sm"
                                 variant="outline-dark"
                                 disabled={!erBekreftet}
                                 onClick={() => {
                                     onBook(slot);
+                                    toast.success(`Booket ${time} ✅`);
                                     reset();
                                 }}
                                 className="d-flex align-items-center gap-2 small"
@@ -108,6 +108,7 @@ export default function BookingSlotItem({
                             variant="outline-dark"
                             onClick={() => {
                                 onCancel(slot);
+                                toast.info(`Avbestilte ${time}`);
                                 reset();
                             }}
                             className="mt-1 d-flex align-items-center gap-2 small"
@@ -123,6 +124,7 @@ export default function BookingSlotItem({
                             variant="outline-dark"
                             onClick={() => {
                                 onDelete(slot);
+                                toast.warn(`Slettet booking: ${time}`);
                                 reset();
                             }}
                             className="mt-1 d-flex align-items-center gap-2 small"
@@ -130,32 +132,6 @@ export default function BookingSlotItem({
                             <FaTrashAlt />
                             Slett
                         </Button>
-                    )}
-
-                    {slot.kanRapportereFravaer && (
-                        <>
-                            <Form.Check
-                                id={`no-show-${time}`}
-                                type="checkbox"
-                                label="Jeg bekrefter at medlemmet som hadde booket banen ikke møtte opp."
-                                checked={erBekreftet}
-                                onChange={(e) => setErBekreftet(e.target.checked)}
-                                className="mb-2 mt-1 small"
-                            />
-                            <Button
-                                size="sm"
-                                variant="outline-dark"
-                                disabled={!erBekreftet}
-                                onClick={() => {
-                                    onReportNoShow(slot);
-                                    reset();
-                                }}
-                                className="d-flex align-items-center gap-2 small"
-                            >
-                                <FaUserSlash />
-                                Marker som ikke møtt
-                            </Button>
-                        </>
                     )}
                 </div>
             )}

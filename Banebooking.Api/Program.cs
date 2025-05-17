@@ -33,17 +33,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
-{
-    // todo: remove
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<BanebookingDbContext>();
-
-        Tesdata.Seed(db);
-    }
-
-}
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

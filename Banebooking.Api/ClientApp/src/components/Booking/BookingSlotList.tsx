@@ -11,7 +11,6 @@ type Props = {
     onBook: (slot: BookingSlot) => void;
     onCancel: (slot: BookingSlot) => void;
     onDelete: (slot: BookingSlot) => void;
-    onReportNoShow: (slot: BookingSlot) => void;
 };
 
 export default function BookingSlotList({
@@ -23,7 +22,6 @@ export default function BookingSlotList({
     onBook,
     onCancel,
     onDelete,
-    onReportNoShow,
 }: Props) {
     if (!slots.length) {
         return <div className="px-1 pt-1 text-muted">Ingen bookinger funnet</div>;
@@ -46,7 +44,6 @@ export default function BookingSlotList({
                     onBook={onBook}
                     onCancel={onCancel}
                     onDelete={onDelete}
-                    onReportNoShow={onReportNoShow}
                 />
             ))}
         </div>

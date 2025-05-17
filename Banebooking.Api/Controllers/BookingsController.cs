@@ -20,62 +20,85 @@ public class BookingerController : ControllerBase
         _db = db;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> HentBookinger(
-        string slug,
-        [FromQuery] Guid baneId,
-        [FromQuery] DateOnly dato)
+     string slug,
+     [FromQuery] Guid baneId,
+     [FromQuery] DateOnly dato)
     {
-        // Hent klubb basert på slug
+        // 1. Finn klubb inkl. bookingregler og baner
         var klubb = await _db.Klubber
             .Include(k => k.Baner)
+            .Include(k => k.BookingRegel)
             .FirstOrDefaultAsync(k => k.Slug == slug);
 
         if (klubb == null)
             return NotFound("Klubb ikke funnet");
 
-        // Sjekk at banen tilhører klubben
         var bane = klubb.Baner.FirstOrDefault(b => b.Id == baneId);
         if (bane == null)
-            return NotFound("Bane ikke funnet i denne klubben");
+            return NotFound("Bane ikke funnet i klubben");
 
-        // Mock-data (bytt ut med ekte booking-henting etter behov)
-        var mock = new List<BookingSlotDto>();
-        var brukere = new[] { null, null, "ola@eksempel.no", "kari@eksempel.no" };
+        var regel = klubb.BookingRegel;
 
-        var currentUserEmail = User.Identity?.Name?.ToLower() ?? "ola@eksempel.no";
-        var erAdmin = currentUserEmail == klubb.AdminEpost?.ToLower();
+        // 2. Hent bruker
+        var bruker = await _brukerHjelper.HentEllerOpprettBrukerAsync(User);
+        var brukerId = bruker?.Id;
+        var brukerEpost = bruker?.Epost?.ToLowerInvariant();
 
+        var erAdmin = brukerEpost != null && klubb.AdminEpost.ToLowerInvariant() == brukerEpost;
+
+        // 3. Hent bookinger for banen og dato
+        var bookinger = await _db.Bookinger
+            .Include(b => b.Bruker)
+            .Where(b => b.BaneId == baneId && b.Dato == dato && !b.Kansellert)
+            .ToListAsync();
+
+        // 4. Tell antall bookinger brukeren allerede har for dagen
+        var bookingerIDag = bookinger
+            .Count(b => b.BrukerId == brukerId);
+
+        // 5. Generér slots
         var nå = DateTime.UtcNow;
         var iDag = DateOnly.FromDateTime(nå.Date);
         var nåTid = TimeOnly.FromDateTime(nå);
 
-        for (int time = 7; time < 22; time++)
+        var slots = new List<BookingSlotDto>();
+        for (var start = regel.Åpningstid; start < regel.Stengetid; start = start.Add(regel.SlotLengde))
         {
-            var start = new TimeOnly(time, 0);
-            var slutt = new TimeOnly(time + 1, 0);
-            var booketAv = brukere[Random.Shared.Next(brukere.Length)];
+            var slutt = start.Add(regel.SlotLengde);
+            var eksisterende = bookinger.FirstOrDefault(b => b.StartTid == start);
 
+            var booketAv = eksisterende?.Bruker?.Epost;
             var erPassert = dato < iDag || (dato == iDag && start < nåTid);
-            var erEier = booketAv != null &&
-                         booketAv.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase);
+            var erEier = eksisterende?.BrukerId == brukerId;
 
-            var slot = new BookingSlotDto
+            slots.Add(new BookingSlotDto
             {
                 StartTid = $"{start:HH\\:mm}",
                 SluttTid = $"{slutt:HH\\:mm}",
                 BooketAv = booketAv,
-                KanBookes = booketAv == null && !erPassert,
-                KanAvbestille = booketAv != null && erEier && !erPassert,
-                KanSlette = booketAv != null && !erEier && erAdmin && !erPassert,
-                KanRapportereFravaer = booketAv != null && !erEier && erPassert
-            };
 
-            mock.Add(slot);
+                KanBookes = eksisterende == null
+                            && !erPassert
+                            && brukerId != null
+                            && bookingerIDag < regel.MaksBookingerPerDagPerBruker,
+
+                KanAvbestille = eksisterende != null
+                                && erEier
+                                && !erPassert,
+
+                KanSlette = eksisterende != null
+                            && !erEier
+                            && erAdmin
+                            && !erPassert
+            });
         }
 
-        return Ok(mock);
+        return Ok(slots);
     }
+
 
     [HttpPost]
     [Authorize]

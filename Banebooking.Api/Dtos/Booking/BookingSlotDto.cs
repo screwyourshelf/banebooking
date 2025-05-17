@@ -7,5 +7,4 @@
     public bool KanBookes { get; set; }
     public bool KanAvbestille { get; set; }
     public bool KanSlette { get; set; }
-    public bool KanRapportereFravaer { get; set; }
 }

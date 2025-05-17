@@ -6,13 +6,14 @@ import {
     NavDropdown,
     Form,
     Button,
-    Alert,
     Spinner
 } from 'react-bootstrap';
 import { supabase } from '../supabase';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook, FaSignInAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import type { User } from '@supabase/supabase-js';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const SlugContext = React.createContext<string | undefined>(undefined);
 
@@ -48,7 +49,7 @@ export default function Layout() {
             } as unknown as Parameters<typeof supabase.auth.signInWithOAuth>[0]['options'],
         });
         if (error) {
-            console.error(error.message);
+            toast.error(error.message);
         }
     };
 
@@ -61,7 +62,7 @@ export default function Layout() {
             } as unknown as Parameters<typeof supabase.auth.signInWithOAuth>[0]['options'],
         });
         if (error) {
-            console.error(error.message);
+            toast.error(error.message);
         }
     };
 
@@ -73,15 +74,27 @@ export default function Layout() {
             options: { emailRedirectTo: redirectTo }
         });
         setStatus(error ? 'error' : 'sent');
-        if (error) console.error('E-postlogin-feil:', error.message);
+        if (error) {
+            toast.error('E-postlogin-feil: ' + error.message);
+        } else {
+            toast.success('Lenke sendt – sjekk innboksen!');
+        }
     };
 
     return (
         <SlugContext.Provider value={slug}>
             <Navbar bg="light" expand="sm" className="border-bottom w-100 p-1 m-0">
                 <div className="w-100 d-flex justify-content-between align-items-center px-0">
-                    <Navbar.Brand href="/" className="fw-bold py-0 px-2 m-0">
-                        Banebooking
+                    <Navbar.Brand href="/" className="fw-bold py-0 px-2 m-0 d-flex align-items-center gap-2">
+                        <img
+                            src={`/klubber/${slug}/img/logo.webp`}
+                            onError={(e) => (e.currentTarget.src = '/klubblogoer/default.webp')}
+                            alt="Klubblogo"
+                            width="32"
+                            height="32"
+                            className="d-inline-block align-top"
+                        />
+                        Ã…s Tennisklubb
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="nav-collapse" className="me-2" />
                 </div>
@@ -154,18 +167,6 @@ export default function Layout() {
                                         )}
                                     </Button>
                                 </Form>
-
-                                {status === 'sent' && (
-                                    <Alert variant="success" className="mt-2 p-2 small mx-2">
-                                        Sjekk innboksen for innloggingslenke.
-                                    </Alert>
-                                )}
-
-                                {status === 'error' && (
-                                    <Alert variant="danger" className="mt-2 p-2 small mx-2">
-                                        Noe gikk galt – prøv igjen.
-                                    </Alert>
-                                )}
                             </NavDropdown>
                         ) : (
                             <NavDropdown title={currentUser.email} align="end" id="user-dropdown">
@@ -178,6 +179,7 @@ export default function Layout() {
                                     onClick={async () => {
                                         await supabase.auth.signOut();
                                         setCurrentUser(null);
+                                        toast.info('Du er logget ut.');
                                     }}
                                 >
                                     <FaSignOutAlt className="me-2" />
@@ -192,6 +194,8 @@ export default function Layout() {
             <main className="w-100 px-2">
                 <Outlet />
             </main>
+
+            <ToastContainer position="bottom-center" autoClose={3000} />
         </SlugContext.Provider>
     );
 }

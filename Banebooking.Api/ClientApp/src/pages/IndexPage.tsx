@@ -9,17 +9,19 @@ import type { User } from '@supabase/supabase-js';
 import type { BookingSlot } from '../types';
 import { SlugContext } from '../layouts/Layout';
 
+
 export default function IndexPage() {
     const { baner, loading } = useBaner();
     const [valgtBaneId, setValgtBaneId] = useState('');
-    const [valgtDato, setValgtDato] = useState<string>(
-        new Date().toISOString().split('T')[0]
-    );
+    const [valgtDato, setValgtDato] = useState<string>(() => {
+        return localStorage.getItem('valgtDato') || new Date().toISOString().split('T')[0];
+    });
     const [slots, setSlots] = useState<BookingSlot[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [apenSlotTid, setApenSlotTid] = useState<string | null>(null);
 
     const slug = useContext(SlugContext);
+
 
     // auth
     useEffect(() => {
@@ -48,13 +50,31 @@ export default function IndexPage() {
         setApenSlotTid(null); // nullstill ekspandert slot ved navigasjon
     }, [valgtDato, valgtBaneId]);
 
-    const hentBookinger = () => {
+    useEffect(() => {
+        if (!currentUser) {
+            setApenSlotTid(null);
+        }
+    }, [currentUser]);
+
+    useEffect(() => {
+        localStorage.setItem('valgtDato', valgtDato);
+    }, [valgtDato]);
+
+    const hentBookinger = async () => {
         if (!valgtBaneId || !slug) return;
-        fetch(`/api/klubb/${slug}/bookinger?baneId=${valgtBaneId}&dato=${valgtDato}`)
-            .then((res) => res.ok ? res.json() : [])
-            .then((data) => setSlots(Array.isArray(data) ? data : []))
-            .catch(() => setSlots([]));
+
+        const token = (await supabase.auth.getSession()).data.session?.access_token;
+
+        fetch(`/api/klubb/${slug}/bookinger?baneId=${valgtBaneId}&dato=${valgtDato}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        })
+        .then((res) => res.ok ? res.json() : [])
+        .then((data) => setSlots(Array.isArray(data) ? data : []))
+        .catch(() => setSlots([]));
     };
+
 
     useEffect(() => {
         hentBookinger();
@@ -107,7 +127,6 @@ export default function IndexPage() {
                     onBook={onBook}
                     onCancel={(slot) => console.log('Kanseller', slot)}
                     onDelete={(slot) => console.log('Slett', slot)}
-                    onReportNoShow={(slot) => console.log('Ikke møtt', slot)}
                 />
             </div>
         </div>
