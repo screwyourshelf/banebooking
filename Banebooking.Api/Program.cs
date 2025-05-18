@@ -1,10 +1,15 @@
 ﻿using Banebooking.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Banebooking.Api.Extensions;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+
+var cultureInfo = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 var connectionString =
     builder.Configuration["ConnectionStrings:DefaultConnection"]

@@ -19,6 +19,9 @@ primary_region = 'ams'
   cpu_kind = 'shared'
   cpus = 1
 
+[build]
+  dockerfile = "Dockerfile"
+
 [build.args]
   VITE_SUPABASE_URL = "${VITE_SUPABASE_URL}"
   VITE_SUPABASE_ANON_KEY = "${VITE_SUPABASE_ANON_KEY}"
