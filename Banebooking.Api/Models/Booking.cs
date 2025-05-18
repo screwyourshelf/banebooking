@@ -15,7 +15,7 @@ public class Booking
     public TimeOnly SluttTid { get; set; }
 
     public BookingType Type { get; set; }
-    public bool Kansellert { get; set; }
+    public bool Aktiv { get; set; }
     public DateTime? KansellertTidspunkt { get; set; }
     public string? KansellertAv { get; set; }
     public bool VarsletOmKansellering { get; set; }

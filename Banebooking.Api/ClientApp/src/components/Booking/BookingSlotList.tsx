@@ -5,7 +5,6 @@ import BookingSlotItem from './BookingSlotItem';
 type Props = {
     slots: BookingSlot[];
     currentUser: User | null;
-    isAdmin: boolean;
     apenSlotTid: string | null;
     setApenSlotTid: React.Dispatch<React.SetStateAction<string | null>>;
     onBook: (slot: BookingSlot) => void;
@@ -16,7 +15,6 @@ type Props = {
 export default function BookingSlotList({
     slots,
     currentUser,
-    isAdmin,
     apenSlotTid,
     setApenSlotTid,
     onBook,
@@ -27,6 +25,10 @@ export default function BookingSlotList({
         return <div className="px-1 pt-1 text-muted">Ingen bookinger funnet</div>;
     }
 
+    const toggleSlot = (startTid: string) => {
+        setApenSlotTid((prev) => (prev === startTid ? null : startTid));
+    };
+
     return (
         <div className="d-flex flex-column gap-1 w-100">
             {slots.map((slot) => (
@@ -34,13 +36,8 @@ export default function BookingSlotList({
                     key={slot.startTid}
                     slot={slot}
                     currentUser={currentUser}
-                    isAdmin={isAdmin}
                     isOpen={apenSlotTid === slot.startTid}
-                    onToggle={() =>
-                        setApenSlotTid((prev: string | null) =>
-                            prev === slot.startTid ? null : slot.startTid
-                        )
-                    }
+                    onToggle={() => toggleSlot(slot.startTid)}
                     onBook={onBook}
                     onCancel={onCancel}
                     onDelete={onDelete}

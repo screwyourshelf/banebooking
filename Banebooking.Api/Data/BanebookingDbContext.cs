@@ -42,11 +42,6 @@ namespace Banebooking.Api.Data
                 .HasForeignKey(b => b.KlubbId)
                 .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
 
-            // Unik booking-slot per bane/dato/starttid
-            modelBuilder.Entity<Booking>()
-                .HasIndex(b => new { b.BaneId, b.Dato, b.StartTid })
-                .IsUnique();
-
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Bane)
                 .WithMany(bn => bn.Bookinger)
@@ -69,6 +64,12 @@ namespace Banebooking.Api.Data
                 .WithMany(k => k.Roller)
                 .HasForeignKey(r => r.KlubbId)
                 .OnDelete(DeleteBehavior.Restrict); // Supabase-trygg
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(b => new { b.BaneId, b.Dato, b.StartTid })
+                .IsUnique()
+                .HasFilter("\"Aktiv\" = TRUE"); // viktig: bruk PostgreSQL-syntaks
+
         }
     }
 }

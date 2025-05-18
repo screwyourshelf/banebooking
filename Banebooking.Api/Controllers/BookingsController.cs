@@ -52,7 +52,7 @@ public class BookingerController : ControllerBase
         // 3. Hent bookinger for banen og dato
         var bookinger = await _db.Bookinger
             .Include(b => b.Bruker)
-            .Where(b => b.BaneId == baneId && b.Dato == dato && !b.Kansellert)
+            .Where(b => b.BaneId == baneId && b.Dato == dato && b.Aktiv)
             .ToListAsync();
 
         // 4. Tell antall bookinger brukeren allerede har for dagen
@@ -99,16 +99,12 @@ public class BookingerController : ControllerBase
         return Ok(slots);
     }
 
-
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> OpprettBooking(
-        string slug,
-        [FromBody] NyBookingDto dto)
+    public async Task<IActionResult> OpprettBooking(string slug, [FromBody] NyBookingDto dto)
     {
         var bruker = await _brukerHjelper.HentEllerOpprettBrukerAsync(User);
 
-        // Hent klubb basert på slug
         var klubb = await _db.Klubber
             .Include(k => k.Baner)
             .Include(k => k.BookingRegel)
@@ -117,7 +113,6 @@ public class BookingerController : ControllerBase
         if (klubb == null)
             return NotFound("Klubb ikke funnet");
 
-        // Sjekk at banen tilhører klubben
         var bane = klubb.Baner.FirstOrDefault(b => b.Id == dto.BaneId);
         if (bane == null)
             return NotFound("Bane ikke funnet i denne klubben");
@@ -130,29 +125,31 @@ public class BookingerController : ControllerBase
         if (dto.StartTid < regel.Åpningstid || dto.SluttTid > regel.Stengetid)
             return BadRequest(new { status = "Feil", melding = "Tid utenfor åpningstid" });
 
-        var eksisterende = await _db.Bookinger
+        // Sjekk om det finnes en aktiv (ikke-kansellert) booking i det aktuelle tidsrommet
+        var konflikt = await _db.Bookinger
             .AnyAsync(b =>
                 b.BaneId == dto.BaneId &&
                 b.Dato == dto.Dato &&
                 b.StartTid < dto.SluttTid &&
                 b.SluttTid > dto.StartTid &&
-                !b.Kansellert);
+                b.Aktiv);
 
-        if (eksisterende)
+        if (konflikt)
             return Conflict(new { status = "Feil", melding = "Slot er allerede booket" });
 
+        // Sjekk brukers daglige begrensning
         var dagensBookinger = await _db.Bookinger
-            .Where(b => b.BrukerId == bruker.Id && b.Dato == dto.Dato && !b.Kansellert)
+            .Where(b => b.BrukerId == bruker.Id && b.Dato == dto.Dato && b.Aktiv)
             .ToListAsync();
 
         var bruktTidIMinutter = dagensBookinger.Sum(b =>
             (b.SluttTid.ToTimeSpan() - b.StartTid.ToTimeSpan()).TotalMinutes);
-
         var ønsketTidIMinutter = (dto.SluttTid - dto.StartTid).TotalMinutes;
 
         if (bruktTidIMinutter + ønsketTidIMinutter > regel.MaksBookingerPerDagPerBruker * 60)
             return BadRequest(new { status = "Feil", melding = "Du har nådd maks tillatt tid for dagen" });
 
+        // Opprett ny booking
         var booking = new Booking
         {
             Id = Guid.NewGuid(),
@@ -161,7 +158,8 @@ public class BookingerController : ControllerBase
             StartTid = dto.StartTid,
             SluttTid = dto.SluttTid,
             BrukerId = bruker.Id,
-            Type = BookingType.Medlem
+            Type = BookingType.Medlem, 
+            Aktiv = true,
         };
 
         _db.Bookinger.Add(booking);
@@ -169,4 +167,46 @@ public class BookingerController : ControllerBase
 
         return Ok(new { id = booking.Id, status = "OK", melding = "Booking registrert" });
     }
+
+
+    [HttpDelete]
+    [Authorize]
+    public async Task<IActionResult> AvbestillBooking(
+    string slug,
+    [FromBody] NyBookingDto dto)
+    {
+        var bruker = await _brukerHjelper.HentEllerOpprettBrukerAsync(User);
+
+        // Hent klubb og bane
+        var klubb = await _db.Klubber
+            .Include(k => k.Baner)
+            .FirstOrDefaultAsync(k => k.Slug == slug);
+
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet");
+
+        var bane = klubb.Baner.FirstOrDefault(b => b.Id == dto.BaneId);
+        if (bane == null)
+            return NotFound("Bane ikke funnet i klubben");
+
+        // Finn eksisterende booking
+        var eksisterende = await _db.Bookinger
+            .Where(b =>
+                b.BaneId == dto.BaneId &&
+                b.Dato == dto.Dato &&
+                b.StartTid == dto.StartTid &&
+                b.SluttTid == dto.SluttTid &&
+                b.Aktiv &&
+                b.BrukerId == bruker.Id)
+            .FirstOrDefaultAsync();
+
+        if (eksisterende == null)
+            return NotFound("Booking ikke funnet eller ikke eid av deg");
+
+        eksisterende.Aktiv = false;
+        await _db.SaveChangesAsync();
+
+        return Ok(new { status = "OK", melding = "Booking avbestilt" });
+    }
+
 }
