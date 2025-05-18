@@ -19,7 +19,12 @@ builder.Services.AddDbContext<BanebookingDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddSupabaseAuthentication(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
