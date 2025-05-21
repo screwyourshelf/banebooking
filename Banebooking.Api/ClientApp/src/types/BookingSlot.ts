@@ -6,4 +6,8 @@ export type BookingSlot = {
     kanAvbestille: boolean;
     kanSlette: boolean;
     kanRapportereFravaer: boolean;
+
+    vææSymbol?: string;
+    temperatur?: number;
+    vind?: number;
 };

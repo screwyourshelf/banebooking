@@ -1,20 +1,20 @@
 ﻿using Banebooking.Api.Data;
 using Microsoft.AspNetCore.Mvc;
-using Banebooking.Api.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Banebooking.Api.Dtos.Bruker;
 using Banebooking.Api.Dtos.Booking;
+using Banebooking.Api.Tjenester;
 
 [Authorize]
 [ApiController]
 [Route("api/bruker")]
 public class BrukerController : ControllerBase
 {
-    private readonly BrukerHjelper _brukerHjelper;
+    private readonly BrukerService _brukerHjelper;
 
     public BrukerController(BanebookingDbContext db)
     {
-        _brukerHjelper = new BrukerHjelper(db);
+        _brukerHjelper = new BrukerService(db);
     }
 
     [HttpGet("meg")]

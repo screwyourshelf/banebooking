@@ -58,6 +58,12 @@ namespace Banebooking.Api.Migrations
                     b.Property<Guid>("KlubbId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AntallDagerFremITidTillatt")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaksAntallBookingerPerBrukerTotalt")
+                        .HasColumnType("integer");
+
                     b.Property<int>("MaksBookingerPerDagPerBruker")
                         .HasColumnType("integer");
 
@@ -154,33 +160,6 @@ namespace Banebooking.Api.Migrations
                     b.ToTable("Brukere");
                 });
 
-            modelBuilder.Entity("Banebooking.Api.Models.Klubb", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AdminEpost")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("KontaktEpost")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Navn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Klubber");
-                });
-
             modelBuilder.Entity("Banebooking.Api.Models.RolleITilgang", b =>
                 {
                     b.Property<Guid>("Id")
@@ -205,9 +184,42 @@ namespace Banebooking.Api.Migrations
                     b.ToTable("Roller");
                 });
 
+            modelBuilder.Entity("Klubb", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdminEpost")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("KontaktEpost")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Navn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Klubber");
+                });
+
             modelBuilder.Entity("Banebooking.Api.Models.Bane", b =>
                 {
-                    b.HasOne("Banebooking.Api.Models.Klubb", "Klubb")
+                    b.HasOne("Klubb", "Klubb")
                         .WithMany("Baner")
                         .HasForeignKey("KlubbId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -218,7 +230,7 @@ namespace Banebooking.Api.Migrations
 
             modelBuilder.Entity("Banebooking.Api.Models.BestemmelseForBooking", b =>
                 {
-                    b.HasOne("Banebooking.Api.Models.Klubb", "Klubb")
+                    b.HasOne("Klubb", "Klubb")
                         .WithOne("BookingRegel")
                         .HasForeignKey("Banebooking.Api.Models.BestemmelseForBooking", "KlubbId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -247,7 +259,7 @@ namespace Banebooking.Api.Migrations
 
             modelBuilder.Entity("Banebooking.Api.Models.RolleITilgang", b =>
                 {
-                    b.HasOne("Banebooking.Api.Models.Klubb", "Klubb")
+                    b.HasOne("Klubb", "Klubb")
                         .WithMany("Roller")
                         .HasForeignKey("KlubbId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -266,7 +278,7 @@ namespace Banebooking.Api.Migrations
                     b.Navigation("Bookinger");
                 });
 
-            modelBuilder.Entity("Banebooking.Api.Models.Klubb", b =>
+            modelBuilder.Entity("Klubb", b =>
                 {
                     b.Navigation("Baner");
 

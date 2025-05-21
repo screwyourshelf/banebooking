@@ -1,16 +1,20 @@
-﻿
-using Banebooking.Api.Data;
+﻿using Banebooking.Api.Data;
 using Banebooking.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace Banebooking.Api.Controllers;
+namespace Banebooking.Api.Tjenester;
 
-public class BrukerHjelper
+public interface IBrukerService
+{
+    Task<Bruker> HentEllerOpprettBrukerAsync(ClaimsPrincipal principal);
+}
+
+public class BrukerService : IBrukerService
 {
     private readonly BanebookingDbContext _db;
 
-    public BrukerHjelper(BanebookingDbContext db)
+    public BrukerService(BanebookingDbContext db)
     {
         _db = db;
     }

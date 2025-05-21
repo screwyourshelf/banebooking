@@ -25,56 +25,92 @@ export default function BookingSlotItem({
 }: Props) {
     const { erBekreftet, setErBekreftet, reset } = useBookingActions();
     const time = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
+    const harHandlinger = slot.kanBookes || slot.kanAvbestille || slot.kanSlette;
 
-    const harHandlinger =
-        slot.kanBookes || slot.kanAvbestille || slot.kanSlette;
+    const handleToggle = () => {
+        if (currentUser && harHandlinger) {
+            onToggle();
+            setErBekreftet(false);
+        }
+    };
 
     return (
-        <div className="border rounded shadow-sm p-1 w-100 bg-white">
-            <div className="d-flex justify-content-between align-items-center">
-                <div>
-                    <span className="fw-semibold border-end pe-1 text-nowrap">{time}</span>
-                    <span className="ps-2 text-break">
-                        {slot.booketAv ? slot.booketAv : 'Ledig'}
-                    </span>
+        <div
+            className="border rounded shadow-sm p-1 bg-white mb-1"
+            style={{ cursor: currentUser && harHandlinger ? 'pointer' : 'default' }}
+            onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest('button, input, label')) return;
+                handleToggle();
+            }}
+        >
+            <div className="d-flex align-items-center justify-content-between gap-1">
+
+                {/* Tid */}
+                <div
+                    className="text-nowrap fw-semibold small text-start"
+                    style={{
+                        width: '36px',
+                        fontFamily: 'monospace'
+                    }}
+                >
+                    {time}
                 </div>
 
-                {currentUser && (
-                    harHandlinger ? (
-                        <button
-                            className="btn btn-link btn-sm text-secondary p-0"
-                            onClick={() => {
-                                onToggle();
-                                setErBekreftet(false);
-                            }}
-                            aria-label="Vis alternativer"
+                {/* Værikon */}
+                <div
+                    className="d-flex justify-content-center align-items-center"
+                    style={{ width: '24px' }}
+                >
+                    {slot.værSymbol && (
+                        <img
+                            src={`/weather-symbols/svg/${slot.værSymbol}.svg`}
+                            alt={slot.værSymbol}
+                            width={16}
+                            height={16}
+                        />
+                    )}
+                </div>
+
+                {/* Booket av / Ledig */}
+                <div className="flex-grow-1 small text-break px-1">
+                    {slot.booketAv ?? 'Ledig'}
+                </div>
+
+                {/* Pilindikator */}
+                {currentUser && harHandlinger && (
+                    <div className="pe-1">
+                        <FaChevronDown
+                            size={12}
                             style={{
                                 transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                                 transition: 'transform 0.2s',
                             }}
-                        >
-                            <FaChevronDown />
-                        </button>
-                    ) : (
-                        <div style={{ width: '2rem', height: '1.5rem' }} />
-                    )
+                        />
+                    </div>
                 )}
             </div>
 
+            {/* Ekspandert visning */}
             {isOpen && (
-                <div className="mt-2 w-100 border rounded p-1 bg-light">
-                    <BookingActions
-                        slot={slot}
-                        time={time}
-                        erBekreftet={erBekreftet}
-                        setErBekreftet={setErBekreftet}
-                        onBook={onBook}
-                        onCancel={onCancel}
-                        onDelete={onDelete}
-                        reset={reset}
-                    />
+                <div className="row mt-1">
+                    <div className="col">
+                        <div className="border rounded p-1 bg-light">
+                            <BookingActions
+                                slot={slot}
+                                time={time}
+                                erBekreftet={erBekreftet}
+                                setErBekreftet={setErBekreftet}
+                                onBook={onBook}
+                                onCancel={onCancel}
+                                onDelete={onDelete}
+                                reset={reset}
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
+
     );
 }

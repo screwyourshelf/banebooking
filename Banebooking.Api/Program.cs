@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Banebooking.Api.Extensions;
 using System.Globalization;
+using Banebooking.Api.Tjenester;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,18 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddHttpClient("VaerApi", client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Banebooking/1.0 (+mailto:andreas.lotarev@gmail.com)");
+});
+
+builder.Services.AddScoped<IKlubbService, KlubbService>();
+builder.Services.AddScoped<IVaerService, VaerService>();
+builder.Services.AddScoped<SlotBerikerMedVaer>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 

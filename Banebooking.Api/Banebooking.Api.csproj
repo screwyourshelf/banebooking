@@ -26,6 +26,7 @@
   
   <ItemGroup>
     <Folder Include="ClientApp\src\layouts\" />
+    <Folder Include="Controllers\Hjelpere\" />
     <Folder Include="Data\Migrations\" />
   </ItemGroup>
 

@@ -30,8 +30,10 @@ public static class Tesdata
                 },
                 Roller =
                 [
-                    new() { Id = Guid.NewGuid(), Epost = "andreas.lotarev@gmail.com", Rolle = RolleType.Admin }
-                ]
+                    new() { Id = Guid.NewGuid(), Epost = "andreas.lotarev@vivende.no", Rolle = RolleType.Admin }
+                ],
+                Longitude = 10.7769,
+                Latitude = 59.6552,
             };
 
             foreach (var bane in klubb.Baner)
