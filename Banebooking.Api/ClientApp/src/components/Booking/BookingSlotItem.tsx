@@ -48,11 +48,7 @@ export default function BookingSlotItem({
 
                 {/* Tid */}
                 <div
-                    className="text-nowrap fw-semibold small text-start"
-                    style={{
-                        width: '36px',
-                        fontFamily: 'monospace'
-                    }}
+                    className="text-nowrap fw-semibold small text-end"
                 >
                     {time}
                 </div>
@@ -60,7 +56,6 @@ export default function BookingSlotItem({
                 {/* Værikon */}
                 <div
                     className="d-flex justify-content-center align-items-center"
-                    style={{ width: '24px' }}
                 >
                     {slot.værSymbol && (
                         <img
@@ -79,7 +74,7 @@ export default function BookingSlotItem({
 
                 {/* Pilindikator */}
                 {currentUser && harHandlinger && (
-                    <div className="pe-1">
+                    <div className="p-1">
                         <FaChevronDown
                             size={12}
                             style={{

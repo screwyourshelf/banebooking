@@ -43,12 +43,12 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() || 1 == 1)
+if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<BanebookingDbContext>();
-        //db.Database.Migrate();
+        db.Database.Migrate();
 
         Tesdata.Seed(db);
     }

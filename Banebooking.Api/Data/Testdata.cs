@@ -13,7 +13,7 @@ public static class Tesdata
                 Navn = "Ås tennisklubb",
                 Slug = "aas-tennisklubb",
                 KontaktEpost = "andreas.lotarev@gmail.com",
-                AdminEpost = "andreas.lotarev@gmail.com",
+                AdminEpost = "andreas.lotarev@vivende.no",
                 Baner =
                 [
                    new() { Id = Guid.NewGuid(), Navn = "Bane A", Beskrivelse = "Bane A - mot klubbhuset", Slug = "bane-a",  Aktiv = true },
@@ -28,10 +28,6 @@ public static class Tesdata
                     MaksBookingerPerDagPerBruker = 2,
                     SlotLengde = TimeSpan.FromMinutes(60)
                 },
-                Roller =
-                [
-                    new() { Id = Guid.NewGuid(), Epost = "andreas.lotarev@vivende.no", Rolle = RolleType.Admin }
-                ],
                 Longitude = 10.7769,
                 Latitude = 59.6552,
             };
@@ -43,16 +39,6 @@ public static class Tesdata
             }
 
             context.Klubber.Add(klubb);
-
-            // Opprett Brukere
-            var bruker1 = new Bruker
-            {
-                Id = Guid.NewGuid(),
-                Epost = "andreas.lotarev@gmail.com",
-                Provider = "local"
-            };
-
-            context.Brukere.AddRange(bruker1);
 
             context.SaveChanges();
         }
