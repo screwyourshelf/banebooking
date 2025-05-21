@@ -43,7 +43,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || 1 == 1)
 {
     using (var scope = app.Services.CreateScope())
     {
