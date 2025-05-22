@@ -44,46 +44,44 @@ export default function BookingSlotItem({
                 handleToggle();
             }}
         >
-            <div className="d-flex align-items-center justify-content-between gap-1">
+            <div className="d-flex align-items-center">
+                {/* Innhold */}
+                <div style={{ flex: 1 }} className="d-flex align-items-center justify-content-between">
+                    {/* Tid */}
+                    <div className="text-nowrap fw-semibold small text-end pe-1">
+                        {time}
+                    </div>
 
-                {/* Tid */}
-                <div
-                    className="text-nowrap fw-semibold small text-end"
-                >
-                    {time}
-                </div>
+                    {/* Værikon */}
+                    <div className="d-flex justify-content-center align-items-center">
+                        {slot.værSymbol && (
+                            <img
+                                src={`/weather-symbols/svg/${slot.værSymbol}.svg`}
+                                alt={slot.værSymbol}
+                                width={16}
+                                height={16}
+                            />
+                        )}
+                    </div>
 
-                {/* Værikon */}
-                <div
-                    className="d-flex justify-content-center align-items-center"
-                >
-                    {slot.værSymbol && (
-                        <img
-                            src={`/weather-symbols/svg/${slot.værSymbol}.svg`}
-                            alt={slot.værSymbol}
-                            width={16}
-                            height={16}
-                        />
+                    {/* Booket av / Ledig */}
+                    <div className="flex-grow-1 small text-break p-1">
+                        {slot.booketAv ?? 'Ledig'}
+                    </div>
+
+                    {/* Pilindikator */}
+                    {currentUser && harHandlinger && (
+                        <div className="p-1">
+                            <FaChevronDown
+                                size={12}
+                                style={{
+                                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.2s',
+                                }}
+                            />
+                        </div>
                     )}
                 </div>
-
-                {/* Booket av / Ledig */}
-                <div className="flex-grow-1 small text-break px-1">
-                    {slot.booketAv ?? 'Ledig'}
-                </div>
-
-                {/* Pilindikator */}
-                {currentUser && harHandlinger && (
-                    <div className="p-1">
-                        <FaChevronDown
-                            size={12}
-                            style={{
-                                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                transition: 'transform 0.2s',
-                            }}
-                        />
-                    </div>
-                )}
             </div>
 
             {/* Ekspandert visning */}
@@ -106,6 +104,5 @@ export default function BookingSlotItem({
                 </div>
             )}
         </div>
-
     );
 }
