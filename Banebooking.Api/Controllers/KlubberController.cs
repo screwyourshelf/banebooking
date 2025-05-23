@@ -1,20 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Banebooking.Api.Data;
 using Banebooking.Api.Dtos.Klubb;
-using Microsoft.EntityFrameworkCore;
 
 namespace Banebooking.Api.Controllers;
 
 [ApiController]
 [Route("api/klubb/")]
-public class KlubberController(BanebookingDbContext _db, IKlubbService _klubbService) : ControllerBase
+public class KlubberController(IKlubbService _klubbService) : ControllerBase
 {
     [HttpGet("{slug}")]
     public async Task<IActionResult> HentKlubb(string slug)
     {
-        var klubb = await _db.Klubber
-            .Include(k => k.BookingRegel)
-            .FirstOrDefaultAsync(k => k.Slug == slug);
+        var klubb = await _klubbService.HentKlubbAsync(slug);
 
         if (klubb == null) return NotFound();
 

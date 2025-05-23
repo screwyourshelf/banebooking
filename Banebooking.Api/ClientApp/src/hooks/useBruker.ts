@@ -1,20 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { hentInnloggetBruker } from '../api/bruker';
 import type { Bruker } from '../types';
 
-export function useBruker(slug: string | undefined) {
+export function useBruker(slug: string | undefined, inkluderHistoriske = false) {
     const [bruker, setBruker] = useState<Bruker | null>(null);
     const [laster, setLaster] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const hent = async () => {
         if (!slug) return;
+        try {
+            setLaster(true);
+            const res = await hentInnloggetBruker(slug, inkluderHistoriske);
+            setBruker(res);
+        } catch (e: unknown) {
+            if (e instanceof Error) setError(e.message);
+            else setError('Ukjent feil');
+        } finally {
+            setLaster(false);
+        }
+    };
 
-        hentInnloggetBruker(slug)
-            .then(setBruker)
-            .catch(err => setError(err.message))
-            .finally(() => setLaster(false));
-    }, [slug]);
+    useEffect(() => {
+        hent();
+    }, [slug, inkluderHistoriske]);
 
-    return { bruker, laster, error };
+    return {
+        bruker,
+        laster,
+        error,
+        refetch: hent
+    };
 }

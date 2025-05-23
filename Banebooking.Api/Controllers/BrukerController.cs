@@ -12,7 +12,7 @@ public class BrukerController : ControllerBase
     private readonly IBrukerService _brukerService;
     private readonly IBookingService _bookingService;
 
-    public BrukerController(BanebookingDbContext db, IBookingService bookingService, IBrukerService brukerService)
+    public BrukerController(IBookingService bookingService, IBrukerService brukerService)
     {
         _brukerService = brukerService;
         _bookingService = bookingService;

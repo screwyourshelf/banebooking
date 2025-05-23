@@ -217,10 +217,12 @@ public class BookingService : IBookingService
 
             slots.Add(new BookingSlotDto
             {
-                BaneNavn = eksisterende.Bane.Navn,
+                BaneId = eksisterende?.BaneId.ToString(),
+                BaneNavn = eksisterende?.Bane?.Navn,
+                Dato = dato.ToString("yyyy-MM-dd"),
                 StartTid = $"{start:HH\\:mm}",
                 SluttTid = $"{slutt:HH\\:mm}",
-                BooketAv = eksisterende.Bruker.Navn,
+                BooketAv = eksisterende?.Bruker?.Navn,
                 KanBookes = aksess.KanBooke,
                 KanAvbestille = aksess.KanAvbestille,
                 KanSlette = aksess.KanSlette,
@@ -259,7 +261,9 @@ public class BookingService : IBookingService
 
         return [.. bookinger.Select(b => new BookingSlotDto
         {
+            BaneId = b.BaneId.ToString(),
             BaneNavn = b.Bane.Navn,
+            Dato = b.Dato.ToString("yyyy-MM-dd"),
             StartTid = $"{b.StartTid:HH\\:mm}",
             SluttTid = $"{b.SluttTid:HH\\:mm}",
             BooketAv = bruker.Navn,

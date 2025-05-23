@@ -1,6 +1,8 @@
 ﻿public class BookingSlotDto
 {
     public string BaneNavn { get; set; }
+    public string BaneId { get; set; }
+    public string Dato { get; set; }
     public string StartTid { get; set; }
     public string SluttTid { get; set; }
     public string? BooketAv { get; set; }
