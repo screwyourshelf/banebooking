@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import IndexPage from './pages/IndexPage';
-import MinSide from './pages/MinSide';
+import MinSide from './pages/MinSidePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import ReglementPage from './pages/ReglementPage';
 

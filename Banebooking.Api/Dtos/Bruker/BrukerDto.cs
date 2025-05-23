@@ -10,5 +10,5 @@ public class BrukerDto
 
     public string Epost { get; set; } = string.Empty;
 
-    public List<BookingDto> Bookinger { get; set; } = new();
+    public List<BookingSlotDto> Bookinger { get; set; } = new();
 }

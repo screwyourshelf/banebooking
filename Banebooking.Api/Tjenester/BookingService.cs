@@ -4,17 +4,16 @@ using Banebooking.Api.Models;
 using Banebooking.Api.Validering;
 using Banebooking.Api.Autorisasjon;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Banebooking.Api.Dtos.Booking;
 
 namespace Banebooking.Api.Tjenester;
 
 public interface IBookingService
 {
-    Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, ClaimsPrincipal user);
-    Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, ClaimsPrincipal user);
-    Task<BookingResultatDto> ForsøkAvbestillBookingAsync(string slug, NyBookingDto dto, ClaimsPrincipal user);
-
+    Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, Bruker bruker);
+    Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, Bruker bruker);
+    Task<BookingResultatDto> ForsøkAvbestillBookingAsync(string slug, NyBookingDto dto, Bruker bruker);
+    Task<List<BookingSlotDto>> HentBookingerAsync(string slug, bool inkluderHistoriske, Bruker bruker);
 }
 
 
@@ -24,18 +23,16 @@ public class BookingService : IBookingService
     private readonly SlotBerikerMedVaer _beriker;
     private readonly IKlubbService _klubbService;
     private readonly ITidProvider _tidProvider;
-    private readonly BrukerService _brukerService;
 
-    public BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker, IKlubbService klubbService, ITidProvider tidProvider)
+    public BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker, IKlubbService klubbService,  ITidProvider tidProvider)
     {
         _db = db;
         _beriker = beriker;
         _klubbService = klubbService;
         _tidProvider = tidProvider;
-        _brukerService = new BrukerService(db); 
     }
 
-    public async Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, ClaimsPrincipal user)
+    public async Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, Bruker bruker)
     {
         var klubb = await _klubbService.HentKlubbAsync(slug);
         if (klubb == null)
@@ -45,20 +42,20 @@ public class BookingService : IBookingService
         if (bane == null)
             return Feil("Bane ikke funnet");
 
-        var bruker = await _brukerService.HentEllerOpprettBrukerAsync(user);
         var regel = klubb.BookingRegel;
 
-        var nå = DateTime.UtcNow;
-        var iDag = DateOnly.FromDateTime(nå.Date);
-        var nåTid = TimeOnly.FromDateTime(nå);
+        var tidspunkt = _tidProvider.NåSnapshot();
 
         var eksisterendeBookinger = await _db.Bookinger
-            .Where(b => b.BrukerId == bruker.Id && b.Aktiv)
+            .Include(b => b.Bane)
+            .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id)
             .ToListAsync();
 
         var eksisterende = await _db.Bookinger
+            .Include(b => b.Bane)
             .FirstOrDefaultAsync(b =>
                 b.BaneId == dto.BaneId &&
+                b.Bane.KlubbId == klubb.Id && 
                 b.Dato == dto.Dato &&
                 b.StartTid < dto.SluttTid &&
                 b.SluttTid > dto.StartTid &&
@@ -76,8 +73,8 @@ public class BookingService : IBookingService
             StartTid = dto.StartTid,
             SluttTid = dto.SluttTid,
             EksisterendeBooking = null,
-            IDag = iDag,
-            NåTid = nåTid,
+            IDag = tidspunkt.IDag,
+            NåTid = tidspunkt.NåTid,
             BookingerForBrukerIPeriode = eksisterendeBookinger
         };
 
@@ -113,7 +110,7 @@ public class BookingService : IBookingService
         };
     }
 
-    public async Task<BookingResultatDto> ForsøkAvbestillBookingAsync(string slug, NyBookingDto dto, ClaimsPrincipal user)
+    public async Task<BookingResultatDto> ForsøkAvbestillBookingAsync(string slug, NyBookingDto dto, Bruker bruker)
     {
         var klubb = await _klubbService.HentKlubbAsync(slug);
         if (klubb == null)
@@ -123,19 +120,17 @@ public class BookingService : IBookingService
         if (bane == null)
             return Feil("Bane ikke funnet i klubben");
 
-        var bruker = await _brukerService.HentEllerOpprettBrukerAsync(user);
-        var nå = _tidProvider.Nå();
-        var iDag = _tidProvider.DatoIDag();
-        var nåTid = _tidProvider.KlokkeslettNå();
+        var tidspunkt = _tidProvider.NåSnapshot();
 
         var eksisterende = await _db.Bookinger
-            .Include(b => b.Bruker)
-            .FirstOrDefaultAsync(b =>
-                b.BaneId == dto.BaneId &&
-                b.Dato == dto.Dato &&
-                b.StartTid == dto.StartTid &&
-                b.SluttTid == dto.SluttTid &&
-                b.Aktiv);
+         .Include(b => b.Bane)
+         .FirstOrDefaultAsync(b =>
+             b.BaneId == dto.BaneId &&
+             b.Bane.KlubbId == klubb.Id &&
+             b.Dato == dto.Dato &&
+             b.StartTid < dto.SluttTid &&
+             b.SluttTid > dto.StartTid &&
+             b.Aktiv);
 
         if (eksisterende == null)
             return Feil("Fant ingen aktiv booking på sloten");
@@ -149,9 +144,9 @@ public class BookingService : IBookingService
             StartTid = dto.StartTid,
             SluttTid = dto.SluttTid,
             EksisterendeBooking = eksisterende,
-            IDag = iDag,
-            NåTid = nåTid,
-            BookingerForBrukerIPeriode = new List<Booking>() // ikke relevant for sletting
+            IDag = tidspunkt.IDag,
+            NåTid = tidspunkt.NåTid,
+            BookingerForBrukerIPeriode = new List<Booking>()
         };
 
         var autorisasjon = new BookingAutorisasjon(ctx).Evaluer();
@@ -169,22 +164,18 @@ public class BookingService : IBookingService
         };
     }
 
-    public async Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, ClaimsPrincipal user)
+    public async Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, Bruker bruker)
     {
         var klubb = await _klubbService.HentKlubbAsync(slug);
         if (klubb == null)
-            throw new Exception("Klubb ikke funnet"); // eller kast 404 i controlleren
+            throw new Exception("Klubb ikke funnet"); 
 
         var bane = klubb.Baner.FirstOrDefault(b => b.Id == baneId);
         if (bane == null)
             throw new Exception("Bane ikke funnet i klubben");
 
-        var bruker = await _brukerService.HentEllerOpprettBrukerAsync(user);
         var regel = klubb.BookingRegel;
-
-        var norskTid = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo"));
-        var iDag = DateOnly.FromDateTime(norskTid.Date);
-        var nåTid = TimeOnly.FromDateTime(norskTid);
+        var tidspunkt = _tidProvider.NåSnapshot();
 
         var eksisterendeBookinger = await _db.Bookinger
             .Include(b => b.Bruker)
@@ -193,7 +184,8 @@ public class BookingService : IBookingService
 
         var bookingerForBruker = bruker?.Id != null
             ? await _db.Bookinger
-                .Where(b => b.BrukerId == bruker.Id && b.Aktiv)
+                .Include(b => b.Bane)
+                .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id)
                 .ToListAsync()
             : new List<Booking>();
 
@@ -213,8 +205,8 @@ public class BookingService : IBookingService
                 StartTid = start,
                 SluttTid = slutt,
                 EksisterendeBooking = eksisterende,
-                IDag = iDag,
-                NåTid = nåTid,
+                IDag = tidspunkt.IDag,
+                NåTid = tidspunkt.NåTid,
                 BookingerForBrukerIPeriode = bookingerForBruker
             };
 
@@ -225,13 +217,14 @@ public class BookingService : IBookingService
 
             slots.Add(new BookingSlotDto
             {
+                BaneNavn = eksisterende.Bane.Navn,
                 StartTid = $"{start:HH\\:mm}",
                 SluttTid = $"{slutt:HH\\:mm}",
-                BooketAv = aksess.BooketAv,
+                BooketAv = eksisterende.Bruker.Navn,
                 KanBookes = aksess.KanBooke,
                 KanAvbestille = aksess.KanAvbestille,
                 KanSlette = aksess.KanSlette,
-                ErPassert = dato < iDag || (dato == iDag && slutt <= nåTid),
+                ErPassert = dato < tidspunkt.IDag || (dato == tidspunkt.IDag && slutt <= tidspunkt.NåTid),
                 VærSymbol = null,
                 Temperatur = null,
                 Vind = null
@@ -242,9 +235,47 @@ public class BookingService : IBookingService
         return slots;
     }
 
+    public async Task<List<BookingSlotDto>> HentBookingerAsync(string slug, bool inkluderHistoriske, Bruker bruker)
+    {
+        var klubb = await _klubbService.HentKlubbAsync(slug)
+            ?? throw new Exception("Klubb ikke funnet");
+
+        var tidspunkt = _tidProvider.NåSnapshot();
+        var dagensDato = DateOnly.FromDateTime(tidspunkt.Nå);
+        var nåTid = TimeOnly.FromDateTime(tidspunkt.Nå);
+
+        var query = _db.Bookinger 
+            .Include(b => b.Bane)
+            .Include(b => b.Bruker)
+            .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id);
+
+        if (!inkluderHistoriske)
+        {
+            query = query.Where(b => b.Dato > dagensDato ||
+                                    (b.Dato == dagensDato && b.SluttTid > nåTid));
+        }
+
+        var bookinger = await query.ToListAsync();
+
+        return [.. bookinger.Select(b => new BookingSlotDto
+        {
+            BaneNavn = b.Bane.Navn,
+            StartTid = $"{b.StartTid:HH\\:mm}",
+            SluttTid = $"{b.SluttTid:HH\\:mm}",
+            BooketAv = bruker.Navn,
+            KanBookes = false, // N/A for MinSide
+            KanAvbestille = b.Dato > dagensDato || (b.Dato == dagensDato && b.StartTid > nåTid),
+            KanSlette = false, // kan legges til ved admin-rolle
+            ErPassert = b.Dato < dagensDato || (b.Dato == dagensDato && b.SluttTid <= nåTid),
+            VærSymbol = null,
+            Temperatur = null,
+            Vind = null
+        })];
+    }
+
     private static BookingResultatDto Feil(string melding) => new()
     {
         Status = "Feil",
         Melding = melding
-    };
+    }; 
 }

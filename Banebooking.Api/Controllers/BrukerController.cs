@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Banebooking.Api.Dtos.Bruker;
-using Banebooking.Api.Dtos.Booking;
 using Banebooking.Api.Tjenester;
 
 [Authorize]
@@ -10,36 +9,26 @@ using Banebooking.Api.Tjenester;
 [Route("api/klubb/{slug}/brukere")]
 public class BrukerController : ControllerBase
 {
-    private readonly BrukerService _brukerHjelper;
+    private readonly IBrukerService _brukerService;
+    private readonly IBookingService _bookingService;
 
-    public BrukerController(BanebookingDbContext db)
+    public BrukerController(BanebookingDbContext db, IBookingService bookingService, IBrukerService brukerService)
     {
-        _brukerHjelper = new BrukerService(db);
+        _brukerService = brukerService;
+        _bookingService = bookingService;
     }
 
     [HttpGet("meg")]
-    public async Task<ActionResult<BrukerDto>> HentInnloggetBruker()
+    public async Task<ActionResult<BrukerDto>> HentInnloggetBruker(string slug)
     {
-        try
-        {
-            var bruker = await _brukerHjelper.HentEllerOpprettBrukerAsync(User);
+        var bruker = await _brukerService.HentEllerOpprettBrukerAsync(User);
+        var mineBookinger = await _bookingService.HentBookingerAsync(slug, false, bruker);
 
-            return Ok(new BrukerDto
-            {
-                Id = bruker.Id,
-                Epost = bruker.Epost,
-                Bookinger = [.. bruker.Bookinger.Select(b => new BookingDto
-                {
-                    Id = b.Id,
-                    StartTid = b.StartTid,
-                    SluttTid = b.SluttTid,
-                    BaneNavn = b.Bane?.Navn ?? "(ukjent bane)"
-                })]
-            });
-        }
-        catch (UnauthorizedAccessException ex)
+        return Ok(new BrukerDto
         {
-            return Unauthorized(ex.Message);
-        }
+            Id = bruker.Id,
+            Epost = bruker.Epost,
+            Bookinger = mineBookinger
+        });
     }
 }

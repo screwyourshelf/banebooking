@@ -52,7 +52,7 @@ public class BrukerService : IBrukerService
             Epost = email,
             Navn = HentNavn(principal),
             Provider = HentProvider(principal),
-            OpprettetTid = DateTime.UtcNow
+            OpprettetTid = DateTime.UtcNow,
         };
 
         _db.Brukere.Add(user);

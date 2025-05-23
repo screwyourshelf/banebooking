@@ -1,4 +1,5 @@
 export type BookingSlot = {
+    baneNavn: string;
     startTid: string;
     sluttTid: string;
     booketAv?: string | null;
