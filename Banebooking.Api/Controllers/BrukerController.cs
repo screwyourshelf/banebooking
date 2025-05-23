@@ -7,7 +7,7 @@ using Banebooking.Api.Tjenester;
 
 [Authorize]
 [ApiController]
-[Route("api/bruker")]
+[Route("api/klubb/{slug}/brukere")]
 public class BrukerController : ControllerBase
 {
     private readonly BrukerService _brukerHjelper;

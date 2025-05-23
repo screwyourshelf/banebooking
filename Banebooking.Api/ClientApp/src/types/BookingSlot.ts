@@ -5,7 +5,7 @@ export type BookingSlot = {
     kanBookes: boolean;
     kanAvbestille: boolean;
     kanSlette: boolean;
-    kanRapportereFravaer: boolean;
+    erPassert: boolean;
 
     værSymbol?: string;
     temperatur?: number;

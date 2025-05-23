@@ -5,6 +5,11 @@ public class Klubb
     public Guid Id { get; set; }
     public string Slug { get; set; } = string.Empty;
     public string Navn { get; set; } = string.Empty;
+
+    public string Beskrivelse { get; set; } = string.Empty;
+
+    public string Banereglement { get; set; } = string.Empty;
+
     public string KontaktEpost { get; set; } = string.Empty;
     public string AdminEpost { get; set; } = string.Empty;
 

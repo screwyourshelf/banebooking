@@ -8,6 +8,8 @@
     public bool KanAvbestille { get; set; }
     public bool KanSlette { get; set; }
 
+    public bool ErPassert { get; set; }
+
     public string? VærSymbol { get; set; }
     public double? Temperatur { get; set; }
     public double? Vind { get; set; }

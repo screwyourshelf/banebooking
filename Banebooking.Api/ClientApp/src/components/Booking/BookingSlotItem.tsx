@@ -26,9 +26,10 @@ export default function BookingSlotItem({
     const { erBekreftet, setErBekreftet, reset } = useBookingActions();
     const time = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
     const harHandlinger = slot.kanBookes || slot.kanAvbestille || slot.kanSlette;
+    const erInteraktiv = currentUser && harHandlinger && !slot.erPassert;
 
     const handleToggle = () => {
-        if (currentUser && harHandlinger) {
+        if (erInteraktiv) {
             onToggle();
             setErBekreftet(false);
         }
@@ -36,8 +37,11 @@ export default function BookingSlotItem({
 
     return (
         <div
-            className="border rounded shadow-sm p-1 bg-white mb-1"
-            style={{ cursor: currentUser && harHandlinger ? 'pointer' : 'default' }}
+            className={`border rounded shadow-sm p-1 mb-1 ${slot.erPassert ? 'bg-light text-muted' : 'bg-white'}`}
+            style={{
+                cursor: erInteraktiv ? 'pointer' : 'default',
+                opacity: slot.erPassert ? 0.5 : 1,
+            }}
             onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('button, input, label')) return;
@@ -45,7 +49,6 @@ export default function BookingSlotItem({
             }}
         >
             <div className="d-flex align-items-center">
-                {/* Innhold */}
                 <div style={{ flex: 1 }} className="d-flex align-items-center justify-content-between">
                     {/* Tid */}
                     <div className="text-nowrap fw-semibold small text-end pe-1">
@@ -70,7 +73,7 @@ export default function BookingSlotItem({
                     </div>
 
                     {/* Pilindikator */}
-                    {currentUser && harHandlinger && (
+                    {erInteraktiv && (
                         <div className="p-1">
                             <FaChevronDown
                                 size={12}
@@ -85,7 +88,7 @@ export default function BookingSlotItem({
             </div>
 
             {/* Ekspandert visning */}
-            {isOpen && (
+            {isOpen && !slot.erPassert && (
                 <div className="row mt-1">
                     <div className="col">
                         <div className="border rounded p-1 bg-light">

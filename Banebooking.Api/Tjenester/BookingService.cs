@@ -23,14 +23,16 @@ public class BookingService : IBookingService
     private readonly BanebookingDbContext _db;
     private readonly SlotBerikerMedVaer _beriker;
     private readonly IKlubbService _klubbService;
+    private readonly ITidProvider _tidProvider;
     private readonly BrukerService _brukerService;
 
-    public BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker, IKlubbService klubbService)
+    public BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker, IKlubbService klubbService, ITidProvider tidProvider)
     {
         _db = db;
         _beriker = beriker;
         _klubbService = klubbService;
-        _brukerService = new BrukerService(db); // evt injiser denne også hvis ønskelig
+        _tidProvider = tidProvider;
+        _brukerService = new BrukerService(db); 
     }
 
     public async Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, ClaimsPrincipal user)
@@ -122,9 +124,9 @@ public class BookingService : IBookingService
             return Feil("Bane ikke funnet i klubben");
 
         var bruker = await _brukerService.HentEllerOpprettBrukerAsync(user);
-        var nå = DateTime.UtcNow;
-        var iDag = DateOnly.FromDateTime(nå.Date);
-        var nåTid = TimeOnly.FromDateTime(nå);
+        var nå = _tidProvider.Nå();
+        var iDag = _tidProvider.DatoIDag();
+        var nåTid = _tidProvider.KlokkeslettNå();
 
         var eksisterende = await _db.Bookinger
             .Include(b => b.Bruker)
@@ -180,9 +182,9 @@ public class BookingService : IBookingService
         var bruker = await _brukerService.HentEllerOpprettBrukerAsync(user);
         var regel = klubb.BookingRegel;
 
-        var nå = DateTime.UtcNow;
-        var iDag = DateOnly.FromDateTime(nå.Date);
-        var nåTid = TimeOnly.FromDateTime(nå);
+        var norskTid = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo"));
+        var iDag = DateOnly.FromDateTime(norskTid.Date);
+        var nåTid = TimeOnly.FromDateTime(norskTid);
 
         var eksisterendeBookinger = await _db.Bookinger
             .Include(b => b.Bruker)
@@ -229,6 +231,7 @@ public class BookingService : IBookingService
                 KanBookes = aksess.KanBooke,
                 KanAvbestille = aksess.KanAvbestille,
                 KanSlette = aksess.KanSlette,
+                ErPassert = dato < iDag || (dato == iDag && slutt <= nåTid),
                 VærSymbol = null,
                 Temperatur = null,
                 Vind = null

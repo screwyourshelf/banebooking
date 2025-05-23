@@ -3,6 +3,7 @@ import Layout from './layouts/Layout';
 import IndexPage from './pages/IndexPage';
 import MinSide from './pages/MinSide';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import ReglementPage from './pages/ReglementPage';
 
 export default function App() {
     return (
@@ -18,6 +19,7 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="reglement" element={<ReglementPage />} />
                 </Route>
                 {/* Hvis du fortsatt vil ha en root-side uten slug, kan du legge til denne: */}
                 <Route path="/" element={<Layout />}>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
     NavDropdown,
     Nav,
@@ -10,7 +10,9 @@ import { supabase } from '../supabase';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook, FaSignInAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
+import { SlugContext } from '../layouts/Layout';
 
 type Props = {
     currentUser: User | null;
@@ -19,6 +21,7 @@ type Props = {
 };
 
 export default function LoginDropdown({ currentUser, setCurrentUser, redirectTo }: Props) {
+    const slug = useContext(SlugContext);
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
@@ -73,7 +76,6 @@ export default function LoginDropdown({ currentUser, setCurrentUser, redirectTo 
                             Logg inn med Google
                         </Nav.Link>
                     </Nav.Item>
-
                     <Nav.Item>
                         <Nav.Link onClick={handleFacebookLogin} className="d-flex align-items-center px-2 py-1">
                             <FaFacebook size={18} className="me-2" />
@@ -119,16 +121,25 @@ export default function LoginDropdown({ currentUser, setCurrentUser, redirectTo 
     }
 
     return (
-        <NavDropdown title={currentUser.email} align="end" id="user-dropdown">
-            <NavDropdown.Item href="/minside">
-                <FaUser className="me-2" />
-                Min side
-            </NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item onClick={handleLogout}>
-                <FaSignOutAlt className="me-2" />
-                Logg ut
-            </NavDropdown.Item>
+        <NavDropdown title={<><FaUser className="me-1" />{currentUser.email}</>} align="end" id="user-dropdown">
+            {slug && (
+                <>
+                    <NavDropdown.Item as={Link} to={`/${slug}/minside`}>
+                        Min side
+                    </NavDropdown.Item>
+                    <NavDropdown.Item onClick={handleLogout}>
+                        <FaSignOutAlt className="me-2" />
+                        Logg ut
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item as={Link} to={`/${slug}`}>
+                        Book bane
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to={`/${slug}/reglement`}>
+                        Reglement
+                    </NavDropdown.Item>
+                </>
+            )}
         </NavDropdown>
     );
 }

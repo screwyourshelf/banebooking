@@ -5,10 +5,10 @@ using Banebooking.Api.Data;
 namespace Banebooking.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/klubb/{slug}/baner")]
 public class BanerController(BanebookingDbContext db) : ControllerBase
 {
-    [HttpGet("/api/klubb/{slug}/baner")]
+    [HttpGet]
     public async Task<IActionResult> HentBaner(string slug)
     {
         var baner = await db.Baner
