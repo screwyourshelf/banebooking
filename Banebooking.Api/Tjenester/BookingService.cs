@@ -177,17 +177,20 @@ public class BookingService : IBookingService
         var regel = klubb.BookingRegel;
         var tidspunkt = _tidProvider.NåSnapshot();
 
-        var eksisterendeBookinger = await _db.Bookinger
+        var alleBookinger = await _db.Bookinger
             .Include(b => b.Bruker)
-            .Where(b => b.BaneId == bane.Id && b.Dato == dato && b.Aktiv)
-            .ToListAsync();
+            .Include(b => b.Bane)
+            .Where(b => b.Aktiv && b.Bane.KlubbId == klubb.Id &&
+                (b.BaneId == bane.Id && b.Dato == dato || b.BrukerId == bruker.Id))
+         .ToListAsync();
 
-        var bookingerForBruker = bruker?.Id != null
-            ? await _db.Bookinger
-                .Include(b => b.Bane)
-                .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id)
-                .ToListAsync()
-            : new List<Booking>();
+        var eksisterendeBookinger = alleBookinger
+            .Where(b => b.BaneId == bane.Id && b.Dato == dato)
+            .ToList();
+
+        var bookingerForBruker = alleBookinger
+            .Where(b => b.BrukerId == bruker.Id)
+            .ToList();
 
         var slots = new List<BookingSlotDto>();
 
@@ -222,7 +225,7 @@ public class BookingService : IBookingService
                 Dato = dato.ToString("yyyy-MM-dd"),
                 StartTid = $"{start:HH\\:mm}",
                 SluttTid = $"{slutt:HH\\:mm}",
-                BooketAv = eksisterende?.Bruker?.Navn,
+                BooketAv = eksisterende?.Bruker?.Epost,
                 KanBookes = aksess.KanBooke,
                 KanAvbestille = aksess.KanAvbestille,
                 KanSlette = aksess.KanSlette,
