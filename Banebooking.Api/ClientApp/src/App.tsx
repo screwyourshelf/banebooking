@@ -4,6 +4,8 @@ import IndexPage from './pages/IndexPage';
 import MinSide from './pages/MinSidePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import ReglementPage from './pages/ReglementPage';
+import RedigerKlubbPage from './pages/admin/RedigerKlubbPage';
+
 
 export default function App() {
     return (
@@ -20,6 +22,14 @@ export default function App() {
                         }
                     />
                     <Route path="reglement" element={<ReglementPage />} />
+                    <Route
+                        path="admin"
+                        element={
+                            <ProtectedRoute>
+                                <RedigerKlubbPage />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Route>
                 {/* Hvis du fortsatt vil ha en root-side uten slug, kan du legge til denne: */}
                 <Route path="/" element={<Layout />}>

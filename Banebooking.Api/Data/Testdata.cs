@@ -11,7 +11,7 @@ public static class Tesdata
             Slug = "aas-tennisklubb",
             Navn = "Ås tennisklubb",
             KontaktEpost = "andreas.lotarev@gmail.com",
-            AdminEpost = "andreas.lotarev@vivende.no",
+            AdminEpost = "andreas.lotarev@gmail.com",
             Longitude = 10.7769,
             Latitude = 59.6552,
             BookingRegel = new BestemmelseForBooking

@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Banebooking.Api.Dtos.Klubb;
+using Microsoft.AspNetCore.Authorization;
+using Banebooking.Api.Tjenester;
 
 namespace Banebooking.Api.Controllers;
 
 [ApiController]
 [Route("api/klubb/")]
-public class KlubberController(IKlubbService _klubbService) : ControllerBase
+public partial class KlubberController(IKlubbService klubbService, IBrukerService brukerService) : ControllerBase
 {
     [HttpGet("{slug}")]
     public async Task<IActionResult> HentKlubb(string slug)
     {
-        var klubb = await _klubbService.HentKlubbAsync(slug);
+        var klubb = await klubbService.HentKlubbAsync(slug);
 
         if (klubb == null) return NotFound();
 
@@ -19,7 +21,10 @@ public class KlubberController(IKlubbService _klubbService) : ControllerBase
             Slug = klubb.Slug,
             Navn = klubb.Navn,
             KontaktEpost = klubb.KontaktEpost,
+            AdminEpost = klubb.AdminEpost,
             Banereglement = klubb.Banereglement,
+            Latitude = klubb.Latitude,
+            Longitude = klubb.Longitude,
             BookingRegel = new BookingRegelDto
             {
                 MaksPerDag = klubb.BookingRegel?.MaksBookingerPerDagPerBruker ?? 1,
@@ -31,4 +36,27 @@ public class KlubberController(IKlubbService _klubbService) : ControllerBase
 
         return Ok(dto);
     }
+
+    [Authorize]
+    [HttpPut("{slug}")]
+    public async Task<IActionResult> OppdaterKlubb(string slug, [FromBody] OppdaterKlubbDto dto)
+    {
+        var bruker = User.Identity?.IsAuthenticated == true
+                 ? await brukerService.HentEllerOpprettBrukerAsync(User)
+                 : null;
+
+        if (bruker == null)
+            return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
+        
+        try
+        {
+            var ok = await klubbService.OppdaterKlubbAsync(slug, dto, bruker);
+            return ok ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
 }

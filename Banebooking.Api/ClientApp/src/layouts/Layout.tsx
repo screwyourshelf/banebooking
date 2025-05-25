@@ -1,10 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useParams, Outlet, Link } from 'react-router-dom';
 import { Navbar, Nav, NavDropdown, Form, Button, Spinner } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import NavbarBrandMedKlubb from '../components/NavbarBrandMedKlubb';
-import { FaUser, FaFacebook, FaSignInAlt, FaSignOutAlt, FaCalendarAlt, FaUserCircle, FaGavel } from 'react-icons/fa';
+import {
+    FaUser, FaFacebook, FaSignInAlt, FaSignOutAlt, FaCalendarAlt,
+    FaUserCircle, FaGavel, FaWrench
+} from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../hooks/useAuth';
 import { useLogin } from '../hooks/useLogin';
@@ -18,7 +22,6 @@ export default function Layout() {
     const redirectTo = window.location.origin + (slugFromUrl ? `/${slugFromUrl}` : '/');
 
     const { klubb, laster } = useKlubb(slug);
-
     const { currentUser, signOut } = useAuth();
     const {
         email,
@@ -28,6 +31,9 @@ export default function Layout() {
         handleFacebookLogin,
         handleMagicLink
     } = useLogin(redirectTo);
+
+    const isAdmin = currentUser?.email?.toLowerCase() === klubb?.adminEpost?.toLowerCase();
+    const navigate = useNavigate();
 
     return (
         <SlugContext.Provider value={slug}>
@@ -56,7 +62,13 @@ export default function Layout() {
                                             Min side
                                         </NavDropdown.Item>
                                     )}
-                                    <NavDropdown.Item onClick={signOut}>
+                                    <NavDropdown.Item onClick={() => signOut(() => {
+                                        if (slug) {
+                                            navigate(`/${slug}`);
+                                        } else {
+                                            navigate('/');
+                                        }
+                                    })}>
                                         <FaSignOutAlt className="me-2" />
                                         Logg ut
                                     </NavDropdown.Item>
@@ -71,6 +83,12 @@ export default function Layout() {
                                                 <FaGavel className="me-2" />
                                                 Reglement
                                             </NavDropdown.Item>
+                                            {isAdmin && (
+                                                <NavDropdown.Item as={Link} to={`/${slug}/admin`}>
+                                                    <FaWrench className="me-2" />
+                                                    Rediger klubb
+                                                </NavDropdown.Item>
+                                            )}
                                         </>
                                     )}
                                 </>

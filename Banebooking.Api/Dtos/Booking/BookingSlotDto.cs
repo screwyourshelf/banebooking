@@ -1,4 +1,6 @@
-﻿public class BookingSlotDto
+﻿namespace Banebooking.Api.Dtos.Booking;
+
+public class BookingSlotDto
 {
     public string BaneNavn { get; set; }
     public string BaneId { get; set; }

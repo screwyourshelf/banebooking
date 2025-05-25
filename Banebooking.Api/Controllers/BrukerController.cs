@@ -1,5 +1,4 @@
-﻿using Banebooking.Api.Data;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Banebooking.Api.Dtos.Bruker;
 using Banebooking.Api.Tjenester;
@@ -7,22 +6,19 @@ using Banebooking.Api.Tjenester;
 [Authorize]
 [ApiController]
 [Route("api/klubb/{slug}/brukere")]
-public class BrukerController : ControllerBase
+public class BrukerController(IBookingService bookingService, IBrukerService brukerService) : ControllerBase
 {
-    private readonly IBrukerService _brukerService;
-    private readonly IBookingService _bookingService;
-
-    public BrukerController(IBookingService bookingService, IBrukerService brukerService)
-    {
-        _brukerService = brukerService;
-        _bookingService = bookingService;
-    }
-
     [HttpGet("meg")]
     public async Task<ActionResult<BrukerDto>> HentInnloggetBruker(string slug)
     {
-        var bruker = await _brukerService.HentEllerOpprettBrukerAsync(User);
-        var mineBookinger = await _bookingService.HentBookingerAsync(slug, false, bruker);
+        var bruker = User.Identity?.IsAuthenticated == true
+            ? await brukerService.HentEllerOpprettBrukerAsync(User)
+            : null;
+        
+        if (bruker == null)
+            return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
+
+        var mineBookinger = await bookingService.HentBookingerAsync(slug, false, bruker);
 
         return Ok(new BrukerDto
         {

@@ -10,7 +10,7 @@ namespace Banebooking.Api.Tjenester;
 
 public interface IBookingService
 {
-    Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, Bruker bruker);
+    Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, Bruker? bruker);
     Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, Bruker bruker);
     Task<BookingResultatDto> ForsøkAvbestillBookingAsync(string slug, NyBookingDto dto, Bruker bruker);
     Task<List<BookingSlotDto>> HentBookingerAsync(string slug, bool inkluderHistoriske, Bruker bruker);
@@ -164,7 +164,7 @@ public class BookingService : IBookingService
         };
     }
 
-    public async Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, Bruker bruker)
+    public async Task<List<BookingSlotDto>> HentBookingerAsync(string slug, Guid baneId, DateOnly dato, Bruker? bruker)
     {
         var klubb = await _klubbService.HentKlubbAsync(slug);
         if (klubb == null)
@@ -177,21 +177,22 @@ public class BookingService : IBookingService
         var regel = klubb.BookingRegel;
         var tidspunkt = _tidProvider.NåSnapshot();
 
+        var brukerId = bruker?.Id;
+
         var alleBookinger = await _db.Bookinger
             .Include(b => b.Bruker)
             .Include(b => b.Bane)
             .Where(b => b.Aktiv && b.Bane.KlubbId == klubb.Id &&
-                    (b.BrukerId == bruker.Id || (b.BaneId == bane.Id && b.Dato == dato)))
+                   ((b.BaneId == bane.Id && b.Dato == dato) || (brukerId != null && b.BrukerId == brukerId)))
             .ToListAsync();
-
 
         var eksisterendeBookinger = alleBookinger
             .Where(b => b.BaneId == bane.Id && b.Dato == dato)
             .ToList();
 
-        var bookingerForBruker = alleBookinger
-            .Where(b => b.BrukerId == bruker.Id)
-            .ToList();
+        var bookingerForBruker = brukerId != null
+            ? alleBookinger.Where(b => b.BrukerId == brukerId).ToList()
+            : new List<Booking>();
 
         var slots = new List<BookingSlotDto>();
 

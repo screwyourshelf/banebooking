@@ -22,9 +22,12 @@ export function useAuth() {
     return {
         currentUser,
         setCurrentUser,
-        signOut: async () => {
+        signOut: async (onComplete?: () => void) => {
             await supabase.auth.signOut();
             setCurrentUser(null);
+            if (onComplete) {
+                onComplete();
+            }
         }
     };
 }

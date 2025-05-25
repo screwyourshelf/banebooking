@@ -42,6 +42,7 @@ builder.Services.AddScoped<SlotBerikerMedVaer>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITidProvider, NorskTidProvider>();
 builder.Services.AddScoped<IBrukerService, BrukerService>();
+builder.Services.AddScoped<IBaneService, BaneService>();
 
 var app = builder.Build();
 
