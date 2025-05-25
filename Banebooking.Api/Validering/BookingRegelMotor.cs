@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Banebooking.Api.Logikk;
+﻿using Banebooking.Api.Logikk;
 
 namespace Banebooking.Api.Validering;
 

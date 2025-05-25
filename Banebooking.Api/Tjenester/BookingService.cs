@@ -181,8 +181,9 @@ public class BookingService : IBookingService
             .Include(b => b.Bruker)
             .Include(b => b.Bane)
             .Where(b => b.Aktiv && b.Bane.KlubbId == klubb.Id &&
-                (b.BaneId == bane.Id && b.Dato == dato || b.BrukerId == bruker.Id))
-         .ToListAsync();
+                    (b.BrukerId == bruker.Id || (b.BaneId == bane.Id && b.Dato == dato)))
+            .ToListAsync();
+
 
         var eksisterendeBookinger = alleBookinger
             .Where(b => b.BaneId == bane.Id && b.Dato == dato)
