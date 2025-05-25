@@ -1,20 +1,12 @@
 ﻿using Banebooking.Api.Dtos.Booking;
-using Banebooking.Api.Tjenester;
 
 namespace Banebooking.Api.Tjenester;
 
-public class SlotBerikerMedVaer
+public class SlotBerikerMedVaer(IVaerService vaerService)
 {
-    private readonly IVaerService _vaerService;
-
-    public SlotBerikerMedVaer(IVaerService vaerService)
-    {
-        _vaerService = vaerService;
-    }
-
     public async Task BerikAsync(List<BookingSlotDto> slots, Guid klubbId, DateOnly dato)
     {
-        var vaerdata = await _vaerService.HentVaerdataAsync(klubbId, dato);
+        var vaerdata = await vaerService.HentVaerdataAsync(klubbId, dato);
 
         foreach (var slot in slots)
         {

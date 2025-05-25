@@ -5,7 +5,7 @@ import MinSide from './pages/MinSidePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import ReglementPage from './pages/ReglementPage';
 import RedigerKlubbPage from './pages/admin/RedigerKlubbPage';
-
+import RedigerBanerPage from './pages/admin/RedigerBanerPage';
 
 export default function App() {
     return (
@@ -22,16 +22,29 @@ export default function App() {
                         }
                     />
                     <Route path="reglement" element={<ReglementPage />} />
-                    <Route
-                        path="admin"
-                        element={
-                            <ProtectedRoute>
-                                <RedigerKlubbPage />
-                            </ProtectedRoute>
-                        }
-                    />
+
+                    {/* Admin routes */}
+                    <Route path="admin">
+                        <Route
+                            index
+                            element={
+                                <ProtectedRoute>
+                                    <RedigerKlubbPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="baner"
+                            element={
+                                <ProtectedRoute>
+                                    <RedigerBanerPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Route>
                 </Route>
-                {/* Hvis du fortsatt vil ha en root-side uten slug, kan du legge til denne: */}
+
+                {/* Root route uten slug */}
                 <Route path="/" element={<Layout />}>
                     <Route index element={<div>Velkommen! Velg klubb.</div>} />
                 </Route>

@@ -1,6 +1,5 @@
 ﻿using Banebooking.Api.Data;
 using Banebooking.Api.Dtos.Vær;
-using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using System.Text.Json;
 
@@ -11,34 +10,26 @@ public interface IVaerService
     Task<Dictionary<TimeOnly, Vaerinfo>> HentVaerdataAsync(Guid klubbId, DateOnly dato);
 }
 
-public class VaerService : IVaerService
+public class VaerService(
+    ICacheService cache,
+    IHttpClientFactory httpClientFactory,
+    BanebookingDbContext db,
+    ILogger<VaerService> logger) : IVaerService
 {
-    private readonly IMemoryCache _cache;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly BanebookingDbContext _db;
-    private readonly ILogger<VaerService> _logger;
-
-    public VaerService(IMemoryCache cache, IHttpClientFactory httpClientFactory, BanebookingDbContext db, ILogger<VaerService> logger)
-    {
-        _cache = cache;
-        _httpClientFactory = httpClientFactory;
-        _db = db;
-        _logger = logger;
-    }
-
     public async Task<Dictionary<TimeOnly, Vaerinfo>> HentVaerdataAsync(Guid klubbId, DateOnly dato)
     {
-        var klubb = await _db.Klubber.FindAsync(klubbId);
+        var klubb = await db.Klubber.FindAsync(klubbId);
         if (klubb == null || klubb.Latitude == null || klubb.Longitude == null)
             return new();
 
-        var cacheKey = $"vaer:klubb:{klubbId}:{dato:yyyy-MM-dd}";
-        _cache.TryGetValue(cacheKey, out CachedVaerData? cached);
+        var cacheSlug = $"{klubbId}:{dato:yyyy-MM-dd}";
+        var cached = cache.Get<CachedVaerData>("vaer", cacheSlug);
 
-        var client = _httpClientFactory.CreateClient("VaerApi");
+        var client = httpClientFactory.CreateClient("VaerApi");
 
         var url = $"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={klubb.Latitude}&lon={klubb.Longitude}";
         var request = new HttpRequestMessage(HttpMethod.Get, url);
+
         if (cached != null)
         {
             request.Headers.IfModifiedSince = cached.SisteOppdatert;
@@ -48,16 +39,13 @@ public class VaerService : IVaerService
 
         if (response.StatusCode == HttpStatusCode.NotModified && cached != null)
         {
-            _logger.LogDebug("Værdata ikke endret – bruker cache.");
-            _cache.Set(cacheKey, cached, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpiration = response.Content.Headers.Expires ?? DateTimeOffset.UtcNow.AddHours(3)
-            });
-
+            logger.LogDebug("Værdata ikke endret – bruker cache.");
+            cache.Set("vaer", cacheSlug, cached, levetid: response.Content.Headers.Expires - DateTimeOffset.UtcNow);
             return cached.Data;
         }
 
         response.EnsureSuccessStatusCode();
+
         var lastModified = response.Content.Headers.LastModified ?? DateTimeOffset.UtcNow;
         var expires = response.Content.Headers.Expires ?? DateTimeOffset.UtcNow.AddHours(3);
 
@@ -98,15 +86,7 @@ public class VaerService : IVaerService
             SisteOppdatert = lastModified
         };
 
-        _cache.Set(cacheKey, newCached, new MemoryCacheEntryOptions
-        {
-            AbsoluteExpiration = expires
-        });
-
+        cache.Set("vaer", cacheSlug, newCached, levetid: expires - DateTimeOffset.UtcNow);
         return result;
     }
 }
-
-
-
-

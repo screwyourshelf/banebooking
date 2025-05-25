@@ -10,15 +10,8 @@ public interface IBrukerService
     Task<Bruker> HentEllerOpprettBrukerAsync(ClaimsPrincipal principal);
 }
 
-public class BrukerService : IBrukerService
+public class BrukerService(BanebookingDbContext db) : IBrukerService
 {
-    private readonly BanebookingDbContext _db;
-
-    public BrukerService(BanebookingDbContext db)
-    {
-        _db = db;
-    }
-
     public async Task<Bruker> HentEllerOpprettBrukerAsync(ClaimsPrincipal principal)
     {
         string? sub = HentSub(principal);
@@ -31,17 +24,17 @@ public class BrukerService : IBrukerService
             throw new UnauthorizedAccessException("Mangler sub eller email i token");
 
         // Prøv å finne bruker via sub
-        var user = await _db.Brukere.FirstOrDefaultAsync(u => u.Sub == sub);
+        var user = await db.Brukere.FirstOrDefaultAsync(u => u.Sub == sub);
         if (user != null)
             return user;
 
         // Fallback: Finn via e-post (samme person med ny provider)
-        user = await _db.Brukere.FirstOrDefaultAsync(u => u.Epost == email);
+        user = await db.Brukere.FirstOrDefaultAsync(u => u.Epost == email);
         if (user != null)
         {
             user.Sub = sub;
             user.Provider = HentProvider(principal);
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             return user;
         }
 
@@ -55,8 +48,8 @@ public class BrukerService : IBrukerService
             OpprettetTid = DateTime.UtcNow,
         };
 
-        _db.Brukere.Add(user);
-        await _db.SaveChangesAsync();
+        db.Brukere.Add(user);
+        await db.SaveChangesAsync();
         return user;
     }
 
@@ -67,7 +60,7 @@ public class BrukerService : IBrukerService
         if (string.IsNullOrWhiteSpace(sub))
             return null;
 
-        return await _db.Brukere
+        return await db.Brukere
             .Where(u => u.Sub == sub)
             .Select(u => u.Id)
             .FirstOrDefaultAsync();

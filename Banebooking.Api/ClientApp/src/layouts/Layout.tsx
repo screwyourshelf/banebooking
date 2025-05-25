@@ -84,10 +84,16 @@ export default function Layout() {
                                                 Reglement
                                             </NavDropdown.Item>
                                             {isAdmin && (
-                                                <NavDropdown.Item as={Link} to={`/${slug}/admin`}>
-                                                    <FaWrench className="me-2" />
-                                                    Rediger klubb
-                                                </NavDropdown.Item>
+                                                <>
+                                                    <NavDropdown.Item as={Link} to={`/${slug}/admin`}>
+                                                        <FaWrench className="me-2" />
+                                                        Rediger klubb
+                                                    </NavDropdown.Item>
+                                                    <NavDropdown.Item as={Link} to={`/${slug}/admin/baner`}>
+                                                        <FaWrench className="me-2" />
+                                                        Rediger baner
+                                                    </NavDropdown.Item>
+                                                </>
                                             )}
                                         </>
                                     )}

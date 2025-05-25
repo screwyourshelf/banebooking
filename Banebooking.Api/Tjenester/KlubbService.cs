@@ -1,23 +1,21 @@
 ﻿using Banebooking.Api.Data;
 using Banebooking.Api.Dtos.Klubb;
 using Banebooking.Api.Models;
+using Banebooking.Api.Tjenester;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 public interface IKlubbService
 {
     Task<Klubb?> HentKlubbAsync(string slug);
-
     Task<bool> OppdaterKlubbAsync(string slug, OppdaterKlubbDto dto, Bruker bruker);
-
 }
 
 public class KlubbService : IKlubbService
 {
     private readonly BanebookingDbContext _db;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
 
-    public KlubbService(BanebookingDbContext db, IMemoryCache cache)
+    public KlubbService(BanebookingDbContext db, ICacheService cache)
     {
         _db = db;
         _cache = cache;
@@ -25,9 +23,8 @@ public class KlubbService : IKlubbService
 
     public async Task<Klubb?> HentKlubbAsync(string slug)
     {
-        var key = $"klubb:{slug}:full";
-
-        if (_cache.TryGetValue<Klubb>(key, out var cached))
+        var cached = _cache.Get<Klubb>("klubb", slug);
+        if (cached != null)
             return cached;
 
         var klubb = await _db.Klubber
@@ -37,10 +34,7 @@ public class KlubbService : IKlubbService
 
         if (klubb != null)
         {
-            _cache.Set(key, klubb, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6)
-            });
+            _cache.Set("klubb", slug, klubb);
         }
 
         return klubb;
@@ -48,7 +42,10 @@ public class KlubbService : IKlubbService
 
     public async Task<bool> OppdaterKlubbAsync(string slug, OppdaterKlubbDto dto, Bruker bruker)
     {
-        var klubb = await HentKlubbAsync(slug);
+        var klubb = await _db.Klubber
+            .Include(k => k.BookingRegel)
+            .FirstOrDefaultAsync(k => k.Slug == slug);
+
         if (klubb == null) return false;
 
         if (!bruker.Epost.Equals(klubb.AdminEpost, StringComparison.OrdinalIgnoreCase))
@@ -60,18 +57,18 @@ public class KlubbService : IKlubbService
         klubb.Latitude = dto.Latitude;
         klubb.Longitude = dto.Longitude;
 
-        klubb.BookingRegel.MaksBookingerPerDagPerBruker = dto.BookingRegel.MaksPerDag;
-        klubb.BookingRegel.MaksAntallBookingerPerBrukerTotalt = dto.BookingRegel.MaksTotalt;
-        klubb.BookingRegel.AntallDagerFremITidTillatt = dto.BookingRegel.DagerFremITid;
-        klubb.BookingRegel.SlotLengde = TimeSpan.FromMinutes(dto.BookingRegel.SlotLengdeMinutter);
+        if (klubb.BookingRegel != null)
+        {
+            klubb.BookingRegel.MaksBookingerPerDagPerBruker = dto.BookingRegel.MaksPerDag;
+            klubb.BookingRegel.MaksAntallBookingerPerBrukerTotalt = dto.BookingRegel.MaksTotalt;
+            klubb.BookingRegel.AntallDagerFremITidTillatt = dto.BookingRegel.DagerFremITid;
+            klubb.BookingRegel.SlotLengde = TimeSpan.FromMinutes(dto.BookingRegel.SlotLengdeMinutter);
+        }
 
-        _db.Entry(klubb.BookingRegel).State = EntityState.Modified;
         await _db.SaveChangesAsync();
 
-        // Fjern eventuell cache
-        _cache.Remove($"klubb:{slug}:full");
+        _cache.Invalider("klubb", slug);
 
         return true;
     }
-
 }

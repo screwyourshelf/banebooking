@@ -36,6 +36,7 @@ builder.Services.AddHttpClient("VaerApi", client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Banebooking/1.0 (+mailto:andreas.lotarev@gmail.com)");
 });
 
+builder.Services.AddSingleton<ICacheService, CacheService>();
 builder.Services.AddScoped<IKlubbService, KlubbService>();
 builder.Services.AddScoped<IVaerService, VaerService>();
 builder.Services.AddScoped<SlotBerikerMedVaer>();

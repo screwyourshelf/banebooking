@@ -1,9 +1,7 @@
 ﻿namespace Banebooking.Api.Dtos.Bane;
 
-public class BaneDto
+public class NyBaneDto
 {
-    public Guid Id { get; set; }
-    public bool Aktiv { get; set; }
     public string Navn { get; set; } = "";
     public string Beskrivelse { get; set; } = "";
 }
