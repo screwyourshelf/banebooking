@@ -2,7 +2,6 @@
 
 public class OppdaterBaneDto
 {
-    public string Navn { get; internal set; }
-    public string Slug { get; internal set; }
-    public string? Beskrivelse { get; internal set; }
+    public string Navn { get; set; } = string.Empty;
+    public string? Beskrivelse { get; set; }
 }

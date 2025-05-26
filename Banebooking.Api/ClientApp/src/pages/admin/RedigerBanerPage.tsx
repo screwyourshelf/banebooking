@@ -1,15 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Button, Spinner } from 'react-bootstrap';
 import { useBaner } from '../../hooks/useBaner';
 import { toast } from 'react-toastify';
 
+type BaneFormData = {
+    navn: string;
+    beskrivelse: string;
+};
+
+const STORAGE_KEY = 'rediger.valgtBaneId';
+
 export default function RedigerBanerPage() {
     const { baner, loading, oppdaterBane, opprettBane, deaktiverBane, aktiverBane } = useBaner(true);
-    const [redigerte, setRedigerte] = useState<Record<string, { navn: string; beskrivelse: string }>>({});
-    const [nyBane, setNyBane] = useState({ navn: '', beskrivelse: '' });
-    const [valgtBaneId, setValgtBaneId] = useState<string | null>(null);
 
-    function håndterEndring(id: string, felt: 'navn' | 'beskrivelse', verdi: string) {
+    const [redigerte, setRedigerte] = useState<Record<string, BaneFormData>>({});
+    const [nyBane, setNyBane] = useState<BaneFormData>({ navn: '', beskrivelse: '' });
+    const [valgtBaneId, setValgtBaneId] = useState<string | null>(() => {
+        const fraStorage = sessionStorage.getItem(STORAGE_KEY);
+        return fraStorage && fraStorage !== 'null' ? fraStorage : null;
+    });
+
+    const valgtBane = baner.find(b => b.id === valgtBaneId) ?? null;
+    const redigerteVerdier: BaneFormData | null =
+        valgtBaneId ? redigerte[valgtBaneId] ?? null : null;
+
+    useEffect(() => {
+        sessionStorage.setItem(STORAGE_KEY, valgtBaneId ?? 'null');
+    }, [valgtBaneId]);
+
+    useEffect(() => {
+        if (valgtBaneId && !baner.some(b => b.id === valgtBaneId)) {
+            setValgtBaneId(null); // valgt bane finnes ikke lenger
+        }
+    }, [baner, valgtBaneId]);
+
+    function håndterEndring(id: string, felt: keyof BaneFormData, verdi: string) {
         setRedigerte((prev) => ({
             ...prev,
             [id]: {
@@ -24,7 +49,10 @@ export default function RedigerBanerPage() {
         if (!oppdatert) return;
 
         try {
-            await oppdaterBane(id, oppdatert);
+            await oppdaterBane(id, {
+                navn: oppdatert.navn,
+                beskrivelse: oppdatert.beskrivelse
+            });
             toast.success('Endringer lagret');
             setRedigerte((prev) => {
                 const ny = { ...prev };
@@ -55,7 +83,6 @@ export default function RedigerBanerPage() {
         try {
             await deaktiverBane(id);
             toast.success('Bane deaktivert');
-            setValgtBaneId(null);
         } catch {
             toast.error('Kunne ikke deaktivere bane');
         }
@@ -65,14 +92,10 @@ export default function RedigerBanerPage() {
         try {
             await aktiverBane(id);
             toast.success('Bane aktivert');
-            setValgtBaneId(null);
         } catch {
             toast.error('Kunne ikke aktivere bane');
         }
     }
-
-    const valgtBane = baner.find(b => b.id === valgtBaneId);
-    const redigerteVerdier = valgtBaneId && redigerte[valgtBaneId];
 
     return (
         <div className="p-3">
