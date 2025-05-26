@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Banebooking.Api.Extensions;
 using System.Globalization;
 using Banebooking.Api.Tjenester;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddSupabaseAuthentication(builder.Configuration);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
     });

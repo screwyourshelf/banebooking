@@ -14,6 +14,9 @@ public interface IBookingService
     Task<BookingResultatDto> ForsøkOpprettBookingAsync(string slug, NyBookingDto dto, Bruker bruker);
     Task<BookingResultatDto> ForsøkAvbestillBookingAsync(string slug, NyBookingDto dto, Bruker bruker);
     Task<List<BookingSlotDto>> HentBookingerAsync(string slug, bool inkluderHistoriske, Bruker bruker);
+
+    Task<MassebookingForhandsvisningDto> GenererForhandsvisningAsync(string slug, MassebookingDto dto, Bruker bruker);
+    Task<MassebookingResultatDto> OpprettMassebookingAsync(string slug, MassebookingDto dto, Bruker bruker);
 }
 
 
@@ -273,5 +276,164 @@ public class BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker,
     {
         Status = "Feil",
         Melding = melding
-    }; 
+    };
+
+    public async Task<MassebookingForhandsvisningDto> GenererForhandsvisningAsync(string slug, MassebookingDto dto, Bruker bruker)
+    {
+        var klubb = await klubbService.HentKlubbAsync(slug);
+        if (klubb?.BookingRegel?.SlotLengde == null)
+            throw new Exception("Slotlengde ikke satt for klubb.");
+
+        var slotLengde = klubb.BookingRegel.SlotLengde;
+
+        var resultat = new MassebookingForhandsvisningDto();
+
+        // Hent eksisterende bookinger for aktuelle baner og datoer, filtrert via klubben
+        var eksisterende = await db.Bookinger
+            .Where(b =>
+                b.Aktiv &&
+                dto.BaneIder.Contains(b.BaneId) &&
+                b.Dato >= dto.StartDato &&
+                b.Dato <= dto.SluttDato)
+            .Join(
+                db.Baner.Where(bane => bane.Klubb.Slug == slug),
+                booking => booking.BaneId,
+                bane => bane.Id,
+                (booking, bane) => booking
+            )
+            .ToListAsync();
+
+        // Generer potensielle bookinger
+        var current = dto.StartDato;
+        while (current <= dto.SluttDato)
+        {
+            if (dto.Ukedager.Contains(current.DayOfWeek))
+            {
+                foreach (var baneId in dto.BaneIder)
+                {
+                    foreach (var tidspunkt in dto.Tidspunkter)
+                    {
+                        var start = tidspunkt;
+                        var slutt = tidspunkt.Add(slotLengde);
+
+                        bool overlapp = eksisterende.Any(b =>
+                            b.BaneId == baneId &&
+                            b.Dato == current &&
+                            b.StartTid == start);
+
+                        var booking = new NyBookingDto
+                        {
+                            BaneId = baneId,
+                            Dato = current,
+                            StartTid = start,
+                            SluttTid = slutt,
+                            Type = dto.Bookingtype,
+                            Kommentar = dto.Kommentar
+                        };
+
+                        if (overlapp)
+                            resultat.Konflikter.Add(booking);
+                        else
+                            resultat.Ledige.Add(booking);
+                    }
+                }
+            }
+
+            current = current.AddDays(1);
+        }
+
+        return resultat;
+    }
+
+    public async Task<MassebookingResultatDto> OpprettMassebookingAsync(string slug, MassebookingDto dto, Bruker bruker)
+    {
+        var klubb = await klubbService.HentKlubbAsync(slug);
+        if (klubb?.BookingRegel?.SlotLengde == null)
+            throw new Exception("Slotlengde ikke satt for klubb.");
+
+        var slotLengde = klubb.BookingRegel.SlotLengde;
+
+        var resultat = new MassebookingResultatDto();
+
+        // Hent eksisterende bookinger (samme som i forhåndsvisning)
+        var eksisterende = await db.Bookinger
+            .Where(b =>
+                b.Aktiv &&
+                dto.BaneIder.Contains(b.BaneId) &&
+                b.Dato >= dto.StartDato &&
+                b.Dato <= dto.SluttDato)
+            .Join(
+                db.Baner.Where(b => b.Klubb.Slug == slug),
+                booking => booking.BaneId,
+                bane => bane.Id,
+                (booking, bane) => booking
+            )
+            .ToListAsync();
+
+        var current = dto.StartDato;
+        while (current <= dto.SluttDato)
+        {
+            if (dto.Ukedager.Contains(current.DayOfWeek))
+            {
+                foreach (var baneId in dto.BaneIder)
+                {
+                    foreach (var tidspunkt in dto.Tidspunkter)
+                    {
+                        var start = tidspunkt;
+                        var slutt = tidspunkt.Add(slotLengde);
+
+                        bool overlapp = eksisterende.Any(b =>
+                            b.BaneId == baneId &&
+                            b.Dato == current &&
+                            b.StartTid == start);
+
+                        if (overlapp)
+                        {
+                            resultat.Errors.Add(new MassebookingFeil
+                            {
+                                Dato = current,
+                                Tid = start,
+                                BaneId = baneId,
+                                Feilmelding = "Allerede booket"
+                            });
+                            continue;
+                        }
+
+                        var booking = new Booking
+                        {
+                            Id = Guid.NewGuid(),
+                            BaneId = baneId,
+                            BrukerId = bruker.Id,
+                            Dato = current,
+                            StartTid = start,
+                            SluttTid = slutt,
+                            Aktiv = true,
+                            Type = Enum.TryParse<BookingType>(dto.Bookingtype, ignoreCase: true, out var type) ? type : BookingType.Annet,
+                            Kommentar = dto.Kommentar
+                        };
+
+                        db.Bookinger.Add(booking);
+
+                        resultat.Vellykkede.Add(new BookingDto
+                        {
+                            Id = booking.Id,
+                            BaneId = booking.BaneId,
+                            Dato = booking.Dato,
+                            StartTid = booking.StartTid,
+                            SluttTid = booking.SluttTid,
+                            Aktiv = booking.Aktiv,
+                            Type = booking.Type.ToString(),
+                            Kommentar = booking.Kommentar
+                        });
+                    }
+                }
+            }
+
+            current = current.AddDays(1);
+        }
+
+        await db.SaveChangesAsync();
+        return resultat;
+    }
+
 }

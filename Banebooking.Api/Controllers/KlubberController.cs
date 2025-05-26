@@ -30,7 +30,9 @@ public partial class KlubberController(IKlubbService klubbService, IBrukerServic
                 MaksPerDag = klubb.BookingRegel?.MaksBookingerPerDagPerBruker ?? 1,
                 MaksTotalt = klubb.BookingRegel?.MaksAntallBookingerPerBrukerTotalt ?? 2,
                 DagerFremITid = klubb.BookingRegel?.AntallDagerFremITidTillatt ?? 7,
-                SlotLengdeMinutter = (int)(klubb.BookingRegel?.SlotLengde.TotalMinutes ?? 60)
+                SlotLengdeMinutter = (int)(klubb.BookingRegel?.SlotLengde.TotalMinutes ?? 60),
+                Aapningstid = klubb.BookingRegel?.Åpningstid.ToString("HH\\:mm") ?? "07:00",  
+                Stengetid = klubb.BookingRegel?.Stengetid.ToString("HH\\:mm") ?? "22:00" 
             }
         };
 
@@ -47,7 +49,7 @@ public partial class KlubberController(IKlubbService klubbService, IBrukerServic
 
         if (bruker == null)
             return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
-        
+
         try
         {
             var ok = await klubbService.OppdaterKlubbAsync(slug, dto, bruker);
