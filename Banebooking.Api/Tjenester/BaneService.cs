@@ -26,7 +26,8 @@ public class BaneService : IBaneService
 
     public async Task<List<BaneDto>> HentBanerForKlubbAsync(string slug, bool inkluderInaktive = false)
     {
-        var cached = _cache.Get<List<BaneDto>>("baner", slug, inkluderInaktive);
+        var cacheKey = CacheKeys.Baner(slug, inkluderInaktive);
+        var cached = _cache.Get<List<BaneDto>>(cacheKey);
         if (cached != null)
             return cached;
 
@@ -46,7 +47,7 @@ public class BaneService : IBaneService
             })
             .ToListAsync();
 
-        _cache.Set("baner", slug, baner, inkluderInaktive);
+        _cache.Set(cacheKey, baner);
         return baner;
     }
 
@@ -68,7 +69,11 @@ public class BaneService : IBaneService
         _db.Baner.Add(bane);
         await _db.SaveChangesAsync();
 
-        _cache.Invalider("baner", slug);
+        _cache.Invalider(
+            CacheKeys.Baner(slug, true),
+            CacheKeys.Baner(slug, false)
+        );
+
         return true;
     }
 
@@ -85,7 +90,12 @@ public class BaneService : IBaneService
         bane.Beskrivelse = dto.Beskrivelse;
 
         await _db.SaveChangesAsync();
-        _cache.Invalider("baner", slug);
+
+        _cache.Invalider(
+            CacheKeys.Baner(slug, true),
+            CacheKeys.Baner(slug, false)
+        );
+
         return true;
     }
 
@@ -101,7 +111,11 @@ public class BaneService : IBaneService
         bane.Aktiv = false;
         await _db.SaveChangesAsync();
 
-        _cache.Invalider("baner", slug);
+        _cache.Invalider(
+            CacheKeys.Baner(slug, true),
+            CacheKeys.Baner(slug, false)
+        );
+
         return true;
     }
 
@@ -117,7 +131,11 @@ public class BaneService : IBaneService
         bane.Aktiv = true;
         await _db.SaveChangesAsync();
 
-        _cache.Invalider("baner", slug);
+        _cache.Invalider(
+            CacheKeys.Baner(slug, true),
+            CacheKeys.Baner(slug, false)
+        );
+
         return true;
     }
 }

@@ -45,8 +45,13 @@ export default function RedigerKlubbPage() {
         e.preventDefault();
         setLagrer(true);
 
-        // Ta snapshot av form-verdiene før async starter
         const verdier = { ...form };
+
+        if (verdier.bookingRegel.maksTotalt < verdier.bookingRegel.maksPerDag) {
+            toast.error('Totalt antall bookinger kan ikke vÃ¦re lavere enn maks per dag.');
+            setLagrer(false);
+            return;
+        }
 
         try {
             await oppdaterKlubb(slug!, {
@@ -65,7 +70,6 @@ export default function RedigerKlubbPage() {
 
         setLagrer(false);
     }
-
 
     if (laster) return <Spinner animation="border" />;
     if (!klubb) return <div>Fant ikke klubb.</div>;
@@ -148,6 +152,7 @@ export default function RedigerKlubbPage() {
                             }))
                         }
                     />
+
                 </Form.Group>
 
                 <Form.Group className="mb-3">
@@ -170,6 +175,7 @@ export default function RedigerKlubbPage() {
                     <Form.Label>Slot-lengde (minutter)</Form.Label>
                     <Form.Select
                         value={form.bookingRegel.slotLengdeMinutter}
+                        disabled
                         onChange={e =>
                             setForm(f => ({
                                 ...f,

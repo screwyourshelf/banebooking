@@ -4,46 +4,58 @@ namespace Banebooking.Api.Tjenester;
 
 public interface ICacheService
 {
-    T? Get<T>(string prefix, string slug, bool? inaktive = null);
-    void Set<T>(string prefix, string slug, T data, bool? inaktive = null, TimeSpan? levetid = null);
-    void Invalider(string prefix, string slug);
+    T? Get<T>(string key);
+    void Set<T>(string key, T data, TimeSpan? levetid = null);
+    void Invalider(params string[] keys);
+    IReadOnlyDictionary<string, DateTimeOffset> GetAllKeysWithTimestamps();
 }
+
+public static class CacheKeys
+{
+    public static string Baner(string slug, bool inkluderInaktive) =>
+        $"baner:{slug.ToLowerInvariant()}:inkluderInaktive={inkluderInaktive}";
+
+    public static string Klubb(string slug) =>
+        $"klubb:{slug.ToLowerInvariant()}:full";
+
+    public static string Vaer(Guid klubbId, DateOnly dato) =>
+        $"vaer:{klubbId}:{dato:yyyy-MM-dd}";
+}
+
 
 public class CacheService : ICacheService
 {
     private readonly IMemoryCache _cache;
+    private readonly Dictionary<string, DateTimeOffset> _lastUpdated = new();
 
     public CacheService(IMemoryCache cache)
     {
         _cache = cache;
     }
 
-    private static string LagKey(string prefix, string slug, bool? inaktive = null)
+    public T? Get<T>(string key)
     {
-        var key = $"{prefix}:{slug.ToLowerInvariant()}";
-        if (inaktive.HasValue)
-            key += $":inkluderInaktive={inaktive.Value}";
-        return key;
-    }
-
-    public T? Get<T>(string prefix, string slug, bool? inaktive = null)
-    {
-        if (string.IsNullOrWhiteSpace(slug))
-            return default;
-
-        var key = LagKey(prefix, slug, inaktive);
         return _cache.TryGetValue(key, out var val) ? (T)val! : default;
     }
 
-    public void Set<T>(string prefix, string slug, T data, bool? inaktive = null, TimeSpan? levetid = null)
+    public void Set<T>(string key, T data, TimeSpan? levetid = null)
     {
-        var key = LagKey(prefix, slug, inaktive);
         _cache.Set(key, data, levetid ?? TimeSpan.FromHours(6));
+        _lastUpdated[key] = DateTimeOffset.UtcNow;
     }
 
-    public void Invalider(string prefix, string slug)
+    public void Invalider(params string[] keys)
     {
-        _cache.Remove(LagKey(prefix, slug, true));
-        _cache.Remove(LagKey(prefix, slug, false));
+        foreach (var key in keys)
+        {
+            _cache.Remove(key);
+            _lastUpdated.Remove(key);
+        }
+    }
+
+    public IReadOnlyDictionary<string, DateTimeOffset> GetAllKeysWithTimestamps()
+    {
+        return new Dictionary<string, DateTimeOffset>(_lastUpdated);
     }
 }
+

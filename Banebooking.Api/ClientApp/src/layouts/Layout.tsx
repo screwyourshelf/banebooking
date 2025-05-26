@@ -93,6 +93,10 @@ export default function Layout() {
                                                         <FaWrench className="me-2" />
                                                         Rediger baner
                                                     </NavDropdown.Item>
+                                                    <NavDropdown.Item as={Link} to={`/${slug}/admin/massebooking`}>
+                                                        <FaWrench className="me-2" />
+                                                        Avansert booking
+                                                    </NavDropdown.Item>
                                                 </>
                                             )}
                                         </>

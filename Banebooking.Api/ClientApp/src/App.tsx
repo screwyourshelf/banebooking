@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import ReglementPage from './pages/ReglementPage';
 import RedigerKlubbPage from './pages/admin/RedigerKlubbPage';
 import RedigerBanerPage from './pages/admin/RedigerBanerPage';
+import MassebookingPage from './pages/admin/MassebookingPage';
 
 export default function App() {
     return (
@@ -38,6 +39,14 @@ export default function App() {
                             element={
                                 <ProtectedRoute>
                                     <RedigerBanerPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="massebooking"
+                            element={
+                                <ProtectedRoute>
+                                    <MassebookingPage />
                                 </ProtectedRoute>
                             }
                         />

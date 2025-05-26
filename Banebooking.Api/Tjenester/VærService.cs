@@ -1,5 +1,6 @@
 ﻿using Banebooking.Api.Data;
 using Banebooking.Api.Dtos.Vær;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
@@ -22,8 +23,8 @@ public class VaerService(
         if (klubb == null || klubb.Latitude == null || klubb.Longitude == null)
             return new();
 
-        var cacheSlug = $"{klubbId}:{dato:yyyy-MM-dd}";
-        var cached = cache.Get<CachedVaerData>("vaer", cacheSlug);
+        var key = CacheKeys.Vaer(klubbId, dato);
+        var cached = cache.Get<CachedVaerData>(key);
 
         var client = httpClientFactory.CreateClient("VaerApi");
 
@@ -40,7 +41,7 @@ public class VaerService(
         if (response.StatusCode == HttpStatusCode.NotModified && cached != null)
         {
             logger.LogDebug("Værdata ikke endret – bruker cache.");
-            cache.Set("vaer", cacheSlug, cached, levetid: response.Content.Headers.Expires - DateTimeOffset.UtcNow);
+            cache.Set(key, cached, levetid: response.Content.Headers.Expires - DateTimeOffset.UtcNow);
             return cached.Data;
         }
 
@@ -86,7 +87,7 @@ public class VaerService(
             SisteOppdatert = lastModified
         };
 
-        cache.Set("vaer", cacheSlug, newCached, levetid: expires - DateTimeOffset.UtcNow);
+        cache.Set(key, newCached, levetid: expires - DateTimeOffset.UtcNow);
         return result;
     }
 }

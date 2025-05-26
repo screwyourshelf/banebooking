@@ -23,7 +23,9 @@ public class KlubbService : IKlubbService
 
     public async Task<Klubb?> HentKlubbAsync(string slug)
     {
-        var cached = _cache.Get<Klubb>("klubb", slug);
+        var key = CacheKeys.Klubb(slug);
+
+        var cached = _cache.Get<Klubb>(key);
         if (cached != null)
             return cached;
 
@@ -34,7 +36,7 @@ public class KlubbService : IKlubbService
 
         if (klubb != null)
         {
-            _cache.Set("klubb", slug, klubb);
+            _cache.Set(key, klubb);
         }
 
         return klubb;
@@ -67,7 +69,7 @@ public class KlubbService : IKlubbService
 
         await _db.SaveChangesAsync();
 
-        _cache.Invalider("klubb", slug);
+        _cache.Invalider(CacheKeys.Klubb(slug));
 
         return true;
     }
