@@ -261,7 +261,7 @@ public class BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker,
             Dato = b.Dato.ToString("yyyy-MM-dd"),
             StartTid = $"{b.StartTid:HH\\:mm}",
             SluttTid = $"{b.SluttTid:HH\\:mm}",
-            BooketAv = bruker.Navn,
+            BooketAv = bruker.Epost,
             KanBookes = false, // N/A for MinSide
             KanAvbestille = b.Dato > dagensDato || (b.Dato == dagensDato && b.StartTid > nåTid),
             KanSlette = false, // kan legges til ved admin-rolle

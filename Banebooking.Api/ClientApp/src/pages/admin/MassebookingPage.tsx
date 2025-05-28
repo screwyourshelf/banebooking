@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Form, Button, Card, Row, Col, Table, Tabs, Tab, Spinner } from 'react-bootstrap';
+import { Form, Button, Card, Row, Col, Tabs, Tab, Spinner } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ukedager, dagNavnTilEnum } from '../../utils/datoUtils';
 import { useMassebooking } from '../../hooks/useMassebooking';
 import type { MassebookingDto } from '../../types';
+import { BookingSlotList } from '../../components/Booking/BookingSlotList';
 
 export default function MassebookingPage() {
     const { slug } = useParams<{ slug: string }>();
@@ -14,10 +15,12 @@ export default function MassebookingPage() {
         baner,
         tilgjengeligeTidspunkter,
         forhandsvisning,
+        setForhandsvisning, // ← legg til denne
         forhandsvis,
         opprett,
         loading
     } = useMassebooking(slug);
+
 
     const [valgteBaner, setValgteBaner] = useState<string[]>([]);
     const [valgteUkedager, setValgteUkedager] = useState<string[]>([]);
@@ -31,6 +34,9 @@ export default function MassebookingPage() {
     const [kommentar, setKommentar] = useState('');
     const [activeTab, setActiveTab] = useState('oppsett');
 
+    const nullstillForhandsvisning = () =>
+        setForhandsvisning({ ledige: [], konflikter: [] });
+
     const tilgjengeligeUkedager = useMemo(() => {
         if (!datoFra || !datoTil) return ukedager;
         const dager = new Set<string>();
@@ -43,11 +49,17 @@ export default function MassebookingPage() {
         return Array.from(dager);
     }, [datoFra, datoTil]);
 
-    function toggle(item: string, set: React.Dispatch<React.SetStateAction<string[]>>) {
-        set(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
-    }
+    useEffect(() => {
+        if (alleBaner) setValgteBaner(baner.map(b => b.id));
+        if (alleUkedager) setValgteUkedager(tilgjengeligeUkedager);
+        if (alleTidspunkter) setValgteTidspunkter(tilgjengeligeTidspunkter);
+    }, [alleBaner, alleUkedager, alleTidspunkter, baner, tilgjengeligeUkedager, tilgjengeligeTidspunkter]);
 
-    function byggDto(): MassebookingDto | null {
+    const toggle = (item: string, set: React.Dispatch<React.SetStateAction<string[]>>) => {
+        set(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
+    };
+
+    const byggDto = (): MassebookingDto | null => {
         if (!datoFra || !datoTil || valgteBaner.length === 0 || valgteUkedager.length === 0 || valgteTidspunkter.length === 0)
             return null;
 
@@ -60,11 +72,15 @@ export default function MassebookingPage() {
             bookingtype,
             kommentar
         };
-    }
+    };
 
     const håndterOpprett = async () => {
         const dto = byggDto();
-        if (dto) await opprett(dto);
+        if (dto) {
+            await opprett(dto);
+            nullstillForhandsvisning();
+            setActiveTab('oppsett');
+        }
     };
 
     const håndterTabChange = async (k: string | null) => {
@@ -76,6 +92,18 @@ export default function MassebookingPage() {
             if (dto) await forhandsvis(dto);
         }
     };
+
+    const grupperteSlots = useMemo(() => {
+        const grupper: Record<string, typeof forhandsvisning.ledige> = {};
+        forhandsvisning.ledige.forEach(slot => {
+            if (!grupper[slot.dato]) grupper[slot.dato] = [];
+            grupper[slot.dato].push(slot);
+        });
+        for (const dato in grupper) {
+            grupper[dato].sort((a, b) => a.startTid.localeCompare(b.startTid));
+        }
+        return Object.entries(grupper).sort(([a], [b]) => a.localeCompare(b));
+    }, [forhandsvisning.ledige]);
 
     return (
         <div className="p-3">
@@ -185,27 +213,33 @@ export default function MassebookingPage() {
                                 <div className="text-muted">Ingen bookinger tilgjengelig. Endre oppsettet og prøv igjen.</div>
                             ) : (
                                 <>
-                                    <Table striped bordered hover size="sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Dato</th>
-                                                <th>Start</th>
-                                                <th>Slutt</th>
-                                                <th>Bane</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {forhandsvisning.ledige.map((b, i) => (
-                                                <tr key={i}>
-                                                    <td>{b.dato}</td>
-                                                    <td>{b.startTid}</td>
-                                                    <td>{b.sluttTid}</td>
-                                                    <td>{b.baneNavn}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </Table>
-                                    <div className="d-flex justify-content-end">
+                                    {grupperteSlots.map(([dato, slots]) => (
+                                        <div key={dato} className="mb-3">
+                                            <h6 className="text-muted">{dato}</h6>
+                                            <BookingSlotList
+                                                slots={slots.map(slot => {
+                                                    const tilhørendeBane = baner.find(b => b.id === slot.baneId);
+                                                    return {
+                                                        ...slot,
+                                                        baneNavn: tilhørendeBane?.navn ?? '(ukjent bane)',
+                                                        kanBookes: false,
+                                                        kanAvbestille: false,
+                                                        kanSlette: false,
+                                                        erPassert: false,
+                                                        booketAv: '',
+                                                        værSymbol: undefined,
+                                                        bookingtype,
+                                                        kommentar
+                                                    };
+                                                })}
+                                                currentUser={{ epost: 'admin@system.no' }}
+                                                modus="readonly"
+                                                apenSlotTid={null}
+                                                setApenSlotTid={() => { }}
+                                            />
+                                        </div>
+                                    ))}
+                                    <div className="d-flex justify-content-end mt-3">
                                         <Button type="button" variant="success" onClick={håndterOpprett} disabled={loading}>
                                             Opprett {forhandsvisning.ledige.length} bookinger
                                         </Button>

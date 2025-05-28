@@ -85,6 +85,7 @@ export function useMassebooking(slug: string | undefined) {
         loading: loading || loadingKlubb || loadingBaner,
         tilgjengeligeTidspunkter,
         forhandsvisning,
+        setForhandsvisning,
         forhandsvis,
         opprett,
     };

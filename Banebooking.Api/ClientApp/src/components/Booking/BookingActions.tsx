@@ -4,28 +4,28 @@ import type { BookingSlot } from '../../types';
 
 type Props = {
     slot: BookingSlot;
-    time: string;
-    erBekreftet: boolean;
-    setErBekreftet: (val: boolean) => void;
-    onBook: (slot: BookingSlot) => void;
-    onCancel: (slot: BookingSlot) => void;
-    onDelete: (slot: BookingSlot) => void;
-    reset: () => void;
+    onBook?: (slot: BookingSlot) => void;
+    onCancel?: (slot: BookingSlot) => void;
+    onDelete?: (slot: BookingSlot) => void;
+    time?: string;
+    erBekreftet?: boolean;
+    setErBekreftet?: (val: boolean) => void;
+    reset?: () => void;
 };
 
 export function BookingActions({
     slot,
+    onBook = () => { },
+    onCancel = () => { },
+    onDelete = () => { },
     time,
     erBekreftet,
     setErBekreftet,
-    onBook,
-    onCancel,
-    onDelete,
-    reset
+    reset = () => { }
 }: Props) {
     return (
         <div className="d-flex flex-column align-items-end w-100">
-            {slot.kanBookes && (
+            {slot.kanBookes && erBekreftet !== undefined && setErBekreftet && (
                 <>
                     <Form.Check
                         id={`book-${time}`}
@@ -35,7 +35,6 @@ export function BookingActions({
                         onChange={(e) => setErBekreftet(e.target.checked)}
                         className="mb-2 small"
                     />
-
                     <Button
                         size="sm"
                         variant="outline-dark"
@@ -84,3 +83,4 @@ export function BookingActions({
         </div>
     );
 }
+

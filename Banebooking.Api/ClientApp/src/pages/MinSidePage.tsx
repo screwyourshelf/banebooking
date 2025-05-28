@@ -1,77 +1,59 @@
+import { useState, useContext, useMemo } from 'react';
+import { Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
-import { toast } from 'react-toastify';
-import { useBruker } from '../hooks/useBruker';
-import { avbestillBooking } from '../api/booking';
-import MinSideBookingItem from '../components/Booking/MinSideBookingItem';
-import type { BookingSlot } from '../types';
+import { BookingSlotList } from '../components/Booking/BookingSlotList';
+import { useMineBookinger } from '../hooks/useMineBookinger';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { SlugContext } from '../layouts/Layout';
 
-export default function MinSide() {
-    const { slug } = useParams();
-    const [inkluderHistoriske, setInkluderHistoriske] = useState(false);
-    const [avbestillerKey, setAvbestillerKey] = useState<string | null>(null);
-    const { bruker, laster, error, refetch } = useBruker(slug, inkluderHistoriske);
+export default function MinSidePage() {
+    const { slug: slugFraParams } = useParams<{ slug: string }>();
+    const slug = useContext(SlugContext) ?? slugFraParams;
 
-    const handleAvbestill = async (slot: BookingSlot, key: string) => {
-        if (!slug) return;
-        setAvbestillerKey(key);
+    const currentUser = useCurrentUser();
+    const [apenSlotTid, setApenSlotTid] = useState<string | null>(null);
+    const { bookinger, laster, onCancel } = useMineBookinger(slug ?? '');
 
-        try {
-            await avbestillBooking(slug, slot.baneId, slot.dato, slot.startTid, slot.sluttTid);
-            toast.success('Booking avbestilt');
-            await refetch(); // Ikke reload
-        } catch (e: unknown) {
-            if (e instanceof Error) {
-                toast.error(e.message);
-            } else {
-                toast.error('Ukjent feil ved avbestilling');
+    // Grupper bookinger per dato, og sorter per tid
+    const grupperteBookinger = useMemo(() => {
+        const grupper: Record<string, typeof bookinger> = {};
+
+        for (const slot of bookinger) {
+            if (!grupper[slot.dato]) {
+                grupper[slot.dato] = [];
             }
-        } finally {
-            setAvbestillerKey(null);
+            grupper[slot.dato].push(slot);
         }
-    };
 
-    if (!slug) return <div>Ugyldig klubb-URL.</div>;
-    if (error) return <div className="alert alert-danger">Feil: {error}</div>;
-    if (laster || !bruker) return <div>Laster brukerdata ...</div>;
+        for (const dato in grupper) {
+            grupper[dato].sort((a, b) => a.startTid.localeCompare(b.startTid));
+        }
+
+        return Object.entries(grupper).sort(([datoA], [datoB]) => datoA.localeCompare(datoB));
+    }, [bookinger]);
+
+    if (laster) return <Spinner animation="border" />;
 
     return (
         <div className="container mt-3">
-            <h3>Min side</h3>
-            <p>Innlogget som: <strong>{bruker.epost}</strong></p>
-
-            <h5 className="mt-4">Mine bookinger</h5>
-
-            <div className="form-check mb-3">
-                <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="visHistoriske"
-                    checked={inkluderHistoriske}
-                    onChange={(e) => setInkluderHistoriske(e.target.checked)}
-                />
-                <label className="form-check-label" htmlFor="visHistoriske">
-                    Vis historiske bookinger
-                </label>
-            </div>
-
-            {bruker.bookinger.length === 0 ? (
-                <p>Du har ingen bookinger{inkluderHistoriske ? '' : ' fremover'}.</p>
-            ) : (
-                <div className="d-flex flex-column gap-2">
-                    {bruker.bookinger.map((b, i) => {
-                        const key = `${b.dato}-${b.startTid}-${b.baneId}-${i}`;
-                        return (
-                            <MinSideBookingItem
-                                key={key}
-                                slot={b}
-                                isCancelling={avbestillerKey === key}
-                                onCancel={() => handleAvbestill(b, key)}
-                            />
-                        );
-                    })}
-                </div>
+            <h5>Mine kommende bookinger</h5>
+            {grupperteBookinger.length === 0 && (
+                <div className="text-muted">Ingen aktive bookinger funnet.</div>
             )}
+
+            {grupperteBookinger.map(([dato, slots]) => (
+                <div key={dato} className="mb-3">
+                    <h6 className="text-muted">{dato}</h6>
+                    <BookingSlotList
+                        slots={slots}
+                        currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
+                        modus="minside"
+                        onCancel={onCancel}
+                        apenSlotTid={apenSlotTid}
+                        setApenSlotTid={setApenSlotTid}
+                    />
+                </div>
+            ))}
         </div>
     );
 }

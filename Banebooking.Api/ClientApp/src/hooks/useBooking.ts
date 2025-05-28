@@ -44,8 +44,8 @@ export function useBooking(slug: string | undefined, valgtDato: string, valgtBan
         try {
             await avbestillBooking(slug, valgtBaneId, valgtDato, slot.startTid, slot.sluttTid);
 
-            const tid = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
-            toast.info(`Avbestilte ${tid}`);
+            const tid = `${slot.startTid.slice(0, 2)}:${slot.startTid.slice(2, 4)}–${slot.sluttTid.slice(0, 2)}:${slot.sluttTid.slice(2, 4)}`;
+            toast.info(`Avbestilling: ${slot.baneNavn ?? 'valgt bane'}, ${valgtDato} kl. ${tid} er avbestilt.`);
 
             await hent();
         } catch (err) {

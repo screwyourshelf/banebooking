@@ -84,3 +84,19 @@ export async function avbestillBooking(
         throw new Error(msg);
     }
 }
+
+export async function hentMineBookinger(
+    slug: string
+): Promise<BookingSlot[]> {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    const res = await fetch(`/api/klubb/${slug}/bookinger/mine`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!res.ok) throw new Error('Kunne ikke hente dine bookinger');
+
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+}

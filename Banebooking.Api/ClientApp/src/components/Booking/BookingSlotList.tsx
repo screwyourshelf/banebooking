@@ -1,48 +1,54 @@
 import type { BookingSlot } from '../../types';
-import type { User } from '@supabase/supabase-js';
 import BookingSlotItem from './BookingSlotItem';
 
 type Props = {
     slots: BookingSlot[];
-    currentUser: User | null;
-    apenSlotTid: string | null;
-    setApenSlotTid: React.Dispatch<React.SetStateAction<string | null>>;
-    onBook: (slot: BookingSlot) => void;
-    onCancel: (slot: BookingSlot) => void;
-    onDelete: (slot: BookingSlot) => void;
+    currentUser: { epost: string } | null;
+    modus: 'index' | 'minside' | 'arrangement' | 'readonly';
+    onBook?: (slot: BookingSlot) => void;
+    onCancel?: (slot: BookingSlot) => void;
+    onDelete?: (slot: BookingSlot) => void;
+    apenSlotTid?: string | null;
+    setApenSlotTid?: (tid: string | null) => void;
 };
 
-export default function BookingSlotList({
+export function BookingSlotList({
     slots,
     currentUser,
-    apenSlotTid,
-    setApenSlotTid,
+    modus,
     onBook,
     onCancel,
     onDelete,
+    apenSlotTid,
+    setApenSlotTid
 }: Props) {
-    if (!slots.length) {
-        return <div className="px-1 pt-1 text-muted">Ingen bookinger funnet</div>;
+    if (slots.length === 0) {
+        return <div className="text-muted small">Ingen bookinger eller slots å vise.</div>;
     }
 
-    const toggleSlot = (startTid: string) => {
-        setApenSlotTid((prev) => (prev === startTid ? null : startTid));
-    };
-
     return (
-        <div className="d-flex flex-column gap-1 w-100">
-            {slots.map((slot) => (
-                <BookingSlotItem
-                    key={slot.startTid}
-                    slot={slot}
-                    currentUser={currentUser}
-                    isOpen={apenSlotTid === slot.startTid}
-                    onToggle={() => toggleSlot(slot.startTid)}
-                    onBook={onBook}
-                    onCancel={onCancel}
-                    onDelete={onDelete}
-                />
-            ))}
+        <div>
+            {slots.map((slot) => {
+                const slotKey = `${slot.dato}-${slot.startTid}-${slot.baneId}`;
+
+                return (
+                    <BookingSlotItem
+                        key={slotKey}
+                        slot={slot}
+                        currentUser={currentUser}
+                        modus={modus}
+                        onBook={onBook}
+                        onCancel={onCancel}
+                        onDelete={onDelete}
+                        isOpen={apenSlotTid === slotKey}
+                        onToggle={() =>
+                            setApenSlotTid?.(
+                                apenSlotTid === slotKey ? null : slotKey
+                            )
+                        }
+                    />
+                );
+            })}
         </div>
     );
 }

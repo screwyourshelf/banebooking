@@ -1,37 +1,39 @@
 import { useBookingActions } from '../../hooks/useBookingActions';
-import { BookingActions } from './BookingActions';
-import { FaChevronDown } from 'react-icons/fa';
+import { BookingSlotItemHeader } from './BookingSlotItemHeader';
+import { BookingSlotItemExpanded } from './BookingSlotItemExpanded';
 import type { BookingSlot } from '../../types';
-import type { User } from '@supabase/supabase-js';
 
 type Props = {
     slot: BookingSlot;
-    currentUser: User | null;
-    isOpen: boolean;
-    onToggle: () => void;
-    onBook: (slot: BookingSlot) => void;
-    onCancel: (slot: BookingSlot) => void;
-    onDelete: (slot: BookingSlot) => void;
+    currentUser: { epost: string } | null;
+    isOpen?: boolean;
+    onToggle?: () => void;
+    onBook?: (slot: BookingSlot) => void;
+    onCancel?: (slot: BookingSlot) => void;
+    onDelete?: (slot: BookingSlot) => void;
+    modus: 'index' | 'minside' | 'arrangement' | 'readonly';
 };
 
 export default function BookingSlotItem({
     slot,
     currentUser,
-    isOpen,
+    isOpen = false,
     onToggle,
-    onBook,
-    onCancel,
-    onDelete,
+    onBook = () => { },
+    onCancel = () => { },
+    onDelete = () => { },
+    modus,
 }: Props) {
     const { erBekreftet, setErBekreftet, reset } = useBookingActions();
-    const time = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
+
+    const tid = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
     const harHandlinger = slot.kanBookes || slot.kanAvbestille || slot.kanSlette;
     const erInteraktiv = currentUser && harHandlinger && !slot.erPassert;
 
     const handleToggle = () => {
-        if (erInteraktiv) {
+        if (erInteraktiv && onToggle) {
             onToggle();
-            setErBekreftet(false);
+            if (modus === 'index') setErBekreftet(false);
         }
     };
 
@@ -48,63 +50,25 @@ export default function BookingSlotItem({
                 handleToggle();
             }}
         >
-            <div className="d-flex align-items-center">
-                <div style={{ flex: 1 }} className="d-flex align-items-center justify-content-between">
-                    {/* Tid */}
-                    <div className="text-nowrap fw-semibold small text-end pe-1">
-                        {time}
-                    </div>
+            <BookingSlotItemHeader
+                slot={slot}
+                isOpen={isOpen}
+                erInteraktiv={!!erInteraktiv}
+                modus={modus}
+            />
 
-                    {/* Værikon */}
-                    <div className="d-flex justify-content-center align-items-center">
-                        {slot.værSymbol && (
-                            <img
-                                src={`/weather-symbols/svg/${slot.værSymbol}.svg`}
-                                alt={slot.værSymbol}
-                                width={16}
-                                height={16}
-                            />
-                        )}
-                    </div>
-
-                    {/* Booket av / Ledig */}
-                    <div className="flex-grow-1 small text-break p-1">
-                        {slot.booketAv ?? 'Ledig'}
-                    </div>
-
-                    {/* Pilindikator */}
-                    {erInteraktiv && (
-                        <div className="p-1">
-                            <FaChevronDown
-                                size={12}
-                                style={{
-                                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                                    transition: 'transform 0.2s',
-                                }}
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Ekspandert visning */}
             {isOpen && !slot.erPassert && (
-                <div className="row mt-1">
-                    <div className="col">
-                        <div className="border rounded p-1 bg-light">
-                            <BookingActions
-                                slot={slot}
-                                time={time}
-                                erBekreftet={erBekreftet}
-                                setErBekreftet={setErBekreftet}
-                                onBook={onBook}
-                                onCancel={onCancel}
-                                onDelete={onDelete}
-                                reset={reset}
-                            />
-                        </div>
-                    </div>
-                </div>
+                <BookingSlotItemExpanded
+                    slot={slot}
+                    modus={modus}
+                    time={tid}
+                    erBekreftet={erBekreftet}
+                    setErBekreftet={setErBekreftet}
+                    onBook={onBook}
+                    onCancel={onCancel}
+                    onDelete={onDelete}
+                    reset={reset}
+                />
             )}
         </div>
     );

@@ -10,6 +10,9 @@ export type BookingSlot = {
     kanSlette: boolean;
     erPassert: boolean;
 
+    bookingtype?: string;
+    kommentar?: string;
+
     værSymbol?: string;
     temperatur?: number;
     vind?: number;

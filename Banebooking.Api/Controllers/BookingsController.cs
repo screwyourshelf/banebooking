@@ -23,6 +23,22 @@ public class BookingerController(
         return Ok(slots);
     }
 
+    [HttpGet("mine")]
+    [Authorize]
+    public async Task<IActionResult> HentMineBookinger(string slug)
+    {
+        var bruker = User.Identity?.IsAuthenticated == true
+            ? await brukerService.HentEllerOpprettBrukerAsync(User)
+            : null;
+
+        if (bruker == null)
+            return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
+
+        var mineBookinger = await bookingService.HentBookingerAsync(slug, false, bruker);
+
+        return Ok(mineBookinger);
+    }
+
 
     [HttpPost]
     [Authorize]
