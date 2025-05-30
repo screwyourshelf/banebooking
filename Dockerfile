@@ -26,7 +26,7 @@ ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 
 # Build React (Vite)
 WORKDIR /app/Banebooking.Api/ClientApp
-RUN npm install && npm run build
+RUN npm install --legacy-peer-deps && npm run build
 
 # Copy frontend into wwwroot
 WORKDIR /app/Banebooking.Api
