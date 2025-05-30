@@ -33,7 +33,7 @@ steps:
     echo ">>> Bygger med Vite (hardkodet supabase.ts)"
 
     echo ">>> Starter npm install"
-    npm install
+    npm install --legacy-peer-deps
 
     echo ">>> Bygger med Vite"
     npm run build
