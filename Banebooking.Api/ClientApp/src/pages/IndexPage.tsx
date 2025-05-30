@@ -58,7 +58,7 @@ export default function IndexPage() {
     }
 
     return (
-        <div className="max-w-screen-sm mx-auto px-2 py-2">
+        <div className="max-w-screen-sm mx-auto px-1 py-1">
             <div className="mb-2">
                 <DatoVelger
                     value={valgtDato}

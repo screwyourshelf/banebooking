@@ -14,9 +14,10 @@ type Props = {
     value: Date | null
     onChange: (date: Date) => void
     minDate?: Date
+    visNavigering?: boolean
 }
 
-export default function DatoVelger({ value, onChange, minDate }: Props) {
+export default function DatoVelger({ value, onChange, minDate, visNavigering = true }: Props) {
     const visningsformat = value
         ? format(value, 'dd.MM.yyyy', { locale: nb })
         : 'Velg dato'
@@ -35,7 +36,7 @@ export default function DatoVelger({ value, onChange, minDate }: Props) {
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
-                        className="h-8 px-2 text-sm w-[140px] justify-start text-left"
+                        className="h-8 px-2 text-sm w-full justify-start text-left"
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {visningsformat}
@@ -57,12 +58,16 @@ export default function DatoVelger({ value, onChange, minDate }: Props) {
                 </PopoverContent>
             </Popover>
 
-            <Button variant="outline" size="icon" onClick={forrigeDag} className="h-8 w-8">
-                <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={nesteDag} className="h-8 w-8">
-                <ChevronRight className="h-4 w-4" />
-            </Button>
+            {visNavigering && (
+                <>
+                    <Button variant="outline" size="icon" onClick={forrigeDag} className="h-8 w-8">
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={nesteDag} className="h-8 w-8">
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </>
+            )}
         </div>
     )
 }

@@ -6,7 +6,6 @@ import { useCurrentUser } from '../hooks/useCurrentUser.js';
 import { SlugContext } from '../layouts/Layout.js';
 import Spinner from '@/components/ui/spinner.js';
 import { Separator } from '@/components/ui/separator.js';
-import { Card, CardContent } from '@/components/ui/card.js';
 
 export default function MinSidePage() {
     const { slug: slugFraParams } = useParams<{ slug: string }>();
@@ -51,21 +50,17 @@ export default function MinSidePage() {
             {grupperteBookinger.map(([dato, slots], index) => (
                 <section key={dato} className="mb-4">
 
-                    <Card>
-                        <CardContent className="p-1 pt-0">
-                            <h3 className="text-sm font-medium mb-1">{dato}</h3>
+                    <h3 className="text-sm font-medium mb-1">{dato}</h3>
 
-                            <BookingSlotList
-                                slots={slots}
-                                currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
-                                modus="minside"
-                                onCancel={onCancel}
-                                apenSlotTid={apenSlotTid}
-                                setApenSlotTid={setApenSlotTid}
-                            />
-                        </CardContent>
+                    <BookingSlotList
+                        slots={slots}
+                        currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
+                        modus="minside"
+                        onCancel={onCancel}
+                        apenSlotTid={apenSlotTid}
+                        setApenSlotTid={setApenSlotTid}
+                    />
 
-                    </Card>
 
                     {index !== grupperteBookinger.length - 1 && <Separator className="my-4" />}
                 </section>

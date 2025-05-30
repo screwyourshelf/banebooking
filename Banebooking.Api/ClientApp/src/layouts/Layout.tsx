@@ -27,7 +27,7 @@ export default function Layout() {
 
                         <BreadcrumbMedSti />
 
-                        <main className="py-4 px-3 min-h-[60vh]">
+                        <main className="py-1 px-1 min-h-[60vh]">
                             {laster ? (
                                 <div className="animate-pulse space-y-4">
                                     <div className="h-6 bg-gray-300 rounded w-3/4"></div>
