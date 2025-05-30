@@ -17,7 +17,6 @@ import DatoVelger from '../../components/DatoVelger.js';
 export default function MassebookingPage() {
     const { slug } = useParams<{ slug: string }>();
     const {
-        klubb,
         baner,
         tilgjengeligeTidspunkter,
         forhandsvisning,
