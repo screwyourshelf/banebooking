@@ -1,75 +1,96 @@
 import { useEffect, useState, useContext } from 'react';
-import 'react-datepicker/dist/react-datepicker.css';
-import BaneTabs from '../components/BaneTabs';
-import DatoVelger from '../components/DatoVelger';
-import { BookingSlotList } from '../components/Booking/BookingSlotList';
-import { useBaner } from '../hooks/useBaner';
-import { useBooking } from '../hooks/useBooking';
-import { useCurrentUser } from '../hooks/useCurrentUser';
-import { SlugContext } from '../layouts/Layout';
+import { format } from 'date-fns';
+import BaneTabs from '../components/BaneTabs.js';
+import DatoVelger from '../components/DatoVelger.js';
+import { BookingSlotList } from '../components/Booking/BookingSlotList.js';
+import { useBaner } from '../hooks/useBaner.js';
+import { useBooking } from '../hooks/useBooking.js';
+import { useCurrentUser } from '../hooks/useCurrentUser.js';
+import { SlugContext } from '../layouts/Layout.js';
+import { Card, CardContent } from '@/components/ui/card.js';
 
 export default function IndexPage() {
     const { baner, loading } = useBaner();
     const [valgtBaneId, setValgtBaneId] = useState('');
-    const [valgtDato, setValgtDato] = useState<string>(() => {
-        return localStorage.getItem('valgtDato') || new Date().toISOString().split('T')[0];
+    const [valgtDato, setValgtDato] = useState<Date | null>(() => {
+        const lagret = localStorage.getItem('valgtDato');
+        return lagret ? new Date(lagret) : new Date();
     });
 
     const currentUser = useCurrentUser();
     const slug = useContext(SlugContext);
 
-    const {
-        slots,
-        apenSlotTid,
-        setApenSlotTid,
-        onBook,
-        onCancel
-    } = useBooking(slug, valgtDato, valgtBaneId);
+    const valgtDatoStr = valgtDato ? format(valgtDato, 'yyyy-MM-dd') : '';
+
+    const { slots, apenSlotTid, setApenSlotTid, onBook, onCancel } = useBooking(
+        slug,
+        valgtDatoStr,
+        valgtBaneId
+    );
 
     useEffect(() => {
         if (!valgtBaneId && baner.length > 0) {
             setValgtBaneId(baner[0].id);
         }
-    }, [baner]);
+    }, [baner, valgtBaneId]);
 
     useEffect(() => {
         setApenSlotTid(null);
-    }, [valgtDato, valgtBaneId]);
+    }, [valgtDato, valgtBaneId, setApenSlotTid]);
 
     useEffect(() => {
         if (!currentUser) {
             setApenSlotTid(null);
         }
-    }, [currentUser]);
+    }, [currentUser, setApenSlotTid]);
 
     useEffect(() => {
-        localStorage.setItem('valgtDato', valgtDato);
+        if (valgtDato) {
+            localStorage.setItem('valgtDato', valgtDato.toISOString());
+        }
     }, [valgtDato]);
 
     if (loading || !valgtBaneId) {
-        return <div className="px-2 py-2">Laster baner...</div>;
+        return (
+            <p className="text-sm text-muted-foreground px-2 py-2 text-center">
+                Laster baner...
+            </p>
+        );
     }
 
     return (
-        <div className="w-100">
-            <DatoVelger valgtDato={valgtDato} onVelgDato={setValgtDato} />
-            <BaneTabs
-                baner={baner}
-                valgtBaneId={valgtBaneId}
-                onVelgBane={setValgtBaneId}
-            />
-            <div className="w-100 py-1">
-                <BookingSlotList
-                    slots={slots}
-                    currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
-                    apenSlotTid={apenSlotTid}
-                    setApenSlotTid={setApenSlotTid}
-                    onBook={onBook}
-                    onCancel={onCancel}
-                    onDelete={(slot) => console.log('Slett', slot)}
-                    modus="index"
-                />
-            </div>
+        <div className="max-w-screen-sm mx-auto px-1 py-1">
+            <Card>
+                <CardContent className="p-1 pt-0">
+                    <div className="mb-2">
+                        <DatoVelger
+                            value={valgtDato}
+                            onChange={(date) => setValgtDato(date ?? null)}
+                        />
+                    </div>
+
+                    <div className="mb-1">
+                        <BaneTabs
+                            baner={baner}
+                            valgtBaneId={valgtBaneId}
+                            onVelgBane={setValgtBaneId}
+                        />
+                    </div>
+
+                    <div className="mt-1">
+                        <BookingSlotList
+                            slots={slots}
+                            currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
+                            apenSlotTid={apenSlotTid}
+                            setApenSlotTid={setApenSlotTid}
+                            onBook={onBook}
+                            onCancel={onCancel}
+                            onDelete={(slot) => console.log('Slett', slot)}
+                            modus="index"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

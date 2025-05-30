@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import type { BookingSlot } from '../types';
-import { hentBookinger, opprettBooking, avbestillBooking } from '../api/booking';
+import type { BookingSlot } from '../types/index.js';
+import { hentBookinger, opprettBooking, avbestillBooking } from '../api/booking.js';
 
 export function useBooking(slug: string | undefined, valgtDato: string, valgtBaneId: string) {
     const [slots, setSlots] = useState<BookingSlot[]>([]);

@@ -1,5 +1,5 @@
-import { BookingActions } from './BookingActions';
-import type { BookingSlot } from '../../types';
+import { BookingActions } from './BookingActions.js';
+import type { BookingSlot } from '../../types/index.js';
 
 type Props = {
     slot: BookingSlot;
@@ -25,20 +25,18 @@ export function BookingSlotItemExpanded({
     reset,
 }: Props) {
     return (
-        <div className="row mt-1">
-            <div className="col">
-                <div className="border rounded p-1 bg-light">
-                    <BookingActions
-                        slot={slot}
-                        time={time}
-                        erBekreftet={modus === 'index' ? erBekreftet : true}
-                        setErBekreftet={modus === 'index' ? setErBekreftet : () => { }}
-                        onBook={onBook}
-                        onCancel={onCancel}
-                        onDelete={onDelete}
-                        reset={reset}
-                    />
-                </div>
+        <div className="mt-2">
+            <div className="border rounded p-2 bg-gray-50">
+                <BookingActions
+                    slot={slot}
+                    time={time}
+                    erBekreftet={modus === 'index' ? erBekreftet : true}
+                    setErBekreftet={modus === 'index' ? setErBekreftet : () => { }}
+                    onBook={onBook}
+                    onCancel={onCancel}
+                    onDelete={onDelete}
+                    reset={reset}
+                />
             </div>
         </div>
     );

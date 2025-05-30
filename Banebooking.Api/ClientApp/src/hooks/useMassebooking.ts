@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { forhandsvisMassebooking, opprettMassebooking } from '../api/massebooking';
-import { useKlubb } from './useKlubb';
-import { useBaner } from './useBaner';
-import type { BookingDto, MassebookingDto } from '../types';
+import { forhandsvisMassebooking, opprettMassebooking } from '../api/massebooking.js';
+import { useKlubb } from './useKlubb.js';
+import { useBaner } from './useBaner.js';
+import type { BookingDto, MassebookingDto } from '../types/index.js';
 
 function parseTimeToMinutes(tid: string) {
     const [h, m] = tid.split(':').map(Number);
@@ -19,7 +19,7 @@ function minutesToTime(mins: number): string {
 function genererTidspunkter(start: string, slutt: string, slotMinutter: number): string[] {
     const startMin = parseTimeToMinutes(start);
     const sluttMin = parseTimeToMinutes(slutt);
-    const result = [];
+    const result: string[] = [];
 
     for (let t = startMin; t + slotMinutter <= sluttMin; t += slotMinutter) {
         result.push(minutesToTime(t));

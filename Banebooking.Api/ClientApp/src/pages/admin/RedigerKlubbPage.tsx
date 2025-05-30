@@ -1,13 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Form, Button, Spinner } from 'react-bootstrap';
-import { useKlubb } from '../../hooks/useKlubb';
-import { oppdaterKlubb } from '../../api/klubb';
+import { useKlubb } from '../../hooks/useKlubb.js';
+import { oppdaterKlubb } from '../../api/klubb.js';
 import { toast } from 'react-toastify';
+
+import { Button } from '@/components/ui/button.js';
+import { Input } from '@/components/ui/input.js';
+import { Label } from '@/components/ui/label.js';
+import { Textarea } from '@/components/ui/textarea.js';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select.js';
+import { Card, CardContent } from '@/components/ui/card.js';
 
 export default function RedigerKlubbPage() {
     const { slug } = useParams<{ slug: string }>();
     const { klubb, laster } = useKlubb(slug);
+
     const [form, setForm] = useState({
         navn: '',
         kontaktEpost: '',
@@ -19,8 +32,9 @@ export default function RedigerKlubbPage() {
             maksTotalt: 2,
             dagerFremITid: 7,
             slotLengdeMinutter: 60,
-        }
+        },
     });
+
     const [lagrer, setLagrer] = useState(false);
 
     useEffect(() => {
@@ -36,7 +50,7 @@ export default function RedigerKlubbPage() {
                     maksTotalt: klubb.bookingRegel?.maksTotalt ?? 2,
                     dagerFremITid: klubb.bookingRegel?.dagerFremITid ?? 7,
                     slotLengdeMinutter: klubb.bookingRegel?.slotLengdeMinutter ?? 60,
-                }
+                },
             });
         }
     }, [klubb]);
@@ -60,7 +74,7 @@ export default function RedigerKlubbPage() {
                 banereglement: verdier.banereglement,
                 latitude: parseFloat(verdier.latitude),
                 longitude: parseFloat(verdier.longitude),
-                bookingRegel: { ...verdier.bookingRegel }
+                bookingRegel: { ...verdier.bookingRegel },
             });
             toast.success('Endringer lagret');
         } catch (error: unknown) {
@@ -71,132 +85,174 @@ export default function RedigerKlubbPage() {
         setLagrer(false);
     }
 
-    if (laster) return <Spinner animation="border" />;
-    if (!klubb) return <div>Fant ikke klubb.</div>;
+    if (laster) return <p className="text-sm text-muted-foreground px-2 py-2 text-center">Laster...</p>;
+    if (!klubb) return <p className="text-sm text-destructive px-2 py-2 text-center">Fant ikke klubb.</p>;
 
     return (
-        <div className="p-3">
-            <h4>Rediger klubb</h4>
-            <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-2">
-                    <Form.Label>Navn</Form.Label>
-                    <Form.Control
-                        value={form.navn}
-                        onChange={e => setForm(f => ({ ...f, navn: e.target.value }))}
-                    />
-                </Form.Group>
+        <div className="max-w-screen-sm mx-auto px-2 py-2">
+            <h2 className="text-base font-semibold mb-2">Rediger klubb</h2>
 
-                <Form.Group className="mb-2">
-                    <Form.Label>Kontakt-e-post</Form.Label>
-                    <Form.Control
-                        value={form.kontaktEpost}
-                        onChange={e => setForm(f => ({ ...f, kontaktEpost: e.target.value }))}
-                    />
-                </Form.Group>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <Card>
+                    <CardContent className="p-4 space-y-4">
 
-                <Form.Group className="mb-2">
-                    <Form.Label>Banereglement</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={form.banereglement}
-                        onChange={e => setForm(f => ({ ...f, banereglement: e.target.value }))}
-                    />
-                </Form.Group>
+                        <div>
+                            <Label htmlFor="navn">Navn</Label>
+                            <Input
+                                id="navn"
+                                value={form.navn}
+                                onChange={e => setForm(f => ({ ...f, navn: e.target.value }))}
+                            />
+                        </div>
 
-                <Form.Group className="mb-2">
-                    <Form.Label>Latitude</Form.Label>
-                    <Form.Control
-                        value={form.latitude}
-                        onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))}
-                    />
-                </Form.Group>
+                        <div>
+                            <Label htmlFor="kontaktEpost">Kontakt-e-post</Label>
+                            <Input
+                                id="kontaktEpost"
+                                type="email"
+                                value={form.kontaktEpost}
+                                onChange={e => setForm(f => ({ ...f, kontaktEpost: e.target.value }))}
+                            />
+                        </div>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Longitude</Form.Label>
-                    <Form.Control
-                        value={form.longitude}
-                        onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
-                    />
-                </Form.Group>
+                        <div>
+                            <Label htmlFor="banereglement">Banereglement</Label>
+                            <Textarea
+                                id="banereglement"
+                                rows={3}
+                                value={form.banereglement}
+                                onChange={e => setForm(f => ({ ...f, banereglement: e.target.value }))}
+                            />
+                        </div>
 
-                <h5 className="mt-3">Bookingregler</h5>
+                        <div>
+                            <Label htmlFor="latitude">Latitude</Label>
+                            <Input
+                                id="latitude"
+                                value={form.latitude}
+                                onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))}
+                            />
+                        </div>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Maks bookinger per dag: {form.bookingRegel.maksPerDag}</Form.Label>
-                    <Form.Range
-                        min={0}
-                        max={5}
-                        step={1}
-                        value={form.bookingRegel.maksPerDag}
-                        onChange={e =>
-                            setForm(f => ({
-                                ...f,
-                                bookingRegel: { ...f.bookingRegel, maksPerDag: parseInt(e.target.value) }
-                            }))
-                        }
-                    />
-                </Form.Group>
+                        <div>
+                            <Label htmlFor="longitude">Longitude</Label>
+                            <Input
+                                id="longitude"
+                                value={form.longitude}
+                                onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
+                            />
+                        </div>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Maks antall aktive bookinger totalt: {form.bookingRegel.maksTotalt}</Form.Label>
-                    <Form.Range
-                        min={0}
-                        max={10}
-                        step={1}
-                        value={form.bookingRegel.maksTotalt}
-                        onChange={e =>
-                            setForm(f => ({
-                                ...f,
-                                bookingRegel: { ...f.bookingRegel, maksTotalt: parseInt(e.target.value) }
-                            }))
-                        }
-                    />
+                        <div className="space-y-4 pt-2">
+                            <h3 className="text-sm font-medium">Bookingregler</h3>
 
-                </Form.Group>
+                            <div>
+                                <Label htmlFor="maksPerDag">
+                                    Maks bookinger per dag: {form.bookingRegel.maksPerDag}
+                                </Label>
+                                <input
+                                    id="maksPerDag"
+                                    type="range"
+                                    min={0}
+                                    max={5}
+                                    step={1}
+                                    value={form.bookingRegel.maksPerDag}
+                                    onChange={e =>
+                                        setForm(f => ({
+                                            ...f,
+                                            bookingRegel: {
+                                                ...f.bookingRegel,
+                                                maksPerDag: parseInt(e.target.value),
+                                            },
+                                        }))
+                                    }
+                                    className="w-full"
+                                />
+                            </div>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Dager frem i tid tillatt: {form.bookingRegel.dagerFremITid}</Form.Label>
-                    <Form.Range
-                        min={1}
-                        max={14}
-                        step={1}
-                        value={form.bookingRegel.dagerFremITid}
-                        onChange={e =>
-                            setForm(f => ({
-                                ...f,
-                                bookingRegel: { ...f.bookingRegel, dagerFremITid: parseInt(e.target.value) }
-                            }))
-                        }
-                    />
-                </Form.Group>
+                            <div>
+                                <Label htmlFor="maksTotalt">
+                                    Maks aktive bookinger totalt: {form.bookingRegel.maksTotalt}
+                                </Label>
+                                <input
+                                    id="maksTotalt"
+                                    type="range"
+                                    min={0}
+                                    max={10}
+                                    step={1}
+                                    value={form.bookingRegel.maksTotalt}
+                                    onChange={e =>
+                                        setForm(f => ({
+                                            ...f,
+                                            bookingRegel: {
+                                                ...f.bookingRegel,
+                                                maksTotalt: parseInt(e.target.value),
+                                            },
+                                        }))
+                                    }
+                                    className="w-full"
+                                />
+                            </div>
 
-                <Form.Group className="mb-4">
-                    <Form.Label>Slot-lengde (minutter)</Form.Label>
-                    <Form.Select
-                        value={form.bookingRegel.slotLengdeMinutter}
-                        disabled
-                        onChange={e =>
-                            setForm(f => ({
-                                ...f,
-                                bookingRegel: {
-                                    ...f.bookingRegel,
-                                    slotLengdeMinutter: parseInt(e.target.value)
-                                }
-                            }))
-                        }
-                    >
-                        <option value={30}>30 minutter</option>
-                        <option value={45}>45 minutter</option>
-                        <option value={60}>60 minutter</option>
-                        <option value={90}>90 minutter</option>
-                    </Form.Select>
-                </Form.Group>
+                            <div>
+                                <Label htmlFor="dagerFremITid">
+                                    Dager frem i tid tillatt: {form.bookingRegel.dagerFremITid}
+                                </Label>
+                                <input
+                                    id="dagerFremITid"
+                                    type="range"
+                                    min={1}
+                                    max={14}
+                                    step={1}
+                                    value={form.bookingRegel.dagerFremITid}
+                                    onChange={e =>
+                                        setForm(f => ({
+                                            ...f,
+                                            bookingRegel: {
+                                                ...f.bookingRegel,
+                                                dagerFremITid: parseInt(e.target.value),
+                                            },
+                                        }))
+                                    }
+                                    className="w-full"
+                                />
+                            </div>
 
-                <Button type="submit" disabled={lagrer}>
-                    {lagrer ? 'Lagrer...' : 'Lagre endringer'}
-                </Button>
-            </Form>
+                            <div>
+                                <Label htmlFor="slotLengdeMinutter">Slot-lengde (minutter)</Label>
+                                <Select
+                                    value={form.bookingRegel.slotLengdeMinutter.toString()}
+                                    onValueChange={value =>
+                                        setForm(f => ({
+                                            ...f,
+                                            bookingRegel: {
+                                                ...f.bookingRegel,
+                                                slotLengdeMinutter: parseInt(value),
+                                            },
+                                        }))
+                                    }
+                                >
+                                    <SelectTrigger id="slotLengdeMinutter">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="30">30 minutter</SelectItem>
+                                        <SelectItem value="45">45 minutter</SelectItem>
+                                        <SelectItem value="60">60 minutter</SelectItem>
+                                        <SelectItem value="90">90 minutter</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <Button type="submit" disabled={lagrer}>
+                                {lagrer ? 'Lagrer...' : 'Lagre endringer'}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </form>
         </div>
     );
 }

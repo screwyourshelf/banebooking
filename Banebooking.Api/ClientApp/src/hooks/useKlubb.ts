@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import type { KlubbDetaljer } from '../types';
-import { hentKlubb } from '../api/klubb';
+import type { KlubbDetaljer } from '../types/index.js';
+import { hentKlubb } from '../api/klubb.js';
 
 export function useKlubb(slug?: string) {
     const [klubb, setKlubb] = useState<KlubbDetaljer | null>(null);

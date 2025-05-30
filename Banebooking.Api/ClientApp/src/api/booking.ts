@@ -1,5 +1,5 @@
-import { supabase } from '../supabase';
-import type { BookingSlot } from '../types';
+import { supabase } from '../supabase.js'
+import type { BookingSlot } from '../types/index.js';
 
 export async function hentBookinger(
     slug: string,

@@ -1,5 +1,5 @@
-import type { OppdaterKlubb, KlubbDetaljer } from '../types';
-import { supabase } from '../supabase';
+import type { OppdaterKlubb, KlubbDetaljer } from '../types/index.js';
+import { supabase } from '../supabase.js'
 
 export async function hentKlubb(slug: string): Promise<KlubbDetaljer> {
     const res = await fetch(`/api/klubb/${slug}`);

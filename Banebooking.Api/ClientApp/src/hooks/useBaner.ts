@@ -1,13 +1,13 @@
 import { useEffect, useState, useContext } from 'react';
-import type { Bane, NyBane, OppdaterBane } from '../types';
-import { SlugContext } from '../layouts/Layout';
+import type { Bane, NyBane, OppdaterBane } from '../types/index.js';
+import { SlugContext } from '../layouts/Layout.js';
 import {
     hentBaner,
     oppdaterBane as apiOppdaterBane,
     opprettBane as apiOpprettBane,
     deaktiverBane as apiDeaktiverBane,
     aktiverBane as apiAktiverBane
-} from '../api/baner';
+} from '../api/baner.js';
 
 export function useBaner(inkluderInaktive = false) {
     const slug = useContext(SlugContext);

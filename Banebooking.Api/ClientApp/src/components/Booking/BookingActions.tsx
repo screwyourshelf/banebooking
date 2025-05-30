@@ -1,6 +1,7 @@
-import { Button, Form } from 'react-bootstrap';
+import { Button } from '@/components/ui/button.js';
+import { Checkbox } from '@/components/ui/checkbox.js';
 import { FaCalendarPlus, FaTimesCircle, FaTrashAlt } from 'react-icons/fa';
-import type { BookingSlot } from '../../types';
+import type { BookingSlot } from '../../types/index.js';
 
 type Props = {
     slot: BookingSlot;
@@ -21,29 +22,31 @@ export function BookingActions({
     time,
     erBekreftet,
     setErBekreftet,
-    reset = () => { }
+    reset = () => { },
 }: Props) {
     return (
-        <div className="d-flex flex-column align-items-end w-100">
+        <div className="flex flex-col items-end w-full space-y-2">
             {slot.kanBookes && erBekreftet !== undefined && setErBekreftet && (
                 <>
-                    <Form.Check
-                        id={`book-${time}`}
-                        type="checkbox"
-                        label={`Jeg (og de jeg spiller sammen med) har betalt medlemskap for ${new Date().getFullYear()}`}
-                        checked={erBekreftet}
-                        onChange={(e) => setErBekreftet(e.target.checked)}
-                        className="mb-2 small"
-                    />
+                    <div className="flex items-center space-x-2 mb-2 text-sm">
+                        <Checkbox
+                            id={`book-${time}`}
+                            checked={erBekreftet}
+                            onCheckedChange={(checked) => setErBekreftet(!!checked)}
+                        />
+                        <label htmlFor={`book-${time}`} className="cursor-pointer select-none">
+                            Jeg (og de jeg spiller sammen med) har betalt medlemskap for {new Date().getFullYear()}
+                        </label>
+                    </div>
                     <Button
+                        variant="outline"
                         size="sm"
-                        variant="outline-dark"
                         disabled={!erBekreftet}
                         onClick={() => {
                             onBook(slot);
                             reset();
                         }}
-                        className="d-flex align-items-center gap-2 small"
+                        className="flex items-center gap-2 text-sm"
                     >
                         <FaCalendarPlus />
                         Book
@@ -53,13 +56,13 @@ export function BookingActions({
 
             {slot.kanAvbestille && (
                 <Button
+                    variant="outline"
                     size="sm"
-                    variant="outline-dark"
                     onClick={() => {
                         onCancel(slot);
                         reset();
                     }}
-                    className="mt-1 d-flex align-items-center gap-2 small"
+                    className="flex items-center gap-2 text-sm"
                 >
                     <FaTimesCircle />
                     Avbestill
@@ -68,13 +71,13 @@ export function BookingActions({
 
             {slot.kanSlette && (
                 <Button
+                    variant="outline"
                     size="sm"
-                    variant="outline-dark"
                     onClick={() => {
                         onDelete(slot);
                         reset();
                     }}
-                    className="mt-1 d-flex align-items-center gap-2 small"
+                    className="flex items-center gap-2 text-sm"
                 >
                     <FaTrashAlt />
                     Slett
@@ -83,4 +86,3 @@ export function BookingActions({
         </div>
     );
 }
-

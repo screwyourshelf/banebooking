@@ -1,5 +1,5 @@
-import { Nav } from 'react-bootstrap';
-import type { Bane } from '../types';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.js";
+import type { Bane } from "../types/index.js";
 
 type Props = {
     baner: Bane[];
@@ -9,17 +9,14 @@ type Props = {
 
 export default function BaneTabs({ baner, valgtBaneId, onVelgBane }: Props) {
     return (
-        <Nav
-            variant="tabs"
-            activeKey={valgtBaneId}
-            onSelect={(baneId) => baneId && onVelgBane(baneId)}
-            className="mt-2 mb-1 flex-nowrap"
-        >
-            {baner.map((bane) => (
-                <Nav.Item key={bane.id}>
-                    <Nav.Link eventKey={bane.id} className="py-1 px-2">{bane.navn}</Nav.Link>
-                </Nav.Item>
-            ))}
-        </Nav>
+        <Tabs value={valgtBaneId} onValueChange={onVelgBane}>
+            <TabsList className="flex flex-wrap gap-2 mb-2">
+                {baner.map((bane) => (
+                    <TabsTrigger key={bane.id} value={bane.id}>
+                        {bane.navn}
+                    </TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
     );
 }

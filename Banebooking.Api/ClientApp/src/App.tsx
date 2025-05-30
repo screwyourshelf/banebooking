@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Layout from './layouts/Layout';
-import IndexPage from './pages/IndexPage';
-import MinSide from './pages/MinSidePage';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import ReglementPage from './pages/ReglementPage';
-import RedigerKlubbPage from './pages/admin/RedigerKlubbPage';
-import RedigerBanerPage from './pages/admin/RedigerBanerPage';
-import MassebookingPage from './pages/admin/MassebookingPage';
+import Layout from './layouts/Layout.js';
+import IndexPage from './pages/IndexPage.js';
+import MinSide from './pages/MinSidePage.js';
+import { ProtectedRoute } from './components/ProtectedRoute.js';
+import ReglementPage from './pages/ReglementPage.js';
+import RedigerKlubbPage from './pages/admin/RedigerKlubbPage.js';
+import RedigerBanerPage from './pages/admin/RedigerBanerPage.js';
+import MassebookingPage from './pages/admin/MassebookingPage.js';
 
 export default function App() {
     return (

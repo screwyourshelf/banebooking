@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Form, Button, Spinner } from 'react-bootstrap';
-import { useBaner } from '../../hooks/useBaner';
+import { useBaner } from '../../hooks/useBaner.js';
 import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button.js';
+import { Input } from '@/components/ui/input.js';
+import { Label } from '@/components/ui/label.js';
+import {
+    Select,
+    SelectContent,
+    SelectTrigger,
+    SelectValue,
+    SelectItem,
+} from '@/components/ui/select.js';
+import { Card, CardContent } from '@/components/ui/card.js';
 
 type BaneFormData = {
     navn: string;
@@ -12,7 +22,6 @@ const STORAGE_KEY = 'rediger.valgtBaneId';
 
 export default function RedigerBanerPage() {
     const { baner, loading, oppdaterBane, opprettBane, deaktiverBane, aktiverBane } = useBaner(true);
-
     const [redigerte, setRedigerte] = useState<Record<string, BaneFormData>>({});
     const [nyBane, setNyBane] = useState<BaneFormData>({ navn: '', beskrivelse: '' });
     const [valgtBaneId, setValgtBaneId] = useState<string | null>(() => {
@@ -21,8 +30,7 @@ export default function RedigerBanerPage() {
     });
 
     const valgtBane = baner.find(b => b.id === valgtBaneId) ?? null;
-    const redigerteVerdier: BaneFormData | null =
-        valgtBaneId ? redigerte[valgtBaneId] ?? null : null;
+    const redigerteVerdier = valgtBaneId ? redigerte[valgtBaneId] ?? null : null;
 
     useEffect(() => {
         sessionStorage.setItem(STORAGE_KEY, valgtBaneId ?? 'null');
@@ -30,17 +38,17 @@ export default function RedigerBanerPage() {
 
     useEffect(() => {
         if (valgtBaneId && !baner.some(b => b.id === valgtBaneId)) {
-            setValgtBaneId(null); // valgt bane finnes ikke lenger
+            setValgtBaneId(null);
         }
     }, [baner, valgtBaneId]);
 
     function håndterEndring(id: string, felt: keyof BaneFormData, verdi: string) {
-        setRedigerte((prev) => ({
+        setRedigerte(prev => ({
             ...prev,
             [id]: {
                 ...(prev[id] ?? baner.find(b => b.id === id)!),
-                [felt]: verdi
-            }
+                [felt]: verdi,
+            },
         }));
     }
 
@@ -51,10 +59,10 @@ export default function RedigerBanerPage() {
         try {
             await oppdaterBane(id, {
                 navn: oppdatert.navn,
-                beskrivelse: oppdatert.beskrivelse
+                beskrivelse: oppdatert.beskrivelse,
             });
             toast.success('Endringer lagret');
-            setRedigerte((prev) => {
+            setRedigerte(prev => {
                 const ny = { ...prev };
                 delete ny[id];
                 return ny;
@@ -98,101 +106,132 @@ export default function RedigerBanerPage() {
     }
 
     return (
-        <div className="p-3">
-            <h4>Administrer baner</h4>
+        <div className="max-w-screen-sm mx-auto px-2 py-2">
+            <h2 className="text-base font-semibold mb-2">Administrer baner</h2>
 
-            {loading && <Spinner animation="border" />}
+            {loading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Laster...</p>
+            ) : (
+                <>
+                    <section className="mb-4">
+                        <Label htmlFor="bane-select" className="mb-1 block text-sm font-medium">
+                            Velg bane
+                        </Label>
+                        <Select value={valgtBaneId ?? ''} onValueChange={value => setValgtBaneId(value || null)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="— Velg bane —" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {baner.map(b => (
+                                    <SelectItem key={b.id} value={b.id}>
+                                        {b.navn} {b.aktiv ? '' : '(inaktiv)'}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </section>
 
-            {!loading && (
-                <Form.Group className="mb-3">
-                    <Form.Label>Velg bane</Form.Label>
-                    <Form.Select
-                        value={valgtBaneId ?? ''}
-                        onChange={(e) => setValgtBaneId(e.target.value || null)}
-                    >
-                        <option value="">— Velg bane —</option>
-                        {baner.map((b) => (
-                            <option key={b.id} value={b.id}>
-                                {b.navn} {b.aktiv ? '' : '(inaktiv)'} – {b.beskrivelse}
-                            </option>
-                        ))}
-                    </Form.Select>
-                </Form.Group>
-            )}
+                    {valgtBane && (
+                        <Card className="mb-4">
+                            <CardContent className="p-4 space-y-3">
+                                <div>
+                                    <Label htmlFor="navn" className="block mb-1">Navn</Label>
+                                    <Input
+                                        id="navn"
+                                        value={redigerteVerdier?.navn ?? valgtBane.navn}
+                                        onChange={e => håndterEndring(valgtBane.id, 'navn', e.target.value)}
+                                        disabled={!valgtBane.aktiv}
+                                    />
+                                </div>
 
-            {valgtBane && (
-                <Form className={`border rounded p-3 mb-3 ${!valgtBane.aktiv ? 'bg-light text-muted' : ''}`}>
-                    <Form.Group className="mb-2">
-                        <Form.Label>Navn</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={redigerteVerdier?.navn ?? valgtBane.navn}
-                            onChange={(e) => håndterEndring(valgtBane.id, 'navn', e.target.value)}
-                            disabled={!valgtBane.aktiv}
-                        />
-                    </Form.Group>
+                                <div>
+                                    <Label htmlFor="beskrivelse" className="block mb-1">Beskrivelse</Label>
+                                    <Input
+                                        id="beskrivelse"
+                                        value={redigerteVerdier?.beskrivelse ?? valgtBane.beskrivelse}
+                                        onChange={e => håndterEndring(valgtBane.id, 'beskrivelse', e.target.value)}
+                                        disabled={!valgtBane.aktiv}
+                                    />
+                                </div>
 
-                    <Form.Group className="mb-2">
-                        <Form.Label>Beskrivelse</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={redigerteVerdier?.beskrivelse ?? valgtBane.beskrivelse}
-                            onChange={(e) => håndterEndring(valgtBane.id, 'beskrivelse', e.target.value)}
-                            disabled={!valgtBane.aktiv}
-                        />
-                    </Form.Group>
+                                <div className="flex justify-between">
+                                    {valgtBane.aktiv ? (
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                onClick={e => {
+                                                    e.preventDefault();
+                                                    lagre(valgtBane.id);
+                                                }}
+                                                disabled={
+                                                    !redigerteVerdier ||
+                                                    (redigerteVerdier.navn === valgtBane.navn &&
+                                                        redigerteVerdier.beskrivelse === valgtBane.beskrivelse)
+                                                }
+                                            >
+                                                Lagre
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={e => {
+                                                    e.preventDefault();
+                                                    deaktiver(valgtBane.id);
+                                                }}
+                                            >
+                                                Deaktiver
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={e => {
+                                                e.preventDefault();
+                                                aktiver(valgtBane.id);
+                                            }}
+                                        >
+                                            Aktiver
+                                        </Button>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
-                    <div className="d-flex justify-content-between">
-                        {valgtBane.aktiv ? (
-                            <>
-                                <Button
-                                    variant="success"
-                                    size="sm"
-                                    onClick={() => lagre(valgtBane.id)}
-                                    disabled={
-                                        !redigerteVerdier ||
-                                        (redigerteVerdier.navn === valgtBane.navn &&
-                                            redigerteVerdier.beskrivelse === valgtBane.beskrivelse)
-                                    }
-                                >
-                                    Lagre
+                    <section>
+                        <h3 className="text-sm font-medium mb-1">Ny bane</h3>
+                        <Card>
+                            <CardContent className="p-4 space-y-3">
+                                <div>
+                                    <Label htmlFor="ny-navn" className="block mb-1">Navn</Label>
+                                    <Input
+                                        id="ny-navn"
+                                        value={nyBane.navn}
+                                        onChange={e => setNyBane(f => ({ ...f, navn: e.target.value }))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="ny-beskrivelse" className="block mb-1">Beskrivelse</Label>
+                                    <Input
+                                        id="ny-beskrivelse"
+                                        value={nyBane.beskrivelse}
+                                        onChange={e => setNyBane(f => ({ ...f, beskrivelse: e.target.value }))}
+                                    />
+                                </div>
+
+                                <Button onClick={e => {
+                                    e.preventDefault();
+                                    leggTil();
+                                }}>
+                                    Legg til
                                 </Button>
-                                <Button variant="outline-danger" size="sm" onClick={() => deaktiver(valgtBane.id)}>
-                                    Deaktiver
-                                </Button>
-                            </>
-                        ) : (
-                            <Button variant="outline-primary" size="sm" onClick={() => aktiver(valgtBane.id)}>
-                                Aktiver
-                            </Button>
-                        )}
-                    </div>
-                </Form>
+                            </CardContent>
+                        </Card>
+                    </section>
+                </>
             )}
-
-            <hr />
-            <h5>Ny bane</h5>
-            <Form className="border rounded p-2">
-                <Form.Group className="mb-2">
-                    <Form.Label>Navn</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={nyBane.navn}
-                        onChange={(e) => setNyBane((f) => ({ ...f, navn: e.target.value }))}
-                    />
-                </Form.Group>
-
-                <Form.Group className="mb-2">
-                    <Form.Label>Beskrivelse</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={nyBane.beskrivelse}
-                        onChange={(e) => setNyBane((f) => ({ ...f, beskrivelse: e.target.value }))}
-                    />
-                </Form.Group>
-
-                <Button onClick={leggTil}>Legg til</Button>
-            </Form>
         </div>
     );
 }

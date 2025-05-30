@@ -1,5 +1,5 @@
-import { supabase } from '../supabase';
-import type { Bane, NyBane, OppdaterBane } from '../types';
+import { supabase } from '../supabase.js'
+import type { Bane, NyBane, OppdaterBane } from '../types/index.js';
 
 export async function hentBaner(slug: string, inkluderInaktive = false): Promise<Bane[]> {
     const query = inkluderInaktive ? '?inkluderInaktive=true' : '';

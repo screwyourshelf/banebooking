@@ -1,5 +1,5 @@
-import type { BookingSlot } from '../../types';
-import BookingSlotItem from './BookingSlotItem';
+import type { BookingSlot } from '../../types/index.js';
+import BookingSlotItem from './BookingSlotItem.js';
 
 type Props = {
     slots: BookingSlot[];
@@ -20,14 +20,18 @@ export function BookingSlotList({
     onCancel,
     onDelete,
     apenSlotTid,
-    setApenSlotTid
+    setApenSlotTid,
 }: Props) {
     if (slots.length === 0) {
-        return <div className="text-muted small">Ingen bookinger eller slots å vise.</div>;
+        return (
+            <div className="text-muted text-sm italic py-4 text-center">
+                Ingen bookinger eller slots å vise.
+            </div>
+        );
     }
 
     return (
-        <div>
+        <div className="space-y-2">
             {slots.map((slot) => {
                 const slotKey = `${slot.dato}-${slot.startTid}-${slot.baneId}`;
 
@@ -42,9 +46,7 @@ export function BookingSlotList({
                         onDelete={onDelete}
                         isOpen={apenSlotTid === slotKey}
                         onToggle={() =>
-                            setApenSlotTid?.(
-                                apenSlotTid === slotKey ? null : slotKey
-                            )
+                            setApenSlotTid?.(apenSlotTid === slotKey ? null : slotKey)
                         }
                     />
                 );

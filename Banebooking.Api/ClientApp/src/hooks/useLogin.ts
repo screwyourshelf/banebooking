@@ -1,6 +1,6 @@
 // src/hooks/useLogin.ts
 import { useState } from 'react';
-import { supabase } from '../supabase';
+import { supabase } from '../supabase.js'
 import { toast } from 'react-toastify';
 
 export function useLogin(redirectTo: string) {

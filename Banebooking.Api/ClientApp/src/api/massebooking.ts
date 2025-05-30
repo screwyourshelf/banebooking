@@ -1,5 +1,5 @@
-import { supabase } from '../supabase';
-import type { MassebookingDto, BookingDto } from '../types';
+import { supabase } from '../supabase.js'
+import type { MassebookingDto, BookingDto } from '../types/index.js';
 
 export async function forhandsvisMassebooking(slug: string, dto: MassebookingDto) {
     const { data: sessionData } = await supabase.auth.getSession();

@@ -1,10 +1,12 @@
 import { useState, useContext, useMemo } from 'react';
-import { Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import { BookingSlotList } from '../components/Booking/BookingSlotList';
-import { useMineBookinger } from '../hooks/useMineBookinger';
-import { useCurrentUser } from '../hooks/useCurrentUser';
-import { SlugContext } from '../layouts/Layout';
+import { BookingSlotList } from '../components/Booking/BookingSlotList.js';
+import { useMineBookinger } from '../hooks/useMineBookinger.js';
+import { useCurrentUser } from '../hooks/useCurrentUser.js';
+import { SlugContext } from '../layouts/Layout.js';
+import Spinner from '@/components/ui/spinner.js';
+import { Separator } from '@/components/ui/separator.js';
+import { Card, CardContent } from '@/components/ui/card.js';
 
 export default function MinSidePage() {
     const { slug: slugFraParams } = useParams<{ slug: string }>();
@@ -14,7 +16,6 @@ export default function MinSidePage() {
     const [apenSlotTid, setApenSlotTid] = useState<string | null>(null);
     const { bookinger, laster, onCancel } = useMineBookinger(slug ?? '');
 
-    // Grupper bookinger per dato, og sorter per tid
     const grupperteBookinger = useMemo(() => {
         const grupper: Record<string, typeof bookinger> = {};
 
@@ -32,27 +33,42 @@ export default function MinSidePage() {
         return Object.entries(grupper).sort(([datoA], [datoB]) => datoA.localeCompare(datoB));
     }, [bookinger]);
 
-    if (laster) return <Spinner animation="border" />;
+    if (laster)
+        return (
+            <div className="flex justify-center py-4">
+                <Spinner />
+            </div>
+        );
 
     return (
-        <div className="container mt-3">
-            <h5>Mine kommende bookinger</h5>
+        <div className="max-w-screen-sm mx-auto px-1 py-1">
+            <h2 className="text-base font-semibold mb-2">Mine kommende bookinger</h2>
+
             {grupperteBookinger.length === 0 && (
-                <div className="text-muted">Ingen aktive bookinger funnet.</div>
+                <p className="text-sm text-muted-foreground italic">Ingen aktive bookinger funnet.</p>
             )}
 
-            {grupperteBookinger.map(([dato, slots]) => (
-                <div key={dato} className="mb-3">
-                    <h6 className="text-muted">{dato}</h6>
-                    <BookingSlotList
-                        slots={slots}
-                        currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
-                        modus="minside"
-                        onCancel={onCancel}
-                        apenSlotTid={apenSlotTid}
-                        setApenSlotTid={setApenSlotTid}
-                    />
-                </div>
+            {grupperteBookinger.map(([dato, slots], index) => (
+                <section key={dato} className="mb-4">
+
+                    <Card>
+                        <CardContent className="p-1 pt-0">
+                            <h3 className="text-sm font-medium mb-1">{dato}</h3>
+
+                            <BookingSlotList
+                                slots={slots}
+                                currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
+                                modus="minside"
+                                onCancel={onCancel}
+                                apenSlotTid={apenSlotTid}
+                                setApenSlotTid={setApenSlotTid}
+                            />
+                        </CardContent>
+
+                    </Card>
+
+                    {index !== grupperteBookinger.length - 1 && <Separator className="my-4" />}
+                </section>
             ))}
         </div>
     );

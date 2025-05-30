@@ -1,12 +1,18 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Form, Button, Card, Row, Col, Tabs, Tab, Spinner } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { ukedager, dagNavnTilEnum } from '../../utils/datoUtils';
-import { useMassebooking } from '../../hooks/useMassebooking';
-import type { MassebookingDto } from '../../types';
-import { BookingSlotList } from '../../components/Booking/BookingSlotList';
+import { ukedager, dagNavnTilEnum } from '../../utils/datoUtils.js';
+import { useMassebooking } from '../../hooks/useMassebooking.js';
+import type { MassebookingDto } from '../../types/index.js';
+import { BookingSlotList } from '../../components/Booking/BookingSlotList.js';
+
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.js';
+import { Button } from '@/components/ui/button.js';
+import { Card } from '@/components/ui/card.js';
+import { Checkbox } from '@/components/ui/checkbox.js';
+import { Label } from '@/components/ui/label.js';
+import Spinner from '../../components/ui/spinner.js';
+
+import DatoVelger from '../../components/DatoVelger.js';
 
 export default function MassebookingPage() {
     const { slug } = useParams<{ slug: string }>();
@@ -15,12 +21,11 @@ export default function MassebookingPage() {
         baner,
         tilgjengeligeTidspunkter,
         forhandsvisning,
-        setForhandsvisning, // ← legg til denne
+        setForhandsvisning,
         forhandsvis,
         opprett,
-        loading
+        loading,
     } = useMassebooking(slug);
-
 
     const [valgteBaner, setValgteBaner] = useState<string[]>([]);
     const [valgteUkedager, setValgteUkedager] = useState<string[]>([]);
@@ -34,8 +39,7 @@ export default function MassebookingPage() {
     const [kommentar, setKommentar] = useState('');
     const [activeTab, setActiveTab] = useState('oppsett');
 
-    const nullstillForhandsvisning = () =>
-        setForhandsvisning({ ledige: [], konflikter: [] });
+    const nullstillForhandsvisning = () => setForhandsvisning({ ledige: [], konflikter: [] });
 
     const tilgjengeligeUkedager = useMemo(() => {
         if (!datoFra || !datoTil) return ukedager;
@@ -56,7 +60,7 @@ export default function MassebookingPage() {
     }, [alleBaner, alleUkedager, alleTidspunkter, baner, tilgjengeligeUkedager, tilgjengeligeTidspunkter]);
 
     const toggle = (item: string, set: React.Dispatch<React.SetStateAction<string[]>>) => {
-        set(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
+        set(prev => (prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]));
     };
 
     const byggDto = (): MassebookingDto | null => {
@@ -70,7 +74,7 @@ export default function MassebookingPage() {
             tidspunkter: valgteTidspunkter,
             baneIder: valgteBaner,
             bookingtype,
-            kommentar
+            kommentar,
         };
     };
 
@@ -83,10 +87,8 @@ export default function MassebookingPage() {
         }
     };
 
-    const håndterTabChange = async (k: string | null) => {
-        const valgt = k ?? 'oppsett';
+    const håndterTabChange = async (valgt: string) => {
         setActiveTab(valgt);
-
         if (valgt === 'forhandsvisning') {
             const dto = byggDto();
             if (dto) await forhandsvis(dto);
@@ -106,116 +108,147 @@ export default function MassebookingPage() {
     }, [forhandsvisning.ledige]);
 
     return (
-        <div className="p-3">
-            <h4>Massebooking {klubb?.navn && <span className="text-muted">– {klubb.navn}</span>}</h4>
+        <div className="max-w-screen-sm mx-auto px-2 py-2">
+            <h2 className="text-base font-semibold mb-1">
+                Massebooking
+            </h2>
 
             {loading ? (
-                <div className="text-center my-4">
-                    <Spinner animation="border" />
+                <div className="text-center py-10">
+                    <Spinner />
                 </div>
             ) : (
-                <Tabs activeKey={activeTab} onSelect={håndterTabChange} className="mb-3">
-                    <Tab eventKey="oppsett" title="Oppsett">
-                        <Card className="p-3 mb-4">
-                            <Form>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Type booking</Form.Label>
-                                    <Form.Select value={bookingtype} onChange={e => setBookingtype(e.target.value)}>
-                                        <option value="admin">Administrator</option>
-                                        <option value="kurs">Kurs</option>
-                                        <option value="trening">Trening</option>
-                                        <option value="turnering">Turnering</option>
-                                    </Form.Select>
-                                </Form.Group>
+                <Tabs value={activeTab} onValueChange={håndterTabChange} className="mt-2">
+                    <TabsList className="mb-3">
+                        <TabsTrigger value="oppsett">Oppsett</TabsTrigger>
+                        <TabsTrigger value="forhandsvisning" disabled={valgteBaner.length === 0}>
+                            Forhåndsvisning ({forhandsvisning.ledige.length})
+                        </TabsTrigger>
+                    </TabsList>
 
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Beskrivelse</Form.Label>
-                                    <Form.Control as="textarea" rows={2} value={kommentar} onChange={e => setKommentar(e.target.value)} />
-                                </Form.Group>
+                    <TabsContent value="oppsett">
+                        <Card className="p-3 space-y-4 mb-4">
 
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Velg baner</Form.Label>
-                                    <Form.Check type="checkbox" label="Alle baner" checked={alleBaner} onChange={e => setAlleBaner(e.target.checked)} />
-                                    <div className="d-flex gap-2 flex-wrap mt-2">
-                                        {baner.map(b => (
-                                            <Form.Check
-                                                key={b.id}
+                            <section>
+                                <Label htmlFor="bookingtype">Type booking</Label>
+                                <select
+                                    id="bookingtype"
+                                    className="w-full border rounded text-sm px-3 py-2"
+                                    value={bookingtype}
+                                    onChange={e => setBookingtype(e.target.value)}
+                                >
+                                    <option value="admin">Administrator</option>
+                                    <option value="kurs">Kurs</option>
+                                    <option value="trening">Trening</option>
+                                    <option value="turnering">Turnering</option>
+                                </select>
+                            </section>
+
+                            <section>
+                                <Label htmlFor="kommentar">Beskrivelse</Label>
+                                <textarea
+                                    id="kommentar"
+                                    className="w-full border rounded text-sm px-3 py-2"
+                                    rows={2}
+                                    value={kommentar}
+                                    onChange={e => setKommentar(e.target.value)}
+                                />
+                            </section>
+
+                            <section>
+                                <Label className="inline-flex items-center">
+                                    <Checkbox checked={alleBaner} onCheckedChange={val => setAlleBaner(!!val)} />
+                                    <span className="ml-2">Alle baner</span>
+                                </Label>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {baner.map(b => (
+                                        <label
+                                            key={b.id}
+                                            className={`cursor-pointer rounded border px-3 py-1 text-sm select-none ${valgteBaner.includes(b.id) ? 'bg-indigo-600 text-white' : 'bg-white'}`}
+                                        >
+                                            <input
                                                 type="checkbox"
-                                                label={b.navn}
                                                 checked={valgteBaner.includes(b.id)}
                                                 onChange={() => toggle(b.id, setValgteBaner)}
                                                 disabled={alleBaner}
+                                                className="hidden"
                                             />
-                                        ))}
-                                    </div>
-                                </Form.Group>
+                                            {b.navn}
+                                        </label>
+                                    ))}
+                                </div>
+                            </section>
 
-                                <Row>
-                                    <Col>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Fra dato</Form.Label>
-                                            <DatePicker selected={datoFra} onChange={setDatoFra} minDate={new Date()} dateFormat="yyyy-MM-dd" className="form-control" />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Til dato</Form.Label>
-                                            <DatePicker selected={datoTil} onChange={setDatoTil} minDate={datoFra || new Date()} dateFormat="yyyy-MM-dd" className="form-control" />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
+                            <section className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label>Fra dato</Label>
+                                    <DatoVelger value={datoFra} onChange={d => setDatoFra(d ?? null)} minDate={new Date()} />
+                                </div>
+                                <div>
+                                    <Label>Til dato</Label>
+                                    <DatoVelger value={datoTil} onChange={d => setDatoTil(d ?? null)} minDate={datoFra || new Date()} />
+                                </div>
+                            </section>
 
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Ukedager</Form.Label>
-                                    <Form.Check type="checkbox" label="Alle gyldige dager" checked={alleUkedager} onChange={e => setAlleUkedager(e.target.checked)} />
-                                    <div className="d-flex gap-2 flex-wrap mt-2">
-                                        {ukedager.map(dag => (
-                                            <Button
-                                                key={dag}
-                                                variant={valgteUkedager.includes(dag) ? 'primary' : 'outline-secondary'}
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    toggle(dag, setValgteUkedager);
-                                                }}
-                                                disabled={alleUkedager || !tilgjengeligeUkedager.includes(dag)}
-                                                type="button"
-                                            >
-                                                {dag}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </Form.Group>
+                            <section>
+                                <Label className="inline-flex items-center">
+                                    <Checkbox checked={alleUkedager} onCheckedChange={val => setAlleUkedager(!!val)} />
+                                    <span className="ml-2">Alle gyldige dager</span>
+                                </Label>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {ukedager.map(dag => (
+                                        <Button
+                                            key={dag}
+                                            variant={valgteUkedager.includes(dag) ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={e => {
+                                                e.preventDefault();
+                                                toggle(dag, setValgteUkedager);
+                                            }}
+                                            disabled={alleUkedager || !tilgjengeligeUkedager.includes(dag)}
+                                            type="button"
+                                        >
+                                            {dag}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </section>
 
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Klokkeslett</Form.Label>
-                                    <Form.Check type="checkbox" label="Alle tidspunkter" checked={alleTidspunkter} onChange={e => setAlleTidspunkter(e.target.checked)} />
-                                    <div className="d-flex gap-2 flex-wrap mt-2">
-                                        {tilgjengeligeTidspunkter.map(tid => (
-                                            <Form.Check
-                                                key={tid}
+                            <section>
+                                <Label className="inline-flex items-center">
+                                    <Checkbox checked={alleTidspunkter} onCheckedChange={val => setAlleTidspunkter(!!val)} />
+                                    <span className="ml-2">Alle tidspunkter</span>
+                                </Label>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {tilgjengeligeTidspunkter.map(tid => (
+                                        <label
+                                            key={tid}
+                                            className={`cursor-pointer rounded border px-3 py-1 text-sm select-none ${valgteTidspunkter.includes(tid) ? 'bg-indigo-600 text-white' : 'bg-white'}`}
+                                        >
+                                            <input
                                                 type="checkbox"
-                                                label={tid}
                                                 checked={valgteTidspunkter.includes(tid)}
                                                 onChange={() => toggle(tid, setValgteTidspunkter)}
                                                 disabled={alleTidspunkter}
+                                                className="hidden"
                                             />
-                                        ))}
-                                    </div>
-                                </Form.Group>
-                            </Form>
+                                            {tid}
+                                        </label>
+                                    ))}
+                                </div>
+                            </section>
                         </Card>
-                    </Tab>
+                    </TabsContent>
 
-                    <Tab eventKey="forhandsvisning" title={`Forhåndsvisning (${forhandsvisning.ledige.length})`} disabled={valgteBaner.length === 0}>
+                    <TabsContent value="forhandsvisning">
                         <Card className="p-3">
                             {forhandsvisning.ledige.length === 0 ? (
-                                <div className="text-muted">Ingen bookinger tilgjengelig. Endre oppsettet og prøv igjen.</div>
+                                <p className="text-sm text-muted-foreground italic">Ingen bookinger tilgjengelig.</p>
                             ) : (
                                 <>
                                     {grupperteSlots.map(([dato, slots]) => (
-                                        <div key={dato} className="mb-3">
-                                            <h6 className="text-muted">{dato}</h6>
+                                        <section key={dato} className="mb-4">
+                                            <h3 className="text-sm font-medium text-gray-600 mb-1">{dato}</h3>
                                             <BookingSlotList
                                                 slots={slots.map(slot => {
                                                     const tilhørendeBane = baner.find(b => b.id === slot.baneId);
@@ -229,7 +262,7 @@ export default function MassebookingPage() {
                                                         booketAv: '',
                                                         værSymbol: undefined,
                                                         bookingtype,
-                                                        kommentar
+                                                        kommentar,
                                                     };
                                                 })}
                                                 currentUser={{ epost: 'admin@system.no' }}
@@ -237,17 +270,17 @@ export default function MassebookingPage() {
                                                 apenSlotTid={null}
                                                 setApenSlotTid={() => { }}
                                             />
-                                        </div>
+                                        </section>
                                     ))}
-                                    <div className="d-flex justify-content-end mt-3">
-                                        <Button type="button" variant="success" onClick={håndterOpprett} disabled={loading}>
+                                    <div className="flex justify-end mt-3">
+                                        <Button type="button" onClick={håndterOpprett} disabled={loading}>
                                             Opprett {forhandsvisning.ledige.length} bookinger
                                         </Button>
                                     </div>
                                 </>
                             )}
                         </Card>
-                    </Tab>
+                    </TabsContent>
                 </Tabs>
             )}
         </div>

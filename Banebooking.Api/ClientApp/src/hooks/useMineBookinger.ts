@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { hentMineBookinger, avbestillBooking } from '../api/booking';
-import type { BookingSlot } from '../types';
+import { hentMineBookinger, avbestillBooking } from '../api/booking.js';
+import type { BookingSlot } from '../types/index.js';
 
 export function useMineBookinger(slug: string | undefined) {
     const [bookinger, setBookinger] = useState<BookingSlot[]>([]);
@@ -15,7 +15,7 @@ export function useMineBookinger(slug: string | undefined) {
             setLaster(true);
             const data = await hentMineBookinger(slug);
             setBookinger(data);
-        } catch (e) {
+        } catch {
             setError('Kunne ikke hente dine bookinger');
             toast.error(error);
         } finally {
@@ -47,7 +47,7 @@ export function useMineBookinger(slug: string | undefined) {
 
             const tid = `${slot.startTid.slice(0, 2)}:${slot.startTid.slice(2, 4)}–${slot.sluttTid.slice(0, 2)}:${slot.sluttTid.slice(2, 4)}`;
             toast.info(`Avbestilling: ${slot.baneNavn ?? 'valgt bane'}, ${slot.dato} kl. ${tid} er avbestilt.`);
-        } catch (e) {
+        } catch {
             toast.error('Avbestilling feilet');
             // Hvis det feiler, legg sloten tilbake igjen
             setBookinger((prev) => [...prev, slot]);
