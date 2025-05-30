@@ -7,7 +7,6 @@ import { useBaner } from '../hooks/useBaner.js';
 import { useBooking } from '../hooks/useBooking.js';
 import { useCurrentUser } from '../hooks/useCurrentUser.js';
 import { SlugContext } from '../layouts/Layout.js';
-import { Card, CardContent } from '@/components/ui/card.js';
 
 export default function IndexPage() {
     const { baner, loading } = useBaner();
@@ -59,38 +58,33 @@ export default function IndexPage() {
     }
 
     return (
-        <div className="max-w-screen-sm mx-auto px-1 py-1">
-            <Card>
-                <CardContent className="p-1 pt-0">
-                    <div className="mb-2">
-                        <DatoVelger
-                            value={valgtDato}
-                            onChange={(date) => setValgtDato(date ?? null)}
-                        />
-                    </div>
+        <div className="max-w-screen-sm mx-auto px-2 py-2">
+            <div className="mb-2">
+                <DatoVelger
+                    value={valgtDato}
+                    onChange={(date) => setValgtDato(date ?? null)}
+                />
+            </div>
 
-                    <div className="mb-1">
-                        <BaneTabs
-                            baner={baner}
-                            valgtBaneId={valgtBaneId}
-                            onVelgBane={setValgtBaneId}
-                        />
-                    </div>
+            <div className="mb-0">
+                <BaneTabs
+                    baner={baner}
+                    valgtBaneId={valgtBaneId}
+                    onVelgBane={setValgtBaneId}
+                />
+            </div>
 
-                    <div className="mt-1">
-                        <BookingSlotList
-                            slots={slots}
-                            currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
-                            apenSlotTid={apenSlotTid}
-                            setApenSlotTid={setApenSlotTid}
-                            onBook={onBook}
-                            onCancel={onCancel}
-                            onDelete={(slot) => console.log('Slett', slot)}
-                            modus="index"
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+            <BookingSlotList
+                slots={slots}
+                currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
+                apenSlotTid={apenSlotTid}
+                setApenSlotTid={setApenSlotTid}
+                onBook={onBook}
+                onCancel={onCancel}
+                onDelete={(slot) => console.log('Slett', slot)}
+                modus="index"
+            />
+
         </div>
     );
 }

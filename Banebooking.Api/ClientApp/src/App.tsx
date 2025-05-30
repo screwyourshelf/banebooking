@@ -27,7 +27,7 @@ export default function App() {
                     {/* Admin routes */}
                     <Route path="admin">
                         <Route
-                            index
+                            path="klubb"
                             element={
                                 <ProtectedRoute>
                                     <RedigerKlubbPage />
