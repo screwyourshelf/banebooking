@@ -21,7 +21,7 @@ export default function Layout() {
             <div className="w-full min-h-screen bg-[url('/backgrounds/bg.webp')] bg-cover bg-center bg-fixed">
                 <div className="w-full max-w-screen-sm mx-auto px-4 py-4 overflow-x-hidden">
                     <div className="bg-white rounded-md shadow-sm overflow-hidden">
-                        <header className="border-b">
+                        <header className="bg-gradient-to-b from-gray-200 to-white border-b border-gray-300 shadow-sm">
                             <Navbar />
                         </header>
 

@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input.js';
 
 import {
     FaUser, FaFacebook, FaSignInAlt, FaSignOutAlt,
-    FaCalendarAlt, FaUserCircle, FaGavel, FaWrench
+    FaCalendarAlt, FaUserCircle, FaGavel, FaWrench, FaBars
 } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 
@@ -40,7 +40,7 @@ export default function Navbar() {
     const isAdmin = currentUser?.email?.toLowerCase() === klubb?.adminEpost?.toLowerCase();
 
     return (
-        <div className="max-w-screen-lg mx-auto flex justify-between items-center px-0 py-1">
+        <div className="max-w-screen-lg mx-auto flex justify-between items-center px-2 py-1">
             <NavbarBrandMedKlubb
                 slug={slug}
                 klubbnavn={laster ? 'Laster...' : klubb?.navn ?? 'Ukjent klubb'}
@@ -48,18 +48,24 @@ export default function Navbar() {
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-8 px-2 text-xs flex items-center gap-2">
-                        {currentUser ? (
-                            <>
-                                <FaUser className="text-gray-500" />
-                                {currentUser.email}
-                            </>
-                        ) : (
-                            <>
-                                <FaSignInAlt className="text-gray-500" />
-                                Logg inn
-                            </>
-                        )}
+                    <Button
+                        variant="outline"
+                        className="h-8 px-2 flex items-center gap-2 sm:text-xs sm:px-2"
+                    >
+                        <FaBars className="text-gray-600 sm:hidden" />
+                        <span className="hidden sm:inline-flex items-center gap-2">
+                            {currentUser ? (
+                                <>
+                                    <FaUser className="text-gray-500" />
+                                    {currentUser.email}
+                                </>
+                            ) : (
+                                <>
+                                    <FaSignInAlt className="text-gray-500" />
+                                    Logg inn
+                                </>
+                            )}
+                        </span>
                     </Button>
                 </DropdownMenuTrigger>
 
