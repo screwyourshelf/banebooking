@@ -14,7 +14,7 @@ export default function Layout() {
         <SlugContext.Provider value={slug}>
             <div className="w-full">
                 {/* Felles wrapper for innhold */}
-                <div className="w-full max-w-screen-sm mx-auto px-2">
+                <div className="w-full max-w-screen-sm mx-auto px-1">
                     <header className="border-b bg-white">
                         <Navbar />
                     </header>

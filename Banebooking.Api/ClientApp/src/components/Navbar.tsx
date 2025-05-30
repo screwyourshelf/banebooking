@@ -40,7 +40,7 @@ export default function Navbar() {
     const isAdmin = currentUser?.email?.toLowerCase() === klubb?.adminEpost?.toLowerCase();
 
     return (
-        <div className="max-w-screen-lg mx-auto flex justify-between items-center px-4 py-2">
+        <div className="max-w-screen-lg mx-auto flex justify-between items-center px-0 py-1">
             <NavbarBrandMedKlubb
                 slug={slug}
                 klubbnavn={laster ? 'Laster...' : klubb?.navn ?? 'Ukjent klubb'}

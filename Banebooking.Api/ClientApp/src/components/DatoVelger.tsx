@@ -1,67 +1,68 @@
-import { addDays, subDays, format } from 'date-fns';
-import { nb } from 'date-fns/locale';
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/dist/style.css';
+import { format, addDays, subDays } from 'date-fns'
+import { nb } from 'date-fns/locale'
+import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 
-import { Button } from '@/components/ui/button.js';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { Button } from '@/components/ui/button.js'
+import { Calendar } from '@/components/ui/calendar.js'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover.js'
 
 type Props = {
-    value: Date | null;
-    onChange: (date: Date) => void;
-    minDate?: Date;
-};
+    value: Date | null
+    onChange: (date: Date) => void
+    minDate?: Date
+}
 
 export default function DatoVelger({ value, onChange, minDate }: Props) {
-    const [visKalender, setVisKalender] = useState(false);
-
-    const velgDato = (dato: Date | undefined) => {
-        if (!dato) return;
-        if (minDate && dato < minDate) return;
-        onChange(dato);
-        setVisKalender(false);
-    };
+    const visningsformat = value
+        ? format(value, 'dd.MM.yyyy', { locale: nb })
+        : 'Velg dato'
 
     const forrigeDag = () => {
-        if (value) onChange(subDays(value, 1));
-    };
+        if (value) onChange(subDays(value, 1))
+    }
 
     const nesteDag = () => {
-        if (value) onChange(addDays(value, 1));
-    };
-
-    const visningsformat = value ? format(value, 'dd.MM.yyyy', { locale: nb }) : 'Velg dato';
+        if (value) onChange(addDays(value, 1))
+    }
 
     return (
-        <div className="flex items-center gap-1 relative">
-            <Button
-                variant="outline"
-                className="h-8 px-2 text-sm"
-                onClick={() => setVisKalender(!visKalender)}
-            >
-                {visningsformat}
-            </Button>
-
-            {visKalender && (
-                <div className="absolute z-10 top-10 left-0 bg-white shadow border rounded-md">
-                    <DayPicker
+        <div className="flex items-center gap-1">
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        className="h-8 px-2 text-sm w-[140px] justify-start text-left"
+                    >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {visningsformat}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
                         mode="single"
                         selected={value ?? undefined}
-                        onSelect={velgDato}
+                        onSelect={(dato) => {
+                            if (!dato) return
+                            if (minDate && dato < minDate) return
+                            onChange(dato)
+                        }}
                         locale={nb}
                         fromDate={minDate}
+                        initialFocus
                     />
-                </div>
-            )}
+                </PopoverContent>
+            </Popover>
 
             <Button variant="outline" size="icon" onClick={forrigeDag} className="h-8 w-8">
-                <ChevronLeft />
+                <ChevronLeft className="h-4 w-4" />
             </Button>
-
             <Button variant="outline" size="icon" onClick={nesteDag} className="h-8 w-8">
-                <ChevronRight />
+                <ChevronRight className="h-4 w-4" />
             </Button>
         </div>
-    );
+    )
 }

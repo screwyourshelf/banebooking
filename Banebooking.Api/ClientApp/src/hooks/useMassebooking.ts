@@ -30,7 +30,7 @@ function genererTidspunkter(start: string, slutt: string, slotMinutter: number):
 
 export function useMassebooking(slug: string | undefined) {
     const { klubb, laster: loadingKlubb } = useKlubb(slug);
-    const { baner, loading: loadingBaner } = useBaner(!!slug);
+    const { baner, loading: loadingBaner } = useBaner();
 
     const tilgjengeligeTidspunkter = useMemo(() => {
         if (!klubb?.bookingRegel) return [];
