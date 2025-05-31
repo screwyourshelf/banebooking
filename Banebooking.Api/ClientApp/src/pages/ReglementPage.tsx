@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { useKlubb } from '../hooks/useKlubb.js';
-import { Separator } from '@/components/ui/separator.js';
 export default function ReglementPage() {
     const { slug } = useParams();
     const { klubb, laster } = useKlubb(slug);
