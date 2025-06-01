@@ -114,7 +114,6 @@ export default function ArrangementPage() {
             ukedager: backendUkedager,
             tidspunkter: valgteTidspunkter,
             baneIder: valgteBaner,
-            overskriv: overskrivKonflikter
         };
     }
 
@@ -144,8 +143,6 @@ export default function ArrangementPage() {
         }
         return a.baneId.localeCompare(b.baneId);
     });
-
-    const [overskrivKonflikter, setOverskrivKonflikter] = useState(false);
 
     return (
         <div className="max-w-screen-md mx-auto px-1 py-1">
