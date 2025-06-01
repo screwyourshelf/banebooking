@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Banebooking.Api.Migrations
 {
     [DbContext(typeof(BanebookingDbContext))]
-    [Migration("20250525194229_FjernetBaneSlug")]
-    partial class FjernetBaneSlug
+    [Migration("20250601144948_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,50 @@ namespace Banebooking.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Arrangement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Kategori")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("KlubbId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OpprettetAvId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("OpprettetTid")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("SluttDato")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("StartDato")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KlubbId");
+
+                    b.HasIndex("OpprettetAvId");
+
+                    b.ToTable("Arrangementer");
+                });
 
             modelBuilder.Entity("Banebooking.Api.Models.Bane", b =>
                 {
@@ -47,7 +91,8 @@ namespace Banebooking.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("KlubbId", "Navn")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Bane_Klubb_Navn");
 
                     b.ToTable("Baner");
                 });
@@ -89,6 +134,9 @@ namespace Banebooking.Api.Migrations
                     b.Property<bool>("Aktiv")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid?>("ArrangementId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("BaneId")
                         .HasColumnType("uuid");
 
@@ -98,33 +146,21 @@ namespace Banebooking.Api.Migrations
                     b.Property<DateOnly>("Dato")
                         .HasColumnType("date");
 
-                    b.Property<string>("KansellertAv")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("KansellertTidspunkt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Kommentar")
-                        .HasColumnType("text");
-
                     b.Property<TimeOnly>("SluttTid")
                         .HasColumnType("time without time zone");
 
                     b.Property<TimeOnly>("StartTid")
                         .HasColumnType("time without time zone");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("VarsletOmKansellering")
-                        .HasColumnType("boolean");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("ArrangementId");
 
                     b.HasIndex("BrukerId");
 
                     b.HasIndex("BaneId", "Dato", "StartTid")
                         .IsUnique()
+                        .HasDatabaseName("IX_Booking_UnikSlotPerBane")
                         .HasFilter("\"Aktiv\" = TRUE");
 
                     b.ToTable("Bookinger");
@@ -138,6 +174,9 @@ namespace Banebooking.Api.Migrations
 
                     b.Property<string>("Epost")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Merknad")
                         .HasColumnType("text");
 
                     b.Property<string>("Navn")
@@ -159,15 +198,14 @@ namespace Banebooking.Api.Migrations
                     b.ToTable("Brukere");
                 });
 
-            modelBuilder.Entity("Banebooking.Api.Models.RolleITilgang", b =>
+            modelBuilder.Entity("Banebooking.Api.Models.BrukerRolle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Epost")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("BrukerId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("KlubbId")
                         .HasColumnType("uuid");
@@ -177,8 +215,11 @@ namespace Banebooking.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("KlubbId", "Epost")
-                        .IsUnique();
+                    b.HasIndex("BrukerId");
+
+                    b.HasIndex("KlubbId", "BrukerId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Rolle_UnikPerBrukerOgKlubb");
 
                     b.ToTable("Roller");
                 });
@@ -188,10 +229,6 @@ namespace Banebooking.Api.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<string>("AdminEpost")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Banereglement")
                         .IsRequired()
@@ -224,6 +261,25 @@ namespace Banebooking.Api.Migrations
                     b.ToTable("Klubber");
                 });
 
+            modelBuilder.Entity("Arrangement", b =>
+                {
+                    b.HasOne("Klubb", "Klubb")
+                        .WithMany()
+                        .HasForeignKey("KlubbId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Banebooking.Api.Models.Bruker", "OpprettetAv")
+                        .WithMany()
+                        .HasForeignKey("OpprettetAvId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Klubb");
+
+                    b.Navigation("OpprettetAv");
+                });
+
             modelBuilder.Entity("Banebooking.Api.Models.Bane", b =>
                 {
                     b.HasOne("Klubb", "Klubb")
@@ -248,6 +304,11 @@ namespace Banebooking.Api.Migrations
 
             modelBuilder.Entity("Banebooking.Api.Models.Booking", b =>
                 {
+                    b.HasOne("Arrangement", "Arrangement")
+                        .WithMany("Bookinger")
+                        .HasForeignKey("ArrangementId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Banebooking.Api.Models.Bane", "Bane")
                         .WithMany("Bookinger")
                         .HasForeignKey("BaneId")
@@ -259,20 +320,35 @@ namespace Banebooking.Api.Migrations
                         .HasForeignKey("BrukerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Arrangement");
+
                     b.Navigation("Bane");
 
                     b.Navigation("Bruker");
                 });
 
-            modelBuilder.Entity("Banebooking.Api.Models.RolleITilgang", b =>
+            modelBuilder.Entity("Banebooking.Api.Models.BrukerRolle", b =>
                 {
+                    b.HasOne("Banebooking.Api.Models.Bruker", "Bruker")
+                        .WithMany("Roller")
+                        .HasForeignKey("BrukerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Klubb", "Klubb")
                         .WithMany("Roller")
                         .HasForeignKey("KlubbId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Bruker");
+
                     b.Navigation("Klubb");
+                });
+
+            modelBuilder.Entity("Arrangement", b =>
+                {
+                    b.Navigation("Bookinger");
                 });
 
             modelBuilder.Entity("Banebooking.Api.Models.Bane", b =>
@@ -283,6 +359,8 @@ namespace Banebooking.Api.Migrations
             modelBuilder.Entity("Banebooking.Api.Models.Bruker", b =>
                 {
                     b.Navigation("Bookinger");
+
+                    b.Navigation("Roller");
                 });
 
             modelBuilder.Entity("Klubb", b =>

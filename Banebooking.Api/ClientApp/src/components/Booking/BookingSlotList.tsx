@@ -4,7 +4,6 @@ import BookingSlotItem from './BookingSlotItem.js';
 type Props = {
     slots: BookingSlot[];
     currentUser: { epost: string } | null;
-    modus: 'index' | 'minside' | 'arrangement' | 'readonly';
     onBook?: (slot: BookingSlot) => void;
     onCancel?: (slot: BookingSlot) => void;
     onDelete?: (slot: BookingSlot) => void;
@@ -15,7 +14,6 @@ type Props = {
 export function BookingSlotList({
     slots,
     currentUser,
-    modus,
     onBook,
     onCancel,
     onDelete,
@@ -40,7 +38,6 @@ export function BookingSlotList({
                         key={slotKey}
                         slot={slot}
                         currentUser={currentUser}
-                        modus={modus}
                         onBook={onBook}
                         onCancel={onCancel}
                         onDelete={onDelete}

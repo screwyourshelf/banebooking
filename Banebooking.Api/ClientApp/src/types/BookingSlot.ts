@@ -5,13 +5,12 @@ export type BookingSlot = {
     startTid: string;
     sluttTid: string;
     booketAv?: string | null;
+    arrangementTittel?: string;
+    arrangementBeskrivelse?: string;
     kanBookes: boolean;
     kanAvbestille: boolean;
     kanSlette: boolean;
     erPassert: boolean;
-
-    bookingtype?: string;
-    kommentar?: string;
 
     værSymbol?: string;
     temperatur?: number;

@@ -11,9 +11,9 @@ public class BookingContext
     public Guid? BrukerId => Bruker?.Id;
 
     public bool ErAdmin =>
-    Bruker?.Epost != null &&
-    Klubb?.AdminEpost != null &&
-    Klubb.AdminEpost.Equals(Bruker.Epost, StringComparison.InvariantCultureIgnoreCase);
+    Bruker?.Roller.Any(r =>
+        r.KlubbId == Klubb.Id &&
+        r.Rolle == RolleType.KlubbAdmin) == true;
 
     public Klubb Klubb { get; init; } = null!;
     public BestemmelseForBooking Regel => Klubb.BookingRegel;

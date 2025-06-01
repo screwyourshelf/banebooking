@@ -1,12 +1,10 @@
-﻿using Banebooking.Api.Dtos.Booking;
-
-namespace Banebooking.Api.Dtos.Bruker;
+﻿namespace Banebooking.Api.Dtos;
 
 public class BrukerDto
 {
     public Guid Id { get; set; }
-
     public string Epost { get; set; } = string.Empty;
 
-    public List<BookingSlotDto> Bookinger { get; set; } = new();
+    // F.eks. ["Utvidet", "KlubbAdmin"]
+    public List<string> Roller { get; set; } = new();
 }

@@ -2,6 +2,7 @@
 using Banebooking.Api.Dtos.Klubb;
 using Microsoft.AspNetCore.Authorization;
 using Banebooking.Api.Tjenester;
+using Banebooking.Api.Models;
 
 namespace Banebooking.Api.Controllers;
 
@@ -21,7 +22,6 @@ public partial class KlubberController(IKlubbService klubbService, IBrukerServic
             Slug = klubb.Slug,
             Navn = klubb.Navn,
             KontaktEpost = klubb.KontaktEpost,
-            AdminEpost = klubb.AdminEpost,
             Banereglement = klubb.Banereglement,
             Latitude = klubb.Latitude,
             Longitude = klubb.Longitude,
@@ -44,21 +44,24 @@ public partial class KlubberController(IKlubbService klubbService, IBrukerServic
     public async Task<IActionResult> OppdaterKlubb(string slug, [FromBody] OppdaterKlubbDto dto)
     {
         var bruker = User.Identity?.IsAuthenticated == true
-                 ? await brukerService.HentEllerOpprettBrukerAsync(User)
+                 ? await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User)
                  : null;
 
         if (bruker == null)
             return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
 
-        try
-        {
-            var ok = await klubbService.OppdaterKlubbAsync(slug, dto, bruker);
-            return ok ? NoContent() : NotFound();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid();
-        }
-    }
+        var klubb = await klubbService.HentKlubbAsync(slug);
+        if (klubb == null)
+            return NotFound();
 
+        var erAdmin = bruker.Roller.Any(r =>
+            r.KlubbId == klubb.Id &&
+            r.Rolle == RolleType.KlubbAdmin);
+
+        if (!erAdmin)
+            return Forbid("Bruker er ikke klubbadministrator");
+
+        var ok = await klubbService.OppdaterKlubbAsync(slug, dto, bruker);
+        return ok ? NoContent() : NotFound();
+    }
 }

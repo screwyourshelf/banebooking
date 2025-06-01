@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ukedager, dagNavnTilEnum } from '../../utils/datoUtils.js';
-import { useMassebooking } from '../../hooks/useMassebooking.js';
-import type { MassebookingDto } from '../../types/index.js';
+import { ukedager, dagNavnTilEnum, tilDatoTekst, enumTilDagNavn, dagIndexTilBackendUkedag, finnUkedagerIDatoPeriode } from '../../utils/datoUtils.js';
+import { useArrangement } from '../../hooks/useArrangement.js';
+import type { OpprettArrangementDto } from '../../types/index.js';
+
 import {
     Table, TableHeader, TableRow, TableHead, TableBody, TableCell
 } from "@/components/ui/table.js";
-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.js';
 import { Button } from '@/components/ui/button.js';
 import { Checkbox } from '@/components/ui/checkbox.js';
@@ -15,7 +15,10 @@ import Spinner from '../../components/ui/spinner.js';
 import DatoVelger from '../../components/DatoVelger.js';
 import { Input } from "@/components/ui/input.js";
 
-export default function MassebookingPage() {
+import { toast } from 'react-toastify';
+
+
+export default function ArrangementPage() {
     const { slug } = useParams<{ slug: string }>();
     const {
         baner,
@@ -25,7 +28,7 @@ export default function MassebookingPage() {
         forhandsvis,
         opprett,
         loading,
-    } = useMassebooking(slug);
+    } = useArrangement(slug);
 
     const [valgteBaner, setValgteBaner] = useState<string[]>([]);
     const [valgteUkedager, setValgteUkedager] = useState<string[]>([]);
@@ -35,22 +38,27 @@ export default function MassebookingPage() {
     const [alleBaner, setAlleBaner] = useState(false);
     const [alleUkedager, setAlleUkedager] = useState(false);
     const [alleTidspunkter, setAlleTidspunkter] = useState(false);
-    const [bookingtype, setBookingtype] = useState('admin');
-    const [kommentar, setKommentar] = useState('');
+    const [kategori, setKategori] = useState('Annet');
+    const [beskrivelse, setBeskrivelse] = useState('');
     const [activeTab, setActiveTab] = useState('oppsett');
 
     const nullstillForhandsvisning = () => setForhandsvisning({ ledige: [], konflikter: [] });
 
     const tilgjengeligeUkedager = useMemo(() => {
         if (!datoFra || !datoTil) return ukedager;
+
         const dager = new Set<string>();
-        const cursor = new Date(datoFra);
-        while (cursor <= datoTil) {
-            const dag = ukedager[cursor.getDay() === 0 ? 6 : cursor.getDay() - 1];
-            dager.add(dag);
-            cursor.setDate(cursor.getDate() + 1);
+        const fra = new Date(datoFra.getFullYear(), datoFra.getMonth(), datoFra.getDate());
+        const til = new Date(datoTil.getFullYear(), datoTil.getMonth(), datoTil.getDate());
+
+        for (let d = new Date(fra); d <= til; d.setDate(d.getDate() + 1)) {
+            const dayIndex = d.getDay(); // 0–6
+            const backendUkedag = dagIndexTilBackendUkedag[dayIndex];
+            const norskKortform = enumTilDagNavn[backendUkedag];
+            if (norskKortform) dager.add(norskKortform);
         }
-        return Array.from(dager);
+
+        return ukedager.filter(d => dager.has(d)); // korrekt rekkefølge
     }, [datoFra, datoTil]);
 
     useEffect(() => {
@@ -63,20 +71,52 @@ export default function MassebookingPage() {
         set(prev => (prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]));
     };
 
-    const byggDto = (): MassebookingDto | null => {
-        if (!datoFra || !datoTil || valgteBaner.length === 0 || valgteUkedager.length === 0 || valgteTidspunkter.length === 0)
+    function byggDto(): OpprettArrangementDto | null {
+        if (!datoFra || !datoTil) {
+            toast.warn('Du må velge start- og sluttdato');
             return null;
+        }
+
+        if (valgteBaner.length === 0) {
+            toast.warn('Du må velge minst én bane');
+            return null;
+        }
+
+        if (valgteTidspunkter.length === 0) {
+            toast.warn('Du må velge minst ett tidspunkt');
+            return null;
+        }
+
+        if (valgteUkedager.length === 0) {
+            toast.warn('Du må velge minst én ukedag');
+            return null;
+        }
+
+        // Finner faktiske backend-ukedager i perioden
+        const faktiskeUkedager = finnUkedagerIDatoPeriode(datoFra, datoTil);
+
+        // Oversett fra norsk kortform → backend-format og filtrer
+        const backendUkedager = valgteUkedager
+            .map(d => dagNavnTilEnum[d])
+            .filter(d => faktiskeUkedager.has(d));
+
+        if (backendUkedager.length === 0) {
+            toast.warn('Ingen av de valgte ukedagene finnes i datointervallet');
+            return null;
+        }
 
         return {
-            startDato: datoFra.toISOString().split('T')[0],
-            sluttDato: datoTil.toISOString().split('T')[0],
-            ukedager: valgteUkedager.map(d => dagNavnTilEnum[d]),
+            tittel: kategori,
+            beskrivelse,
+            kategori: kategori as OpprettArrangementDto['kategori'],
+            startDato: tilDatoTekst(datoFra),
+            sluttDato: tilDatoTekst(datoTil),
+            ukedager: backendUkedager,
             tidspunkter: valgteTidspunkter,
             baneIder: valgteBaner,
-            bookingtype,
-            kommentar,
+            overskriv: overskrivKonflikter
         };
-    };
+    }
 
     const håndterOpprett = async () => {
         const dto = byggDto();
@@ -95,6 +135,18 @@ export default function MassebookingPage() {
         }
     };
 
+    const alleSlots = [...forhandsvisning.ledige, ...forhandsvisning.konflikter].sort((a, b) => {
+        if (a.dato !== b.dato) {
+            return a.dato.localeCompare(b.dato);
+        }
+        if (a.startTid !== b.startTid) {
+            return a.startTid.localeCompare(b.startTid);
+        }
+        return a.baneId.localeCompare(b.baneId);
+    });
+
+    const [overskrivKonflikter, setOverskrivKonflikter] = useState(false);
+
     return (
         <div className="max-w-screen-md mx-auto px-1 py-1">
             {loading ? (
@@ -112,16 +164,22 @@ export default function MassebookingPage() {
 
                     <TabsContent value="oppsett" className="space-y-4">
                         <div>
-                            <Label>Type booking</Label>
+                            <Label>Kategori</Label>
                             <select
                                 className="w-full border rounded text-sm px-3 py-2 mt-1"
-                                value={bookingtype}
-                                onChange={e => setBookingtype(e.target.value)}
+                                value={kategori}
+                                onChange={e => setKategori(e.target.value)}
                             >
-                                <option value="admin">Administrator</option>
-                                <option value="kurs">Kurs</option>
-                                <option value="trening">Trening</option>
-                                <option value="turnering">Turnering</option>
+                                <option value="Trening">Trening</option>
+                                <option value="Turnering">Turnering</option>
+                                <option value="Klubbmersterskap">Klubbmersterskap</option>
+                                <option value="Kurs">Kurs</option>
+                                <option value="Lagkamp">Lagkamp</option>
+                                <option value="Stigespill">Stigespill</option>
+                                <option value="Dugnad">Dugnad</option>
+                                <option value="Vedlikehold">Vedlikehold</option>
+                                <option value="Sosialt">Sosialt</option>
+                                <option value="Annet">Annet</option>
                             </select>
                         </div>
 
@@ -129,24 +187,20 @@ export default function MassebookingPage() {
                             <Label>Beskrivelse</Label>
                             <Input
                                 type="text"
-                                    className="w-full text-sm mt-1"
-                                value={kommentar}
-                                onChange={e => setKommentar(e.target.value)}
+                                className="w-full text-sm mt-1"
+                                value={beskrivelse}
+                                onChange={e => setBeskrivelse(e.target.value)}
                             />
                         </div>
 
                         <div>
                             <Label>Fra</Label>
-                                <div className="mt-1 w-full">
-                                <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering={false} />
-                            </div>
+                            <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering={false} />
                         </div>
 
                         <div>
                             <Label>Til</Label>
-                                <div className="mt-1 w-full">
-                                <DatoVelger value={datoTil} onChange={setDatoTil} minDate={new Date()} visNavigering={false} />
-                            </div>
+                            <DatoVelger value={datoTil} onChange={setDatoTil} minDate={new Date()} visNavigering={false} />
                         </div>
 
                         <div>
@@ -225,18 +279,35 @@ export default function MassebookingPage() {
                                                 <TableHead>Dato</TableHead>
                                                 <TableHead>Klokkeslett</TableHead>
                                                 <TableHead>Bane</TableHead>
-                                                <TableHead>Kommentar</TableHead>
+                                                <TableHead>Beskrivelse</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {forhandsvisning.ledige.map((slot) => {
+                                            {alleSlots.map((slot) => {
                                                 const bane = baner.find((b) => b.id === slot.baneId);
+                                                const erKonflikt = forhandsvisning.konflikter.some(k =>
+                                                    k.baneId === slot.baneId &&
+                                                    k.dato === slot.dato &&
+                                                    k.startTid === slot.startTid &&
+                                                    k.sluttTid === slot.sluttTid
+                                                );
+
                                                 return (
-                                                    <TableRow key={`${slot.dato}-${slot.baneId}-${slot.startTid}`}>
+                                                    <TableRow
+                                                        key={`${slot.dato}-${slot.baneId}-${slot.startTid}`}
+                                                        className={erKonflikt ? 'bg-yellow-100' : ''}
+                                                    >
                                                         <TableCell>{slot.dato}</TableCell>
                                                         <TableCell>{slot.startTid} – {slot.sluttTid}</TableCell>
                                                         <TableCell>{bane?.navn ?? "(ukjent bane)"}</TableCell>
-                                                        <TableCell>{kommentar}</TableCell>
+                                                        <TableCell>
+                                                            {beskrivelse}
+                                                            {erKonflikt && (
+                                                                <span className="ml-2 text-yellow-700 text-xs italic">
+                                                                    (Konflikt)
+                                                                </span>
+                                                            )}
+                                                        </TableCell>
                                                     </TableRow>
                                                 );
                                             })}

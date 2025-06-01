@@ -11,12 +11,11 @@ public class Klubb
     public string Banereglement { get; set; } = string.Empty;
 
     public string KontaktEpost { get; set; } = string.Empty;
-    public string AdminEpost { get; set; } = string.Empty;
 
     public double? Latitude { get; set; }
-    public double? Longitude { get; set; } 
+    public double? Longitude { get; set; }
 
-    public virtual ICollection<Bane> Baner { get; set; } = new List<Bane>();
     public virtual BestemmelseForBooking BookingRegel { get; set; } = null!;
-    public virtual ICollection<RolleITilgang> Roller { get; set; } = new List<RolleITilgang>();
+    public virtual ICollection<Bane> Baner { get; set; } = [];
+    public virtual ICollection<BrukerRolle> Roller { get; set; } = [];
 }

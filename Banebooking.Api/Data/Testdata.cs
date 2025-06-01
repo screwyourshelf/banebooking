@@ -2,98 +2,85 @@
 using Banebooking.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-public static class Tesdata
+public static class Testdata
 {
     public static void Seed(BanebookingDbContext context)
     {
-        var definertKlubb = new Klubb
-        {
-            Id = Guid.NewGuid(),
-            Slug = "aas-tennisklubb",
-            Navn = "Ås tennisklubb",
-            KontaktEpost = "andreas.lotarev@gmail.com",
-            AdminEpost = "andreas.lotarev@gmail.com",
-            Longitude = 10.7769,
-            Latitude = 59.6552,
-            BookingRegel = new BestemmelseForBooking
-            {
-                Åpningstid = new TimeOnly(7, 0),
-                Stengetid = new TimeOnly(22, 0),
-                MaksBookingerPerDagPerBruker = 1,
-                AntallDagerFremITidTillatt = 7,
-                MaksAntallBookingerPerBrukerTotalt = 2,
-                SlotLengde = TimeSpan.FromMinutes(60),
-            },
-            Banereglement = "... Reglement",
-            Baner = new List<Bane>
-        {
-            new() { Id = Guid.NewGuid(), Navn = "Bane A", Beskrivelse = "Bane A - mot klubbhuset", Aktiv = true },
-            new() { Id = Guid.NewGuid(), Navn = "Bane B", Beskrivelse = "Bane B - i mitten", Aktiv = true },
-            new() { Id = Guid.NewGuid(), Navn = "Bane C", Beskrivelse = "Bane C - lengst bort fra klubbhuset", Aktiv = true },
-            new() { Id = Guid.NewGuid(), Navn = "Padel",  Beskrivelse = "Padelbane", Aktiv = true }
-        }
-        };
+        var slug = "aas-tennisklubb";
+        var adminEpost = "andreas.lotarev@gmail.com";
 
-        var eksisterende = context.Klubber
+        // Opprett eller oppdater klubb
+        var klubb = context.Klubber
             .Include(k => k.Baner)
             .Include(k => k.BookingRegel)
-            .FirstOrDefault(k => k.Slug == definertKlubb.Slug);
+            .FirstOrDefault(k => k.Slug == slug);
 
-        if (eksisterende == null)
+        if (klubb == null)
         {
-            context.Klubber.Add(definertKlubb);
+            klubb = new Klubb
+            {
+                Id = Guid.NewGuid(),
+                Slug = slug,
+                Navn = "Ås tennisklubb",
+                KontaktEpost = adminEpost,
+                Latitude = 59.6552,
+                Longitude = 10.7769,
+                Banereglement = "... Reglement",
+                BookingRegel = new BestemmelseForBooking
+                {
+                    Åpningstid = new TimeOnly(7, 0),
+                    Stengetid = new TimeOnly(22, 0),
+                    MaksBookingerPerDagPerBruker = 1,
+                    AntallDagerFremITidTillatt = 7,
+                    MaksAntallBookingerPerBrukerTotalt = 2,
+                    SlotLengde = TimeSpan.FromMinutes(60),
+                },
+                Baner =
+                [
+                    new() { Id = Guid.NewGuid(), Navn = "Bane A", Beskrivelse = "Mot klubbhuset", Aktiv = true },
+                    new() { Id = Guid.NewGuid(), Navn = "Bane B", Beskrivelse = "Midten", Aktiv = true },
+                    new() { Id = Guid.NewGuid(), Navn = "Bane C", Beskrivelse = "Lengst bort", Aktiv = true },
+                    new() { Id = Guid.NewGuid(), Navn = "Padel",  Beskrivelse = "Padelbane", Aktiv = false }
+                ]
+            };
+            context.Klubber.Add(klubb);
+            context.SaveChanges();
         }
-        else
+
+        // Opprett eller hent bruker
+        var bruker = context.Brukere.FirstOrDefault(b => b.Epost == adminEpost);
+        if (bruker == null)
         {
-            // Oppdater klubbinfo
-            eksisterende.Navn = definertKlubb.Navn;
-            eksisterende.KontaktEpost = definertKlubb.KontaktEpost;
-            eksisterende.AdminEpost = definertKlubb.AdminEpost;
-            eksisterende.Latitude = definertKlubb.Latitude;
-            eksisterende.Longitude = definertKlubb.Longitude;
-            eksisterende.Banereglement = definertKlubb.Banereglement;
-
-            // Bookingregel
-            if (eksisterende.BookingRegel == null)
+            bruker = new Bruker
             {
-                eksisterende.BookingRegel = definertKlubb.BookingRegel;
-            }
-            else
-            {
-                eksisterende.BookingRegel.Åpningstid = definertKlubb.BookingRegel.Åpningstid;
-                eksisterende.BookingRegel.Stengetid = definertKlubb.BookingRegel.Stengetid;
-                eksisterende.BookingRegel.MaksBookingerPerDagPerBruker = definertKlubb.BookingRegel.MaksBookingerPerDagPerBruker;
-                eksisterende.BookingRegel.AntallDagerFremITidTillatt = definertKlubb.BookingRegel.AntallDagerFremITidTillatt;
-                eksisterende.BookingRegel.MaksAntallBookingerPerBrukerTotalt = definertKlubb.BookingRegel.MaksAntallBookingerPerBrukerTotalt;
-                eksisterende.BookingRegel.SlotLengde = definertKlubb.BookingRegel.SlotLengde;
-            }
+                Id = Guid.NewGuid(),
+                Epost = adminEpost,
+                Navn = "Andreas Lotarev",
+                Sub = "dev|andreas.lotarev",
+                Provider = "email",
+                OpprettetTid = DateTime.UtcNow
+            };
+            context.Brukere.Add(bruker);
+            context.SaveChanges();
+        }
 
-            // Oppdater eller legg til baner
-            foreach (var definertBane in definertKlubb.Baner)
-            {
-                var eksisterendeBane = eksisterende.Baner
-                    .FirstOrDefault(b => b.Navn.Equals(definertBane.Navn, StringComparison.OrdinalIgnoreCase));
+        // Legg til roller om de mangler
+        var eksisterendeRoller = context.Roller
+            .Where(r => r.BrukerId == bruker.Id && r.KlubbId == klubb.Id)
+            .Select(r => r.Rolle)
+            .ToHashSet();
 
-                if (eksisterendeBane == null)
-                {
-                    eksisterende.Baner.Add(new Bane
-                    {
-                        Id = Guid.NewGuid(),
-                        Navn = definertBane.Navn,
-                        Beskrivelse = definertBane.Beskrivelse,
-                        Aktiv = definertBane.Aktiv,
-                        KlubbId = eksisterende.Id
-                    });
-                }
-                else
-                {
-                    eksisterendeBane.Beskrivelse = definertBane.Beskrivelse;
-                    eksisterendeBane.Aktiv = definertBane.Aktiv;
-                }
-            }
+        if (!eksisterendeRoller.Contains(RolleType.KlubbAdmin))
+        {
+            context.Roller.Add(new BrukerRolle
+            {
+                Id = Guid.NewGuid(),
+                BrukerId = bruker.Id,
+                KlubbId = klubb.Id,
+                Rolle = RolleType.KlubbAdmin
+            });
         }
 
         context.SaveChanges();
     }
-
 }

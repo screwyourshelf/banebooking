@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { forhandsvisMassebooking, opprettMassebooking } from '../api/massebooking.js';
+import {
+    forhandsvisArrangement,
+    opprettArrangement,
+    hentKommendeArrangementer,
+} from '../api/arrangement.js';
 import { useKlubb } from './useKlubb.js';
 import { useBaner } from './useBaner.js';
-import type { BookingDto, MassebookingDto } from '../types/index.js';
+import type { BookingDto, OpprettArrangementDto, ArrangementDto } from '../types/index.js';
 
 function parseTimeToMinutes(tid: string) {
     const [h, m] = tid.split(':').map(Number);
@@ -28,7 +32,7 @@ function genererTidspunkter(start: string, slutt: string, slotMinutter: number):
     return result;
 }
 
-export function useMassebooking(slug: string | undefined) {
+export function useArrangement(slug: string | undefined) {
     const { klubb, laster: loadingKlubb } = useKlubb(slug);
     const { baner, loading: loadingBaner } = useBaner();
 
@@ -48,11 +52,33 @@ export function useMassebooking(slug: string | undefined) {
         konflikter: BookingDto[];
     }>({ ledige: [], konflikter: [] });
 
-    const forhandsvis = async (dto: MassebookingDto) => {
+    const [arrangementer, setArrangementer] = useState<ArrangementDto[]>([]);
+
+    const lastArrangementer = async () => {
+        if (!slug) return;
+        try {
+            const result = await hentKommendeArrangementer(slug);
+
+            // Sorter etter startdato (nærmeste først)
+            const sortert = [...result].sort((a, b) =>
+                a.startDato.localeCompare(b.startDato)
+            );
+
+            setArrangementer(sortert);
+        } catch {
+            toast.error('Feil ved henting av arrangementer');
+        }
+    };
+
+    useEffect(() => {
+        lastArrangementer();
+    }, [slug]);
+
+    const forhandsvis = async (dto: OpprettArrangementDto) => {
         if (!slug) return;
         setLoading(true);
         try {
-            const data = await forhandsvisMassebooking(slug, dto);
+            const data = await forhandsvisArrangement(slug, dto);
             setForhandsvisning(data);
         } catch {
             toast.error('Feil ved forhåndsvisning');
@@ -61,16 +87,18 @@ export function useMassebooking(slug: string | undefined) {
         }
     };
 
-    const opprett = async (dto: MassebookingDto) => {
+    const opprett = async (dto: OpprettArrangementDto) => {
         if (!slug) return;
         setLoading(true);
         try {
-            const result = await opprettMassebooking(slug, dto);
+            const result = await opprettArrangement(slug, dto);
             setForhandsvisning({ ledige: [], konflikter: [] });
-            toast.success(`${result.vellykkede.length} bookinger opprettet`);
-            if (result.errors.length > 0) {
-                toast.warn(`${result.errors.length} konflikter oppsto`);
-            }
+
+            toast.success(`${result.opprettet.length} bookinger opprettet`);
+            
+            // Reload arrangementer etter opprettelse
+            await lastArrangementer();
+
             return result;
         } catch {
             toast.error('Feil ved oppretting');
@@ -88,5 +116,7 @@ export function useMassebooking(slug: string | undefined) {
         setForhandsvisning,
         forhandsvis,
         opprett,
+        arrangementer,        
+        lastArrangementer
     };
 }

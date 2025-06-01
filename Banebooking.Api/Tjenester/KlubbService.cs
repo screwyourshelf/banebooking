@@ -50,9 +50,6 @@ public class KlubbService : IKlubbService
 
         if (klubb == null) return false;
 
-        if (!bruker.Epost.Equals(klubb.AdminEpost, StringComparison.OrdinalIgnoreCase))
-            throw new UnauthorizedAccessException("Bruker er ikke admin for klubben");
-
         klubb.Navn = dto.Navn;
         klubb.KontaktEpost = dto.KontaktEpost;
         klubb.Banereglement = dto.Banereglement;

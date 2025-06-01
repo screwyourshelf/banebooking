@@ -1,20 +1,22 @@
 ﻿using Banebooking.Api.Logikk;
-using Banebooking.Api.Models;
 
 namespace Banebooking.Api.Autorisasjon;
 
 /// <summary>
 /// Resultatmodell for hvilke handlinger brukeren har tilgang til for en gitt slot.
 /// </summary>
+/// <summary>
+/// Resultatmodell for hvilke handlinger brukeren har tilgang til for en gitt booking-slot.
+/// </summary>
 public class BookingAksessVurdering
 {
-    public bool KanBooke { get; set; }
-    public bool KanAvbestille { get; set; }
-    public bool KanSlette { get; set; }
-    public bool ErEier { get; set; }
-    public string? BooketAv { get; set; }
-    public BookingType? Type { get; set; }
+    public bool KanBooke { get; set; }             // Kan lage ny booking i dette slotet
+    public bool KanAvbestille { get; set; }        // Kan avbestille egen booking
+    public bool KanSlette { get; set; }            // Kan slette andres booking (admin)
+    public bool ErEier { get; set; }               // Gjelder denne booking brukeren selv
+    public string? BooketAv { get; set; }          // E-post (eller navn) på den som booket
 }
+
 
 public class BookingAutorisasjon
 {
@@ -38,7 +40,6 @@ public class BookingAutorisasjon
         {
             BooketAv = _ctx.EksisterendeBooking?.Bruker?.Epost,
             ErEier = _ctx.ErEier,
-            Type = _ctx.EksisterendeBooking?.Type
         };
 
         var harMedlemstilgang = ErLedig && ErInnenforTid && ErInnenFremITid && HarBookingrett && UnderMaxPerDag && UnderMaxTotalt;

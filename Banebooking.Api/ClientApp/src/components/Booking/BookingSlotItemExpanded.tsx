@@ -3,7 +3,6 @@ import type { BookingSlot } from '../../types/index.js';
 
 type Props = {
     slot: BookingSlot;
-    modus: 'index' | 'minside' | 'arrangement' | 'readonly';
     time: string;
     erBekreftet: boolean;
     setErBekreftet: (val: boolean) => void;
@@ -15,7 +14,6 @@ type Props = {
 
 export function BookingSlotItemExpanded({
     slot,
-    modus,
     time,
     erBekreftet,
     setErBekreftet,
@@ -30,8 +28,8 @@ export function BookingSlotItemExpanded({
                 <BookingActions
                     slot={slot}
                     time={time}
-                    erBekreftet={modus === 'index' ? erBekreftet : true}
-                    setErBekreftet={modus === 'index' ? setErBekreftet : () => { }}
+                    erBekreftet={erBekreftet}
+                    setErBekreftet={setErBekreftet}
                     onBook={onBook}
                     onCancel={onCancel}
                     onDelete={onDelete}

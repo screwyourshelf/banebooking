@@ -7,56 +7,87 @@ namespace Banebooking.Api.Tjenester;
 
 public interface IBrukerService
 {
-    Task<Bruker> HentEllerOpprettBrukerAsync(ClaimsPrincipal principal);
+    Task<Bruker> HentEllerOpprettBrukerMedRolleAsync(string slug, ClaimsPrincipal principal);
+    Task<Guid?> HentUserIdAsync(ClaimsPrincipal principal);
 }
 
 public class BrukerService(BanebookingDbContext db) : IBrukerService
 {
-    public async Task<Bruker> HentEllerOpprettBrukerAsync(ClaimsPrincipal principal)
+    public async Task<Bruker> HentEllerOpprettBrukerMedRolleAsync(string slug, ClaimsPrincipal principal)
     {
         string? sub = HentSub(principal);
         string? email = HentEpost(principal);
 
         if (string.IsNullOrWhiteSpace(sub) || string.IsNullOrWhiteSpace(email))
-            return null;
-
-        if (string.IsNullOrWhiteSpace(sub) || string.IsNullOrWhiteSpace(email))
             throw new UnauthorizedAccessException("Mangler sub eller email i token");
 
         // Prøv å finne bruker via sub
-        var user = await db.Brukere.FirstOrDefaultAsync(u => u.Sub == sub);
-        if (user != null)
-            return user;
+        var bruker = await db.Brukere.FirstOrDefaultAsync(u => u.Sub == sub);
 
-        // Fallback: Finn via e-post (samme person med ny provider)
-        user = await db.Brukere.FirstOrDefaultAsync(u => u.Epost == email);
-        if (user != null)
+        if (bruker == null)
         {
-            user.Sub = sub;
-            user.Provider = HentProvider(principal);
-            await db.SaveChangesAsync();
-            return user;
+            // Fallback: Finn via e-post (samme person med ny provider)
+            bruker = await db.Brukere.FirstOrDefaultAsync(u => u.Epost == email);
+            if (bruker != null)
+            {
+                bruker.Sub = sub;
+                bruker.Provider = HentProvider(principal);
+                await db.SaveChangesAsync();
+            }
         }
 
-        // Opprett ny bruker
-        user = new Bruker
+        // Hvis fortsatt ikke finnes – opprett
+        if (bruker == null)
         {
-            Sub = sub,
-            Epost = email,
-            Navn = HentNavn(principal),
-            Provider = HentProvider(principal),
-            OpprettetTid = DateTime.UtcNow,
-        };
+            bruker = new Bruker
+            {
+                Sub = sub,
+                Epost = email,
+                Navn = HentNavn(principal),
+                Provider = HentProvider(principal),
+                OpprettetTid = DateTime.UtcNow,
+            };
+            db.Brukere.Add(bruker);
+            await db.SaveChangesAsync();
+        }
 
-        db.Brukere.Add(user);
-        await db.SaveChangesAsync();
-        return user;
+        // Hent klubb og legg til rolle hvis mangler
+        var klubb = await db.Klubber
+            .Include(k => k.Roller)
+            .FirstOrDefaultAsync(k => k.Slug == slug);
+
+        if (klubb != null)
+        {
+            var eksisterendeRolle = klubb.Roller
+                .FirstOrDefault(r => r.BrukerId == bruker.Id);
+
+            if (eksisterendeRolle == null)
+            {
+                var nyRolle = new BrukerRolle
+                {
+                    BrukerId = bruker.Id,
+                    Rolle = RolleType.Medlem,
+                    KlubbId = klubb.Id
+                };
+
+                klubb.Roller.Add(nyRolle);
+                await db.SaveChangesAsync();
+
+                bruker.Roller.Add(nyRolle);
+            }
+            else
+            {
+                bruker.Roller.Add(eksisterendeRolle);
+            }
+        }
+
+        return bruker;
     }
+
 
     public async Task<Guid?> HentUserIdAsync(ClaimsPrincipal principal)
     {
         var sub = HentSub(principal);
-
         if (string.IsNullOrWhiteSpace(sub))
             return null;
 
@@ -69,13 +100,13 @@ public class BrukerService(BanebookingDbContext db) : IBrukerService
     private static string? HentSub(ClaimsPrincipal principal)
     {
         return principal.FindFirst("sub")?.Value
-               ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     }
 
     private static string? HentEpost(ClaimsPrincipal principal)
     {
         return principal.FindFirst("email")?.Value
-                  ?? principal.FindFirst(ClaimTypes.Email)?.Value;
+            ?? principal.FindFirst(ClaimTypes.Email)?.Value;
     }
 
     private static string HentProvider(ClaimsPrincipal principal)
@@ -92,4 +123,3 @@ public class BrukerService(BanebookingDbContext db) : IBrukerService
             ?? principal.Identity?.Name;
     }
 }
-

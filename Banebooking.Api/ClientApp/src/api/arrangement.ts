@@ -1,11 +1,24 @@
-import { supabase } from '../supabase.js'
-import type { MassebookingDto, BookingDto } from '../types/index.js';
+import { supabase } from '../supabase.js';
+import type { BookingDto, ArrangementDto, OpprettArrangementDto } from '../types/index.js';
 
-export async function forhandsvisMassebooking(slug: string, dto: MassebookingDto) {
+export async function hentKommendeArrangementer(slug: string) {
+    const res = await fetch(`/api/klubb/${slug}/arrangement/kommende`, {
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || 'Feil ved henting av arrangementer');
+    }
+
+    return await res.json() as ArrangementDto[];
+}
+
+export async function forhandsvisArrangement(slug: string, dto: OpprettArrangementDto) {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
 
-    const res = await fetch(`/api/klubb/${slug}/massebooking/forhandsvis`, {
+    const res = await fetch(`/api/klubb/${slug}/arrangement/forhandsvis`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -16,7 +29,7 @@ export async function forhandsvisMassebooking(slug: string, dto: MassebookingDto
 
     if (!res.ok) {
         const msg = await res.text();
-        throw new Error(msg || 'Feil ved forhåndsvisning');
+        throw new Error(msg || 'Feil ved forhåndsvisning av arrangement');
     }
 
     return await res.json() as {
@@ -25,11 +38,11 @@ export async function forhandsvisMassebooking(slug: string, dto: MassebookingDto
     };
 }
 
-export async function opprettMassebooking(slug: string, dto: MassebookingDto) {
+export async function opprettArrangement(slug: string, dto: OpprettArrangementDto) {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
 
-    const res = await fetch(`/api/klubb/${slug}/massebooking`, {
+    const res = await fetch(`/api/klubb/${slug}/arrangement`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -40,12 +53,12 @@ export async function opprettMassebooking(slug: string, dto: MassebookingDto) {
 
     if (!res.ok) {
         const msg = await res.text();
-        throw new Error(msg || 'Feil ved oppretting av massebooking');
+        throw new Error(msg || 'Feil ved oppretting av arrangement');
     }
 
     return await res.json() as {
-        vellykkede: BookingDto[];
-        errors: {
+        opprettet: BookingDto[];
+        konflikter: {
             dato: string;
             tid: string;
             baneId: string;
@@ -53,3 +66,4 @@ export async function opprettMassebooking(slug: string, dto: MassebookingDto) {
         }[];
     };
 }
+

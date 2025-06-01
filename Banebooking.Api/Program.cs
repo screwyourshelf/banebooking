@@ -46,6 +46,8 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITidProvider, NorskTidProvider>();
 builder.Services.AddScoped<IBrukerService, BrukerService>();
 builder.Services.AddScoped<IBaneService, BaneService>();
+builder.Services.AddScoped<IArrangementService, ArrangementService>();
+
 
 var app = builder.Build();
 
@@ -56,14 +58,22 @@ if (app.Environment.IsDevelopment())
         var db = scope.ServiceProvider.GetRequiredService<BanebookingDbContext>();
         db.Database.Migrate();
 
-        Tesdata.Seed(db);
+        Testdata.Seed(db);
     }
 
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BanebookingDbContext>();
+        Testdata.Seed(db);
+    }
+}
 
-app.UseDefaultFiles();
+    app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseRouting();

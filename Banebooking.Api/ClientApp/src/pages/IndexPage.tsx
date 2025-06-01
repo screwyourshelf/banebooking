@@ -5,7 +5,7 @@ import DatoVelger from '../components/DatoVelger.js';
 import { BookingSlotList } from '../components/Booking/BookingSlotList.js';
 import { useBaner } from '../hooks/useBaner.js';
 import { useBooking } from '../hooks/useBooking.js';
-import { useCurrentUser } from '../hooks/useCurrentUser.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { SlugContext } from '../layouts/Layout.js';
 
 export default function IndexPage() {
@@ -16,7 +16,7 @@ export default function IndexPage() {
         return lagret ? new Date(lagret) : new Date();
     });
 
-    const currentUser = useCurrentUser();
+    const { currentUser } = useAuth();
     const slug = useContext(SlugContext);
 
     const valgtDatoStr = valgtDato ? format(valgtDato, 'yyyy-MM-dd') : '';
@@ -82,9 +82,7 @@ export default function IndexPage() {
                 onBook={onBook}
                 onCancel={onCancel}
                 onDelete={(slot) => console.log('Slett', slot)}
-                modus="index"
             />
-
         </div>
     );
 }

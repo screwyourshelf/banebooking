@@ -6,7 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute.js';
 import ReglementPage from './pages/ReglementPage.js';
 import RedigerKlubbPage from './pages/admin/RedigerKlubbPage.js';
 import RedigerBanerPage from './pages/admin/RedigerBanerPage.js';
-import MassebookingPage from './pages/admin/MassebookingPage.js';
+import ArrangementPage from './pages/utvidet/ArrangementPage.js';
 
 export default function App() {
     return (
@@ -42,15 +42,17 @@ export default function App() {
                                 </ProtectedRoute>
                             }
                         />
-                        <Route
-                            path="massebooking"
-                            element={
-                                <ProtectedRoute>
-                                    <MassebookingPage />
-                                </ProtectedRoute>
-                            }
-                        />
                     </Route>
+
+                    <Route
+                        path="arrangement"
+                        element={
+                            <ProtectedRoute>
+                                <ArrangementPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
                 </Route>
 
                 {/* Root route uten slug */}

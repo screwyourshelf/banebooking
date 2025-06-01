@@ -1,19 +1,24 @@
-import { useState, useContext, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { BookingSlotList } from '../components/Booking/BookingSlotList.js';
 import { useMineBookinger } from '../hooks/useMineBookinger.js';
-import { useCurrentUser } from '../hooks/useCurrentUser.js';
+import { useArrangement } from '../hooks/useArrangement.js';
 import { SlugContext } from '../layouts/Layout.js';
 import Spinner from '@/components/ui/spinner.js';
-import { Separator } from '@/components/ui/separator.js';
+import {
+    Table,
+    TableHeader,
+    TableRow,
+    TableHead,
+    TableBody,
+    TableCell,
+} from '@/components/ui/table.js';
 
 export default function MinSidePage() {
     const { slug: slugFraParams } = useParams<{ slug: string }>();
     const slug = useContext(SlugContext) ?? slugFraParams;
 
-    const currentUser = useCurrentUser();
-    const [apenSlotTid, setApenSlotTid] = useState<string | null>(null);
-    const { bookinger, laster, onCancel } = useMineBookinger(slug ?? '');
+    const { bookinger, laster } = useMineBookinger(slug ?? '');
+    const { arrangementer, loading: lasterArrangementer } = useArrangement(slug);
 
     const grupperteBookinger = useMemo(() => {
         const grupper: Record<string, typeof bookinger> = {};
@@ -25,46 +30,98 @@ export default function MinSidePage() {
             grupper[slot.dato].push(slot);
         }
 
-        for (const dato in grupper) {
-            grupper[dato].sort((a, b) => a.startTid.localeCompare(b.startTid));
-        }
-
         return Object.entries(grupper).sort(([datoA], [datoB]) => datoA.localeCompare(datoB));
     }, [bookinger]);
 
-    if (laster)
+    if (laster || lasterArrangementer) {
         return (
             <div className="flex justify-center py-4">
                 <Spinner />
             </div>
         );
+    }
 
     return (
         <div className="max-w-screen-sm mx-auto px-1 py-1">
             <h2 className="text-base font-semibold mb-2">Mine kommende bookinger</h2>
 
-            {grupperteBookinger.length === 0 && (
+            {grupperteBookinger.length === 0 ? (
                 <p className="text-sm text-muted-foreground italic">Ingen aktive bookinger funnet.</p>
+            ) : (
+                <div className="overflow-auto max-h-[60vh] border rounded-md mb-6">
+                    <Table className="text-sm">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Dato</TableHead>
+                                <TableHead>Klokkeslett</TableHead>
+                                <TableHead>Bane</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {grupperteBookinger.flatMap(([dato, slots]) =>
+                                slots.map((slot) => (
+                                    <TableRow key={`${dato}-${slot.baneId}-${slot.startTid}`}>
+                                        <TableCell>{dato}</TableCell>
+                                        <TableCell>
+                                            {slot.startTid} – {slot.sluttTid}
+                                        </TableCell>
+                                        <TableCell>{slot.baneNavn ?? '(ukjent bane)'}</TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             )}
 
-            {grupperteBookinger.map(([dato, slots], index) => (
-                <section key={dato} className="mb-4">
+            {arrangementer.length > 0 && (
+                <>
+                    <h2 className="text-base font-semibold mb-2">Kommende arrangementer</h2>
 
-                    <h3 className="text-sm font-medium mb-1">{dato}</h3>
+                    <div className="overflow-auto max-h-[60vh] border rounded-md">
+                        <Table className="text-sm">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Hva</TableHead>
+                                    <TableHead>Når</TableHead>
+                                    <TableHead className="text-right">Dager igjen</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {arrangementer.map((arr) => {
+                                    const start = new Date(arr.startDato);
+                                    const today = new Date();
+                                    const dagerIgjen = Math.max(
+                                        0,
+                                        Math.ceil((start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                                    );
 
-                    <BookingSlotList
-                        slots={slots}
-                        currentUser={currentUser ? { epost: currentUser.email ?? '' } : null}
-                        modus="minside"
-                        onCancel={onCancel}
-                        apenSlotTid={apenSlotTid}
-                        setApenSlotTid={setApenSlotTid}
-                    />
-
-
-                    {index !== grupperteBookinger.length - 1 && <Separator className="my-4" />}
-                </section>
-            ))}
+                                    return (
+                                        <TableRow key={arr.id}>
+                                            <TableCell>
+                                                <div className="font-medium">{arr.tittel}</div>
+                                                {arr.beskrivelse && (
+                                                    <div className="text-muted-foreground text-xs">
+                                                        {arr.beskrivelse}
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {arr.startDato === arr.sluttDato
+                                                    ? arr.startDato
+                                                    : `${arr.startDato} – ${arr.sluttDato}`}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {dagerIgjen} {dagerIgjen === 1 ? 'dag' : 'dager'}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

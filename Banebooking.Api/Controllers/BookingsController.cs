@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Banebooking.Api.Tjenester;
 using Banebooking.Api.Dtos.Booking;
+using Banebooking.Api.Tjenester;
+using Banebooking.Api.Data;
 
 namespace Banebooking.Api.Controllers;
 
 [ApiController]
 [Route("api/klubb/{slug}/bookinger")]
 public class BookingerController(
+    BanebookingDbContext db,
+    IKlubbService klubbService,
     IBrukerService brukerService,
     IBookingService bookingService) : ControllerBase
 {
@@ -15,11 +18,20 @@ public class BookingerController(
     [AllowAnonymous]
     public async Task<IActionResult> HentBookinger(string slug, [FromQuery] Guid baneId, [FromQuery] DateOnly dato)
     {
+        var klubb = await klubbService.HentKlubbAsync(slug);
+
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet.");
+
+        var bane = klubb.Baner.FirstOrDefault(b => b.Id == baneId);
+        if (bane == null)
+            return NotFound("Bane ikke funnet i klubben.");
+
         var bruker = User.Identity?.IsAuthenticated == true
-            ? await brukerService.HentEllerOpprettBrukerAsync(User)
+            ? await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User)
             : null;
 
-        var slots = await bookingService.HentBookingerAsync(slug, baneId, dato, bruker);
+        var slots = await bookingService.HentBookingerForDatoAsync(klubb, bane, dato, bruker);
         return Ok(slots);
     }
 
@@ -27,54 +39,58 @@ public class BookingerController(
     [Authorize]
     public async Task<IActionResult> HentMineBookinger(string slug)
     {
-        var bruker = User.Identity?.IsAuthenticated == true
-            ? await brukerService.HentEllerOpprettBrukerAsync(User)
-            : null;
+        var klubb = await klubbService.HentKlubbAsync(slug);
 
-        if (bruker == null)
-            return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet.");
 
-        var mineBookinger = await bookingService.HentBookingerAsync(slug, false, bruker);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
 
+        var mineBookinger = await bookingService.HentMineBookingerAsync(klubb, false, bruker);
         return Ok(mineBookinger);
     }
-
 
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> OpprettBooking(string slug, [FromBody] NyBookingDto dto)
     {
-        var bruker = User.Identity?.IsAuthenticated == true
-            ? await brukerService.HentEllerOpprettBrukerAsync(User)
-            : null;
+        var klubb = await klubbService.HentKlubbAsync(slug);
 
-        if (bruker == null)
-            return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet.");
 
-        var resultat = await bookingService.ForsøkOpprettBookingAsync(slug, dto, bruker);
+        var bane = klubb.Baner.FirstOrDefault(b => b.Id == dto.BaneId);
+        if (bane == null)
+            return NotFound("Bane ikke funnet i klubben.");
 
-        if (resultat.Status == "Feil")
-            return BadRequest(resultat);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
 
-        return Ok(resultat);
+        var resultat = await bookingService.ForsøkOpprettBookingAsync(klubb, bane, dto, bruker);
+
+        return resultat.Status == "Feil"
+            ? BadRequest(resultat)
+            : Ok(resultat);
     }
 
     [HttpDelete]
     [Authorize]
     public async Task<IActionResult> AvbestillBooking(string slug, [FromBody] NyBookingDto dto)
     {
-        var bruker = User.Identity?.IsAuthenticated == true
-            ? await brukerService.HentEllerOpprettBrukerAsync(User)
-            : null;
+        var klubb = await klubbService.HentKlubbAsync(slug);
 
-        if (bruker == null)
-            return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
+        if (klubb == null)
+            return NotFound("Klubb ikke funnet.");
 
-        var resultat = await bookingService.ForsøkAvbestillBookingAsync(slug, dto, bruker);
+        var bane = klubb.Baner.FirstOrDefault(b => b.Id == dto.BaneId);
+        if (bane == null)
+            return NotFound("Bane ikke funnet i klubben.");
 
-        if (resultat.Status == "Feil")
-            return BadRequest(resultat);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
 
-        return Ok(resultat);
+        var resultat = await bookingService.ForsøkAvbestillBookingAsync(klubb, bane, dto, bruker);
+
+        return resultat.Status == "Feil"
+            ? BadRequest(resultat)
+            : Ok(resultat);
     }
 }

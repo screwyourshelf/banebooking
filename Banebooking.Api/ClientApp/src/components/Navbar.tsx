@@ -19,6 +19,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../hooks/useAuth.js';
 import { useLogin } from '../hooks/useLogin.js';
 import { useKlubb } from '../hooks/useKlubb.js';
+import { useBruker } from '../hooks/useBruker.js';
 import NavbarBrandMedKlubb from './NavbarBrandMedKlubb.js';
 import Spinner from './ui/spinner.js';
 
@@ -26,6 +27,7 @@ export default function Navbar() {
     const { slug } = useParams<{ slug: string }>();
     const { klubb, laster } = useKlubb(slug);
     const { currentUser, signOut } = useAuth();
+    const { bruker } = useBruker(slug);
     const navigate = useNavigate();
 
     const {
@@ -37,7 +39,8 @@ export default function Navbar() {
         handleMagicLink
     } = useLogin(window.location.origin + (slug ? `/${slug}` : ''));
 
-    const isAdmin = currentUser?.email?.toLowerCase() === klubb?.adminEpost?.toLowerCase();
+    const erAdmin = bruker?.roller.includes('KlubbAdmin');
+    const harUtvidetTilgang = bruker?.roller.includes('Utvidet');
 
     return (
         <div className="max-w-screen-lg mx-auto flex justify-between items-center px-2 py-1">
@@ -92,23 +95,33 @@ export default function Navbar() {
                                 </>
                             )}
 
-                            {isAdmin && (
+                            {(erAdmin || harUtvidetTilgang) && (
                                 <>
                                     <DropdownMenuSeparator />
-                                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Admin</div>
+                                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                                        {erAdmin ? 'Admin' : 'Utvidet tilgang'}
+                                    </div>
+
+                                    {/* Admin-menyvalg */}
+                                    {erAdmin && (
+                                        <>
+                                            <DropdownMenuItem asChild>
+                                                <Link to={`/${slug}/admin/klubb`}>
+                                                    <FaWrench className="mr-2" />Rediger klubb
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link to={`/${slug}/admin/baner`}>
+                                                    <FaWrench className="mr-2" />Baner
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </>
+                                    )}
+
+                                    {/* Arrangement vises for både admin og utvidet */}
                                     <DropdownMenuItem asChild>
-                                        <Link to={`/${slug}/admin/klubb`}>
-                                            <FaWrench className="mr-2" />Rediger klubb
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to={`/${slug}/admin/baner`}>
-                                            <FaWrench className="mr-2" />Baner
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to={`/${slug}/admin/massebooking`}>
-                                            <FaCalendarAlt className="mr-2" />Massebooking
+                                        <Link to={`/${slug}/arrangement`}>
+                                            <FaCalendarAlt className="mr-2" />Arrangement
                                         </Link>
                                     </DropdownMenuItem>
                                 </>

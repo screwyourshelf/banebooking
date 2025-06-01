@@ -11,7 +11,6 @@ type Props = {
     onBook?: (slot: BookingSlot) => void;
     onCancel?: (slot: BookingSlot) => void;
     onDelete?: (slot: BookingSlot) => void;
-    modus: 'index' | 'minside' | 'arrangement' | 'readonly';
 };
 
 export default function BookingSlotItem({
@@ -22,7 +21,6 @@ export default function BookingSlotItem({
     onBook = () => { },
     onCancel = () => { },
     onDelete = () => { },
-    modus,
 }: Props) {
     const { erBekreftet, setErBekreftet, reset } = useBookingActions();
 
@@ -33,7 +31,7 @@ export default function BookingSlotItem({
     const handleToggle = () => {
         if (erInteraktiv && onToggle) {
             onToggle();
-            if (modus === 'index') setErBekreftet(false);
+            setErBekreftet(false);
         }
     };
 
@@ -59,12 +57,11 @@ export default function BookingSlotItem({
                 }
             }}
         >
-            <BookingSlotItemHeader slot={slot} isOpen={isOpen} erInteraktiv={erInteraktiv} modus={modus} />
+            <BookingSlotItemHeader slot={slot} isOpen={isOpen} erInteraktiv={erInteraktiv} />
 
             {isOpen && !slot.erPassert && (
                 <BookingSlotItemExpanded
                     slot={slot}
-                    modus={modus}
                     time={tid}
                     erBekreftet={erBekreftet}
                     setErBekreftet={setErBekreftet}
