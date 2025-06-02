@@ -8,23 +8,24 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb.js";
 
+const visningsnavn: Record<string, string> = {
+    "minside": "Min side",
+    "reglement": "Reglement",
+    "admin": "Admin",
+    "baner": "Baner",
+    "brukere": "Brukere",
+    "klubb": "Klubb",
+    "arrangement": "Arrangement",
+    "": "Book bane"
+};
+
 function oversettSegment(segment: string): string {
-    switch (segment.toLowerCase()) {
-        case "minside":
-            return "Min side";
-        case "reglement":
-            return "Reglement";
-        case "admin":
-            return "Admin";
-        case "baner":
-            return "Baner";
-        case "massebooking":
-            return "Massebooking";
-        case "":
-            return "Book bane";
-        default:
-            return segment.charAt(0).toUpperCase() + segment.slice(1);
-    }
+    const lower = segment.toLowerCase();
+    return visningsnavn[lower] ?? capitalize(segment);
+}
+
+function capitalize(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export default function BreadcrumbMedSti() {
@@ -56,7 +57,7 @@ export default function BreadcrumbMedSti() {
                     <span key={siste.url} className="flex items-center">
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            {idx === pathSegments.length - 1 ? (
+                            {idx === pathSegments.length - 1 || siste.segment === 'admin' ? (
                                 <BreadcrumbPage>{oversettSegment(siste.segment)}</BreadcrumbPage>
                             ) : (
                                 <BreadcrumbLink asChild>

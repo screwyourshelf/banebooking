@@ -36,13 +36,13 @@ export function BookingSlotItemHeader({ slot, isOpen, erInteraktiv }: Props) {
                 </div>
 
                 {/* Værikon */}
-                <div className="w-[16px] h-[16px] flex items-center justify-center">
+                <div className="w-[18px] h-[18px] flex items-center justify-center">
                     {slot.værSymbol ? (
                         <img
                             src={`/weather-symbols/svg/${slot.værSymbol}.svg`}
                             alt={slot.værSymbol}
-                            width={16}
-                            height={16}
+                            width={18}
+                            height={18}
                             className="select-none"
                             draggable={false}
                         />
