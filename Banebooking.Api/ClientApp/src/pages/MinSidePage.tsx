@@ -50,12 +50,12 @@ export default function MinSidePage() {
                 <p className="text-sm text-muted-foreground italic">Ingen aktive bookinger funnet.</p>
             ) : (
                 <div className="overflow-auto max-h-[60vh] border rounded-md mb-6">
-                    <Table className="text-sm">
+                    <Table className="text-sm table-fixed w-full">
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Dato</TableHead>
-                                <TableHead>Klokkeslett</TableHead>
-                                <TableHead>Bane</TableHead>
+                                <TableHead className="w-1/4">Dato</TableHead>
+                                <TableHead className="w-1/4">Klokkeslett</TableHead>
+                                <TableHead className="w-2/4">Bane</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -63,15 +63,14 @@ export default function MinSidePage() {
                                 slots.map((slot) => (
                                     <TableRow key={`${dato}-${slot.baneId}-${slot.startTid}`}>
                                         <TableCell>{formatDatoKort(dato)}</TableCell>
-                                        <TableCell>
-                                            {slot.startTid} – {slot.sluttTid}
-                                        </TableCell>
+                                        <TableCell>{slot.startTid} – {slot.sluttTid}</TableCell>
                                         <TableCell>{slot.baneNavn ?? '(ukjent bane)'}</TableCell>
                                     </TableRow>
                                 ))
                             )}
                         </TableBody>
                     </Table>
+
                 </div>
             )}
 
@@ -79,13 +78,13 @@ export default function MinSidePage() {
                 <>
                     <h2 className="text-base font-semibold mb-2">Kommende arrangementer</h2>
 
-                    <div className="overflow-auto max-h-[60vh] border rounded-md">
-                        <Table className="text-sm">
+                    <div className="overflow-auto max-h-[60vh] border rounded-md mb-6">
+                        <Table className="text-sm table-fixed w-full">
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Hva</TableHead>
-                                    <TableHead>Når</TableHead>
-                                    <TableHead className="text-right">Dager igjen</TableHead>
+                                    <TableHead className="w-2/5">Hva</TableHead>
+                                    <TableHead className="w-2/5">Når</TableHead>
+                                    <TableHead className="w-1/5 text-right">Om</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -98,21 +97,29 @@ export default function MinSidePage() {
                                     );
 
                                     return (
-                                        <TableRow key={arr.id}>
-                                            <TableCell>
+                                        <TableRow
+                                            key={arr.id}
+                                            className={[
+                                                'border-b',
+                                                'transition-colors duration-300 ease-in-out',
+                                                'bg-gradient-to-r from-blue-0 via-blue-50 to-blue-200',
+                                            ].join(' ')}
+                                        >
+
+                                            <TableCell className="whitespace-normal break-words">
                                                 <div className="font-medium">{arr.tittel}</div>
                                                 {arr.beskrivelse && (
-                                                    <div className="text-muted-foreground text-xs">
+                                                    <div className="text-muted-foreground text-xs whitespace-normal break-words">
                                                         {arr.beskrivelse}
                                                     </div>
                                                 )}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="whitespace-nowrap">
                                                 {arr.startDato === arr.sluttDato
                                                     ? formatDatoKort(arr.startDato)
                                                     : `${formatDatoKort(arr.startDato)} – ${formatDatoKort(arr.sluttDato)}`}
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-right whitespace-nowrap">
                                                 {dagerIgjen} {dagerIgjen === 1 ? 'dag' : 'dager'}
                                             </TableCell>
                                         </TableRow>
@@ -120,6 +127,7 @@ export default function MinSidePage() {
                                 })}
                             </TableBody>
                         </Table>
+
                     </div>
                 </>
             )}

@@ -15,7 +15,7 @@ import Spinner from '../../components/ui/spinner.js';
 import DatoVelger from '../../components/DatoVelger.js';
 import { Input } from "@/components/ui/input.js";
 
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 
 export default function ArrangementPage() {
@@ -73,22 +73,22 @@ export default function ArrangementPage() {
 
     function byggDto(): OpprettArrangementDto | null {
         if (!datoFra || !datoTil) {
-            toast.warn('Du må velge start- og sluttdato');
+            toast.warning('Du må velge start- og sluttdato');
             return null;
         }
 
         if (valgteBaner.length === 0) {
-            toast.warn('Du må velge minst én bane');
+            toast.warning('Du må velge minst én bane');
             return null;
         }
 
         if (valgteTidspunkter.length === 0) {
-            toast.warn('Du må velge minst ett tidspunkt');
+            toast.warning('Du må velge minst ett tidspunkt');
             return null;
         }
 
         if (valgteUkedager.length === 0) {
-            toast.warn('Du må velge minst én ukedag');
+            toast.warning('Du må velge minst én ukedag');
             return null;
         }
 
@@ -101,7 +101,7 @@ export default function ArrangementPage() {
             .filter(d => faktiskeUkedager.has(d));
 
         if (backendUkedager.length === 0) {
-            toast.warn('Ingen av de valgte ukedagene finnes i datointervallet');
+            toast.warning('Ingen av de valgte ukedagene finnes i datointervallet');
             return null;
         }
 

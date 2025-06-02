@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useBaner } from '../../hooks/useBaner.js';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';
 import { Label } from '@/components/ui/label.js';

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useKlubb } from '../../hooks/useKlubb.js';
 import { oppdaterKlubb } from '../../api/klubb.js';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';

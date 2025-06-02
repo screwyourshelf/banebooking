@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { hentMineBookinger } from '../api/booking.js';
 import type { BookingSlot } from '../types/index.js';
 

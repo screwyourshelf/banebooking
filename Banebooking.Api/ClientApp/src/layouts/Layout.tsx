@@ -1,6 +1,5 @@
 import { Outlet, useParams } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'sonner';
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar.js';
 import BreadcrumbMedSti from '../components/BreadcrumbMedSti.js';
@@ -41,7 +40,8 @@ export default function Layout() {
                     </div>
                 </div>
 
-                <ToastContainer position="bottom-center" autoClose={3000} />
+                <Toaster position="top-center" />
+
             </div>
         </SlugContext.Provider>
     );

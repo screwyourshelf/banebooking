@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import type { KlubbDetaljer } from '../types/index.js';
 import { hentKlubb } from '../api/klubb.js';
 

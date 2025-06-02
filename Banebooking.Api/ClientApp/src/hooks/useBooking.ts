@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import type { BookingSlot } from '../types/index.js';
 import { hentBookinger, opprettBooking, avbestillBooking } from '../api/booking.js';
 
@@ -44,8 +44,8 @@ export function useBooking(slug: string | undefined, valgtDato: string, valgtBan
         try {
             await avbestillBooking(slug, valgtBaneId, valgtDato, slot.startTid, slot.sluttTid);
 
-            const tid = `${slot.startTid.slice(0, 2)}:${slot.startTid.slice(2, 4)}–${slot.sluttTid.slice(0, 2)}:${slot.sluttTid.slice(2, 4)}`;
-            toast.info(`Avbestilling: ${slot.baneNavn ?? 'valgt bane'}, ${valgtDato} kl. ${tid} er avbestilt.`);
+            const tid = `${slot.startTid.slice(0, 2)}:${slot.startTid.slice(2, 4)}â€“${slot.sluttTid.slice(0, 2)}:${slot.sluttTid.slice(2, 4)}`;
+            toast.info(`${slot.baneNavn ?? 'valgt bane'}, ${valgtDato} kl. ${tid} er avbestilt.`);
 
             await hent();
         } catch (err) {

@@ -118,7 +118,7 @@ export default function Navbar() {
                                         </>
                                     )}
 
-                                    {/* Arrangement vises for både admin og utvidet */}
+                                    {/* Arrangement vises for bÃ¥de admin og utvidet */}
                                     <DropdownMenuItem asChild>
                                         <Link to={`/${slug}/arrangement`}>
                                             <FaCalendarAlt className="mr-2" />Arrangement

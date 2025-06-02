@@ -1,7 +1,7 @@
 // src/hooks/useLogin.ts
 import { useState } from 'react';
 import { supabase } from '../supabase.js'
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 export function useLogin(redirectTo: string) {
     const [email, setEmail] = useState('');
@@ -34,7 +34,7 @@ export function useLogin(redirectTo: string) {
         if (error) {
             toast.error('E-postlogin-feil: ' + error.message);
         } else {
-            toast.success('Lenke sendt – sjekk innboksen!');
+            toast.success('Lenke sendt â€“ sjekk innboksen!');
         }
     };
 
