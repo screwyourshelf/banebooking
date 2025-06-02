@@ -119,4 +119,26 @@ export function getBackendUkedagFraDate(dato: Date): string {
     return dagIndexTilBackendUkedag[dato.getDay()];
 }
 
+/** Viser dato som 'dd.MM.yyyy' – f.eks. '01.06.2025' */
+export function formatDatoKort(datoStr: string): string {
+    const dato = new Date(`${datoStr}T00:00:00`); // unngå UTC-problemer
+    return dato.toLocaleDateString('nb-NO', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+}
+
+/** Viser dato som 'd. MMMM yyyy' – f.eks. '1. juni 2025' */
+export function formatDatoLang(datoStr: string): string {
+    const dato = new Date(`${datoStr}T00:00:00`);
+    return dato.toLocaleDateString('nb-NO', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+}
+
+
+
 

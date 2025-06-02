@@ -25,10 +25,10 @@ export function BookingActions({
     reset = () => { },
 }: Props) {
     return (
-        <div className="flex flex-col items-end w-full space-y-2">
+        <div className="flex flex-col items-end w-full">
             {slot.kanBookes && erBekreftet !== undefined && setErBekreftet && (
                 <>
-                    <div className="flex items-center space-x-2 mb-2 text-sm">
+                    <div className="flex items-center space-x-1 mb-2 text-sm">
                         <Checkbox
                             id={`book-${time}`}
                             checked={erBekreftet}
@@ -71,7 +71,7 @@ export function BookingActions({
 
             {slot.kanSlette && (
                 <Button
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
                     onClick={() => {
                         onDelete(slot);

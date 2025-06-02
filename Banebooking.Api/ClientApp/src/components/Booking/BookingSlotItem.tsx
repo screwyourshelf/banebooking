@@ -27,6 +27,21 @@ export default function BookingSlotItem({
     const tid = `${slot.startTid.slice(0, 2)}-${slot.sluttTid.slice(0, 2)}`;
     const harHandlinger = slot.kanBookes || slot.kanAvbestille || slot.kanSlette;
     const erInteraktiv = !!currentUser && harHandlinger && !slot.erPassert;
+    const harArrangement = !!slot.arrangementTittel;
+    const erMinBooking = slot.booketAv === currentUser?.epost;
+
+    const className = [
+        'border rounded shadow-sm p-2 mb-2',
+        'transition-colors duration-300 ease-in-out',
+        slot.erPassert ? 'bg-gray-100 text-gray-400' : '',
+        !slot.erPassert && harArrangement
+            ? 'bg-gradient-to-r from-blue-0 via-blue-50 to-blue-200 border-blue-200'
+            : '',
+        !slot.erPassert && !harArrangement ? 'bg-white text-gray-900' : '',
+        erMinBooking && !harArrangement
+            ? 'animate__animated animate__headShake animate__slow'
+            : '',
+    ].join(' ');
 
     const handleToggle = () => {
         if (erInteraktiv && onToggle) {
@@ -37,8 +52,7 @@ export default function BookingSlotItem({
 
     return (
         <div
-            className={`border rounded shadow-sm p-2 mb-2 ${slot.erPassert ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-900'
-                }`}
+            className={className}
             style={{
                 cursor: erInteraktiv ? 'pointer' : 'default',
                 opacity: slot.erPassert ? 0.5 : 1,

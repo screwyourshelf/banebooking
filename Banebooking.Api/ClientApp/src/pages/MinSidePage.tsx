@@ -12,6 +12,7 @@ import {
     TableBody,
     TableCell,
 } from '@/components/ui/table.js';
+import { formatDatoKort } from '../utils/datoUtils.js';
 
 export default function MinSidePage() {
     const { slug: slugFraParams } = useParams<{ slug: string }>();
@@ -61,7 +62,7 @@ export default function MinSidePage() {
                             {grupperteBookinger.flatMap(([dato, slots]) =>
                                 slots.map((slot) => (
                                     <TableRow key={`${dato}-${slot.baneId}-${slot.startTid}`}>
-                                        <TableCell>{dato}</TableCell>
+                                        <TableCell>{formatDatoKort(dato)}</TableCell>
                                         <TableCell>
                                             {slot.startTid} – {slot.sluttTid}
                                         </TableCell>
@@ -108,8 +109,8 @@ export default function MinSidePage() {
                                             </TableCell>
                                             <TableCell>
                                                 {arr.startDato === arr.sluttDato
-                                                    ? arr.startDato
-                                                    : `${arr.startDato} – ${arr.sluttDato}`}
+                                                    ? formatDatoKort(arr.startDato)
+                                                    : `${formatDatoKort(arr.startDato)} – ${formatDatoKort(arr.sluttDato)}`}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 {dagerIgjen} {dagerIgjen === 1 ? 'dag' : 'dager'}

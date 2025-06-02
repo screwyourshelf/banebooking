@@ -31,12 +31,12 @@ export default function DatoVelger({ value, onChange, minDate, visNavigering = t
     }
 
     return (
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center w-full">
             <Popover>
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
-                        className="h-8 px-2 text-sm w-full justify-start text-left"
+                        className="h-8 px-2 text-sm flex-1 justify-start text-left min-w-[10rem]"
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {visningsformat}
@@ -47,9 +47,9 @@ export default function DatoVelger({ value, onChange, minDate, visNavigering = t
                         mode="single"
                         selected={value ?? undefined}
                         onSelect={(dato) => {
-                            if (!dato) return
-                            if (minDate && dato < minDate) return
-                            onChange(dato)
+                            if (!dato) return;
+                            if (minDate && dato < minDate) return;
+                            onChange(dato);
                         }}
                         locale={nb}
                         fromDate={minDate}
@@ -59,15 +59,26 @@ export default function DatoVelger({ value, onChange, minDate, visNavigering = t
             </Popover>
 
             {visNavigering && (
-                <>
-                    <Button variant="outline" size="icon" onClick={forrigeDag} className="h-8 w-8">
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={forrigeDag}
+                        className="h-8 w-8"
+                    >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" onClick={nesteDag} className="h-8 w-8">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={nesteDag}
+                        className="h-8 w-8"
+                    >
                         <ChevronRight className="h-4 w-4" />
                     </Button>
-                </>
+                </div>
             )}
         </div>
-    )
+    );
+
 }

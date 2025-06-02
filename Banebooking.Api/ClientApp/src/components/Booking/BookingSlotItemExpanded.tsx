@@ -23,8 +23,8 @@ export function BookingSlotItemExpanded({
     reset,
 }: Props) {
     return (
-        <div className="mt-2">
-            <div className="border rounded p-2 bg-gray-50">
+        <div className="mt-1">
+            <div className="bg-inherit">
                 <BookingActions
                     slot={slot}
                     time={time}

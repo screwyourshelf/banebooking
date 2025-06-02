@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ukedager, dagNavnTilEnum, tilDatoTekst, enumTilDagNavn, dagIndexTilBackendUkedag, finnUkedagerIDatoPeriode } from '../../utils/datoUtils.js';
+import { ukedager, dagNavnTilEnum, tilDatoTekst, enumTilDagNavn, dagIndexTilBackendUkedag, finnUkedagerIDatoPeriode, formatDatoKort } from '../../utils/datoUtils.js';
 import { useArrangement } from '../../hooks/useArrangement.js';
 import type { OpprettArrangementDto } from '../../types/index.js';
 
@@ -192,12 +192,12 @@ export default function ArrangementPage() {
 
                         <div>
                             <Label>Fra</Label>
-                            <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering={false} />
+                            <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering={true} />
                         </div>
 
                         <div>
                             <Label>Til</Label>
-                            <DatoVelger value={datoTil} onChange={setDatoTil} minDate={new Date()} visNavigering={false} />
+                            <DatoVelger value={datoTil} onChange={setDatoTil} minDate={new Date()} visNavigering={true} />
                         </div>
 
                         <div>
@@ -294,7 +294,7 @@ export default function ArrangementPage() {
                                                         key={`${slot.dato}-${slot.baneId}-${slot.startTid}`}
                                                         className={erKonflikt ? 'bg-yellow-100' : ''}
                                                     >
-                                                        <TableCell>{slot.dato}</TableCell>
+                                                        <TableCell>{formatDatoKort(slot.dato)}</TableCell>
                                                         <TableCell>{slot.startTid} – {slot.sluttTid}</TableCell>
                                                         <TableCell>{bane?.navn ?? "(ukjent bane)"}</TableCell>
                                                         <TableCell>

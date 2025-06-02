@@ -8,6 +8,8 @@ import { useBooking } from '../hooks/useBooking.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { SlugContext } from '../layouts/Layout.js';
 
+import 'animate.css';
+
 export default function IndexPage() {
     const { baner, loading } = useBaner();
     const [valgtBaneId, setValgtBaneId] = useState('');
@@ -63,6 +65,7 @@ export default function IndexPage() {
                 <DatoVelger
                     value={valgtDato}
                     onChange={(date) => setValgtDato(date ?? null)}
+                    visNavigering={true}
                 />
             </div>
 
