@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -29,7 +29,6 @@ export default function Navbar() {
     const { klubb, laster } = useKlubb(slug);
     const { currentUser, signOut } = useAuth();
     const { bruker } = useBruker(slug);
-    const navigate = useNavigate();
 
     const {
         email,
@@ -132,7 +131,7 @@ export default function Navbar() {
                             )}
 
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => signOut(() => navigate(slug ? `/${slug}` : '/'))}>
+                            <DropdownMenuItem onClick={() => signOut(slug)}>
                                 <FaSignOutAlt className="mr-2" />Logg ut
                             </DropdownMenuItem>
                         </>

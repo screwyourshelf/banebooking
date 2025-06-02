@@ -27,10 +27,11 @@ export function useAuth() {
     return {
         currentUser,
         setCurrentUser,
-        signOut: async (onComplete?: () => void) => {
+        signOut: async (redirectSlug?: string) => {
             await supabase.auth.signOut();
             setCurrentUser(null);
-            if (onComplete) onComplete();
+            const url = window.location.origin + (redirectSlug ? `/${redirectSlug}` : '/');
+            window.location.href = url;
         }
     };
 }

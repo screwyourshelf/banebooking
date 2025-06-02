@@ -34,7 +34,7 @@ export function useLogin(redirectTo: string) {
         if (error) {
             toast.error('E-postlogin-feil: ' + error.message);
         } else {
-            toast.success('Lenke sendt – sjekk innboksen!');
+            toast.success('Lenke sendt - sjekk innboksen!');
         }
     };
 

@@ -28,7 +28,7 @@ export default function Layout() {
                     </div>
                 </div>
 
-                <Toaster position="top-center" />
+                <Toaster position="bottom-center" closeButton />
             </div>
         </SlugContext.Provider>
     );
