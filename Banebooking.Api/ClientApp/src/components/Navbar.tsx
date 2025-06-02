@@ -107,7 +107,7 @@ export default function Navbar() {
                                         <>
                                             <DropdownMenuItem asChild>
                                                 <Link to={`/${slug}/admin/klubb`}>
-                                                    <FaWrench className="mr-2" />Rediger klubb
+                                                    <FaWrench className="mr-2" />Klubb
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>

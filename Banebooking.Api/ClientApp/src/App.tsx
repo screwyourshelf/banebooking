@@ -4,8 +4,8 @@ import IndexPage from './pages/IndexPage.js';
 import MinSide from './pages/MinSidePage.js';
 import { ProtectedRoute } from './components/ProtectedRoute.js';
 import ReglementPage from './pages/ReglementPage.js';
-import RedigerKlubbPage from './pages/admin/RedigerKlubbPage.js';
-import RedigerBanerPage from './pages/admin/RedigerBanerPage.js';
+import KlubbPage from './pages/admin/KlubbPage.js';
+import BanerPage from './pages/admin/BanerPage.js';
 import ArrangementPage from './pages/utvidet/ArrangementPage.js';
 
 export default function App() {
@@ -30,7 +30,7 @@ export default function App() {
                             path="klubb"
                             element={
                                 <ProtectedRoute>
-                                    <RedigerKlubbPage />
+                                    <KlubbPage />
                                 </ProtectedRoute>
                             }
                         />
@@ -38,7 +38,7 @@ export default function App() {
                             path="baner"
                             element={
                                 <ProtectedRoute>
-                                    <RedigerBanerPage />
+                                    <BanerPage />
                                 </ProtectedRoute>
                             }
                         />

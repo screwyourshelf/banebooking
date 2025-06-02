@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select.js';
 import { Card, CardContent } from '@/components/ui/card.js';
 
-export default function RedigerKlubbPage() {
+export default function KlubbPage() {
     const { slug } = useParams<{ slug: string }>();
     const { klubb, laster } = useKlubb(slug);
 
@@ -90,19 +90,13 @@ export default function RedigerKlubbPage() {
 
     return (
         <div className="max-w-screen-sm mx-auto px-2 py-2">
-            <h2 className="text-base font-semibold mb-2">Rediger klubb</h2>
-
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Card>
                     <CardContent className="p-4 space-y-4">
 
                         <div>
                             <Label htmlFor="navn">Navn</Label>
-                            <Input
-                                id="navn"
-                                value={form.navn}
-                                onChange={e => setForm(f => ({ ...f, navn: e.target.value }))}
-                            />
+                            <Input id="navn" value={form.navn} onChange={e => setForm(f => ({ ...f, navn: e.target.value }))} />
                         </div>
 
                         <div>
@@ -127,23 +121,15 @@ export default function RedigerKlubbPage() {
 
                         <div>
                             <Label htmlFor="latitude">Latitude</Label>
-                            <Input
-                                id="latitude"
-                                value={form.latitude}
-                                onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))}
-                            />
+                            <Input id="latitude" value={form.latitude} onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))} />
                         </div>
 
                         <div>
                             <Label htmlFor="longitude">Longitude</Label>
-                            <Input
-                                id="longitude"
-                                value={form.longitude}
-                                onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
-                            />
+                            <Input id="longitude" value={form.longitude} onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))} />
                         </div>
 
-                        <div className="space-y-4 pt-2">
+                        <div className="space-y-3 pt-2">
                             <h3 className="text-sm font-medium">Bookingregler</h3>
 
                             <div>
@@ -160,10 +146,7 @@ export default function RedigerKlubbPage() {
                                     onChange={e =>
                                         setForm(f => ({
                                             ...f,
-                                            bookingRegel: {
-                                                ...f.bookingRegel,
-                                                maksPerDag: parseInt(e.target.value),
-                                            },
+                                            bookingRegel: { ...f.bookingRegel, maksPerDag: parseInt(e.target.value) },
                                         }))
                                     }
                                     className="w-full"
@@ -184,10 +167,7 @@ export default function RedigerKlubbPage() {
                                     onChange={e =>
                                         setForm(f => ({
                                             ...f,
-                                            bookingRegel: {
-                                                ...f.bookingRegel,
-                                                maksTotalt: parseInt(e.target.value),
-                                            },
+                                            bookingRegel: { ...f.bookingRegel, maksTotalt: parseInt(e.target.value) },
                                         }))
                                     }
                                     className="w-full"
@@ -208,10 +188,7 @@ export default function RedigerKlubbPage() {
                                     onChange={e =>
                                         setForm(f => ({
                                             ...f,
-                                            bookingRegel: {
-                                                ...f.bookingRegel,
-                                                dagerFremITid: parseInt(e.target.value),
-                                            },
+                                            bookingRegel: { ...f.bookingRegel, dagerFremITid: parseInt(e.target.value) },
                                         }))
                                     }
                                     className="w-full"
@@ -225,14 +202,12 @@ export default function RedigerKlubbPage() {
                                     onValueChange={value =>
                                         setForm(f => ({
                                             ...f,
-                                            bookingRegel: {
-                                                ...f.bookingRegel,
-                                                slotLengdeMinutter: parseInt(value),
-                                            },
+                                            bookingRegel: { ...f.bookingRegel, slotLengdeMinutter: parseInt(value) },
                                         }))
                                     }
+                                    disabled // <-- her
                                 >
-                                    <SelectTrigger id="slotLengdeMinutter">
+                                    <SelectTrigger id="slotLengdeMinutter" disabled> {/* <-- her også */}
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -243,10 +218,11 @@ export default function RedigerKlubbPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
                         </div>
 
                         <div className="pt-2">
-                            <Button type="submit" disabled={lagrer}>
+                            <Button type="submit" size="sm" disabled={lagrer}>
                                 {lagrer ? 'Lagrer...' : 'Lagre endringer'}
                             </Button>
                         </div>

@@ -1,18 +1,12 @@
-// src/api/bruker.ts
 import type { BrukerDto } from '../types/index.js';
-import { supabase } from '../supabase.js';
+import { fetchWithAuth } from './fetchWithAuth.js';
 
 export async function hentInnloggetBruker(slug: string): Promise<BrukerDto | null> {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-
-    const res = await fetch(`/api/klubb/${slug}/bruker`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-        },
-    });
+    const res = await fetchWithAuth(
+        `/api/klubb/${slug}/bruker`,
+        { method: 'GET' },
+        true
+    );
 
     if (!res.ok) {
         const feilmelding = await res.text();

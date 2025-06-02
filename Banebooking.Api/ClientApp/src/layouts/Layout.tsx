@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar.js';
 import BreadcrumbMedSti from '../components/BreadcrumbMedSti.js';
+import { Skeleton } from '@/components/ui/skeleton.js';
 
 export const SlugContext = React.createContext<string | undefined>(undefined);
 
@@ -28,20 +29,21 @@ export default function Layout() {
 
                         <main className="py-1 px-1 min-h-[60vh]">
                             {laster ? (
-                                <div className="animate-pulse space-y-4">
-                                    <div className="h-6 bg-gray-300 rounded w-3/4"></div>
-                                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                                    <div className="h-20 bg-gray-200 rounded"></div>
+                                <div className="animate__animated animate__fadeIn animate__faster space-y-4">
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <Skeleton className="h-20 w-full" />
                                 </div>
                             ) : (
-                                <Outlet />
+                                <div className="animate__animated animate__fadeIn animate__faster">
+                                    <Outlet />
+                                </div>
                             )}
                         </main>
                     </div>
                 </div>
 
                 <Toaster position="top-center" />
-
             </div>
         </SlugContext.Provider>
     );
