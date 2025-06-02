@@ -22,6 +22,7 @@ import { useKlubb } from '../hooks/useKlubb.js';
 import { useBruker } from '../hooks/useBruker.js';
 import NavbarBrandMedKlubb from './NavbarBrandMedKlubb.js';
 import Spinner from './ui/spinner.js';
+import LoaderSkeleton from './LoaderSkeleton.js';
 
 export default function Navbar() {
     const { slug } = useParams<{ slug: string }>();
@@ -39,14 +40,14 @@ export default function Navbar() {
         handleMagicLink
     } = useLogin(window.location.origin + (slug ? `/${slug}` : ''));
 
-    const erAdmin = bruker?.roller.includes('KlubbAdmin');
-    const harUtvidetTilgang = bruker?.roller.includes('Utvidet');
+    const erAdmin = bruker?.roller.includes('KlubbAdmin') ?? false;
+    const harUtvidetTilgang = bruker?.roller.includes('Utvidet') ?? false;
 
     return (
         <div className="max-w-screen-lg mx-auto flex justify-between items-center px-2 py-1">
             <NavbarBrandMedKlubb
                 slug={slug}
-                klubbnavn={laster ? 'Laster...' : klubb?.navn ?? 'Ukjent klubb'}
+                klubbnavn={laster ? <LoaderSkeleton /> : klubb?.navn ?? 'Ukjent klubb'}
             />
 
             <DropdownMenu>
@@ -102,7 +103,6 @@ export default function Navbar() {
                                         {erAdmin ? 'Admin' : 'Utvidet tilgang'}
                                     </div>
 
-                                    {/* Admin-menyvalg */}
                                     {erAdmin && (
                                         <>
                                             <DropdownMenuItem asChild>
@@ -118,7 +118,6 @@ export default function Navbar() {
                                         </>
                                     )}
 
-                                    {/* Arrangement vises for både admin og utvidet */}
                                     <DropdownMenuItem asChild>
                                         <Link to={`/${slug}/arrangement`}>
                                             <FaCalendarAlt className="mr-2" />Arrangement
@@ -134,10 +133,10 @@ export default function Navbar() {
                         </>
                     ) : (
                         <>
-                            <DropdownMenuItem onClick={handleGoogleLogin}>
+                            <DropdownMenuItem onClick={handleGoogleLogin} disabled={status === 'sending'}>
                                 <FcGoogle size={18} className="mr-2" />Logg inn med Google
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={handleFacebookLogin}>
+                            <DropdownMenuItem onClick={handleFacebookLogin} disabled={status === 'sending'}>
                                 <FaFacebook size={18} className="mr-2" />Logg inn med Facebook
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -154,7 +153,12 @@ export default function Navbar() {
                                     required
                                     className="text-sm h-8"
                                 />
-                                <Button type="submit" size="sm" disabled={status === 'sending'} className="w-full h-8 text-sm">
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    disabled={status === 'sending'}
+                                    className="w-full h-8 text-sm"
+                                >
                                     {status === 'sending' ? (
                                         <>
                                             <Spinner />

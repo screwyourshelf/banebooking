@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useKlubb } from '../../hooks/useKlubb.js';
-import { oppdaterKlubb } from '../../api/klubb.js';
 import { toast } from 'sonner';
+
+import { oppdaterKlubb } from '../../api/klubb.js'; // Viktig å importere dette
+import { useKlubb } from '../../hooks/useKlubb.js';
 
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';
@@ -16,6 +17,7 @@ import {
     SelectValue,
 } from '@/components/ui/select.js';
 import { Card, CardContent } from '@/components/ui/card.js';
+import LoaderSkeleton from '@/components/LoaderSkeleton.js';
 
 export default function KlubbPage() {
     const { slug } = useParams<{ slug: string }>();
@@ -85,8 +87,15 @@ export default function KlubbPage() {
         setLagrer(false);
     }
 
-    if (laster) return <p className="text-sm text-muted-foreground px-2 py-2 text-center">Laster...</p>;
-    if (!klubb) return <p className="text-sm text-destructive px-2 py-2 text-center">Fant ikke klubb.</p>;
+    if (laster) return <LoaderSkeleton />;
+
+    if (!klubb) {
+        return (
+            <p className="text-sm text-destructive px-2 py-2 text-center">
+                Fant ikke klubb.
+            </p>
+        );
+    }
 
     return (
         <div className="max-w-screen-sm mx-auto px-2 py-2">
@@ -96,7 +105,11 @@ export default function KlubbPage() {
 
                         <div>
                             <Label htmlFor="navn">Navn</Label>
-                            <Input id="navn" value={form.navn} onChange={e => setForm(f => ({ ...f, navn: e.target.value }))} />
+                            <Input
+                                id="navn"
+                                value={form.navn}
+                                onChange={e => setForm(f => ({ ...f, navn: e.target.value }))}
+                            />
                         </div>
 
                         <div>
@@ -121,12 +134,20 @@ export default function KlubbPage() {
 
                         <div>
                             <Label htmlFor="latitude">Latitude</Label>
-                            <Input id="latitude" value={form.latitude} onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))} />
+                            <Input
+                                id="latitude"
+                                value={form.latitude}
+                                onChange={e => setForm(f => ({ ...f, latitude: e.target.value }))}
+                            />
                         </div>
 
                         <div>
                             <Label htmlFor="longitude">Longitude</Label>
-                            <Input id="longitude" value={form.longitude} onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))} />
+                            <Input
+                                id="longitude"
+                                value={form.longitude}
+                                onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
+                            />
                         </div>
 
                         <div className="space-y-3 pt-2">
@@ -205,9 +226,9 @@ export default function KlubbPage() {
                                             bookingRegel: { ...f.bookingRegel, slotLengdeMinutter: parseInt(value) },
                                         }))
                                     }
-                                    disabled // <-- her
+                                    disabled
                                 >
-                                    <SelectTrigger id="slotLengdeMinutter" disabled> {/* <-- her også */}
+                                    <SelectTrigger id="slotLengdeMinutter" disabled>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -218,7 +239,6 @@ export default function KlubbPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-
                         </div>
 
                         <div className="pt-2">

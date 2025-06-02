@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { hentMineBookinger } from '../api/booking.js';
 import type { BookingSlot } from '../types/index.js';
@@ -8,25 +8,26 @@ export function useMineBookinger(slug: string | undefined) {
     const [laster, setLaster] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const hent = async () => {
+    const hent = useCallback(async () => {
         if (!slug) return;
 
         try {
             setLaster(true);
+            setError(null);
             const data = await hentMineBookinger(slug);
             setBookinger(data);
-        } catch {
-            setError('Kunne ikke hente dine bookinger');
-            toast.error(error);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Ukjent feil ved henting';
+            setError(message);
+            toast.error(message);
         } finally {
             setLaster(false);
         }
-    };
+    }, [slug]);
 
     useEffect(() => {
         hent();
-    }, [slug]);
-
+    }, [hent]);
 
     return {
         bookinger,

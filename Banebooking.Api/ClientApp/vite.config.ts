@@ -12,6 +12,17 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    react: ['react', 'react-dom'],
+                    shadcn: ['@radix-ui/react-slot', '@radix-ui/react-tabs', '@radix-ui/react-popover'],
+                    lucide: ['lucide-react'],
+                },
+            },
+        },
+    },
     server: {
         open: '/aas-tennisklubb',
         proxy: {

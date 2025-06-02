@@ -4,7 +4,8 @@ import { useMineBookinger } from '../hooks/useMineBookinger.js';
 import { useArrangement } from '../hooks/useArrangement.js';
 import { SlugContext } from '../layouts/Layout.js';
 
-import Spinner from '@/components/ui/spinner.js';
+import LoaderSkeleton from '@/components/LoaderSkeleton.js';
+
 import {
     Table,
     TableHeader,
@@ -27,12 +28,11 @@ export default function MinSidePage() {
 
     const [tab, setTab] = useState('bookinger');
 
-    const { bookinger, laster: lasterBookinger } = useMineBookinger(slug);
-    const { arrangementer, loading: lasterArrangementer } = useArrangement(slug);
+    const { bookinger, laster: loadingBookinger } = useMineBookinger(slug);
+    const { arrangementer, isLoading: loadingArrangementer } = useArrangement(slug);
 
     return (
         <div className="max-w-screen-md mx-auto px-1 py-1">
-
             <Tabs value={tab} onValueChange={setTab}>
                 <TabsList className="mb-4">
                     <TabsTrigger value="bookinger">Mine bookinger</TabsTrigger>
@@ -40,10 +40,8 @@ export default function MinSidePage() {
                 </TabsList>
 
                 <TabsContent value="bookinger">
-                    {lasterBookinger ? (
-                        <div className="text-center py-10">
-                            <Spinner />
-                        </div>
+                    {loadingBookinger ? (
+                        <LoaderSkeleton />
                     ) : bookinger.length === 0 ? (
                         <p className="text-sm text-muted-foreground italic">
                             Du har ingen kommende bookinger.
@@ -73,10 +71,8 @@ export default function MinSidePage() {
                 </TabsContent>
 
                 <TabsContent value="arrangementer">
-                    {lasterArrangementer ? (
-                        <div className="text-center py-10">
-                            <Spinner />
-                        </div>
+                    {loadingArrangementer ? (
+                        <LoaderSkeleton /> 
                     ) : arrangementer.length === 0 ? (
                         <p className="text-sm text-muted-foreground italic">
                             Ingen arrangementer registrert.
@@ -86,9 +82,9 @@ export default function MinSidePage() {
                             <Table className="text-sm">
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-2/6">Hva</TableHead>
-                                        <TableHead className="w-2/6">Når</TableHead>
-                                        <TableHead className="w-2/6">Om</TableHead>
+                                        <TableHead className="w-1/3">Hva</TableHead>
+                                        <TableHead className="w-1/3">Når</TableHead>
+                                        <TableHead className="w-1/3">Om</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

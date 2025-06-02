@@ -7,11 +7,12 @@ import { useBaner } from '../hooks/useBaner.js';
 import { useBooking } from '../hooks/useBooking.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { SlugContext } from '../layouts/Layout.js';
+import LoaderSkeleton from '../components/LoaderSkeleton.js';
 
 import 'animate.css';
 
 export default function IndexPage() {
-    const { baner, loading } = useBaner();
+    const { baner, isLoading: loadingBaner } = useBaner();
     const [valgtBaneId, setValgtBaneId] = useState('');
     const [valgtDato, setValgtDato] = useState<Date | null>(() => {
         const lagret = localStorage.getItem('valgtDato');
@@ -23,11 +24,14 @@ export default function IndexPage() {
 
     const valgtDatoStr = valgtDato ? format(valgtDato, 'yyyy-MM-dd') : '';
 
-    const { slots, apenSlotTid, setApenSlotTid, onBook, onCancel } = useBooking(
-        slug,
-        valgtDatoStr,
-        valgtBaneId
-    );
+    const {
+        slots,
+        apenSlotTid,
+        setApenSlotTid,
+        onBook,
+        onCancel,
+        isLoading: loadingBooking,
+    } = useBooking(slug, valgtDatoStr, valgtBaneId);
 
     useEffect(() => {
         if (!valgtBaneId && baner.length > 0) {
@@ -51,12 +55,8 @@ export default function IndexPage() {
         }
     }, [valgtDato]);
 
-    if (loading || !valgtBaneId) {
-        return (
-            <p className="text-sm text-muted-foreground px-2 py-2 text-center">
-                Laster baner...
-            </p>
-        );
+    if (loadingBaner || !valgtBaneId) {
+        return <LoaderSkeleton />;
     }
 
     return (
@@ -85,6 +85,7 @@ export default function IndexPage() {
                 onBook={onBook}
                 onCancel={onCancel}
                 onDelete={(slot) => console.log('Slett', slot)}
+                isLoading={loadingBooking}
             />
         </div>
     );

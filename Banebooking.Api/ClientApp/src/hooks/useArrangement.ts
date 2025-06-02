@@ -34,19 +34,11 @@ function genererTidspunkter(start: string, slutt: string, slotMinutter: number):
 
 export function useArrangement(slug: string | undefined) {
     const { klubb, laster: loadingKlubb } = useKlubb(slug);
-    const { baner, loading: loadingBaner } = useBaner();
+    const { baner, isLoading: loadingBaner } = useBaner();
 
-    const tilgjengeligeTidspunkter = useMemo(() => {
-        if (!klubb?.bookingRegel) return [];
+    const [loadingArrangementer, setLoadingArrangementer] = useState(false);
+    const [loadingForhandsvisning, setLoadingForhandsvisning] = useState(false);
 
-        const start = klubb.bookingRegel.aapningstid || '08:00';
-        const slutt = klubb.bookingRegel.stengetid || '22:00';
-        const slot = klubb.bookingRegel.slotLengdeMinutter || 60;
-
-        return genererTidspunkter(start, slutt, slot);
-    }, [klubb]);
-
-    const [loading, setLoading] = useState(false);
     const [forhandsvisning, setForhandsvisning] = useState<{
         ledige: BookingDto[];
         konflikter: BookingDto[];
@@ -54,19 +46,25 @@ export function useArrangement(slug: string | undefined) {
 
     const [arrangementer, setArrangementer] = useState<ArrangementDto[]>([]);
 
+    const tilgjengeligeTidspunkter = useMemo(() => {
+        if (!klubb?.bookingRegel) return [];
+        const start = klubb.bookingRegel.aapningstid || '08:00';
+        const slutt = klubb.bookingRegel.stengetid || '22:00';
+        const slot = klubb.bookingRegel.slotLengdeMinutter || 60;
+        return genererTidspunkter(start, slutt, slot);
+    }, [klubb]);
+
     const lastArrangementer = async () => {
         if (!slug) return;
+        setLoadingArrangementer(true);
         try {
             const result = await hentKommendeArrangementer(slug);
-
-            // Sorter etter startdato (nærmeste først)
-            const sortert = [...result].sort((a, b) =>
-                a.startDato.localeCompare(b.startDato)
-            );
-
+            const sortert = result.sort((a, b) => a.startDato.localeCompare(b.startDato));
             setArrangementer(sortert);
         } catch {
             toast.error('Feil ved henting av arrangementer');
+        } finally {
+            setLoadingArrangementer(false);
         }
     };
 
@@ -76,47 +74,47 @@ export function useArrangement(slug: string | undefined) {
 
     const forhandsvis = async (dto: OpprettArrangementDto) => {
         if (!slug) return;
-        setLoading(true);
+        setLoadingForhandsvisning(true);
         try {
             const data = await forhandsvisArrangement(slug, dto);
             setForhandsvisning(data);
+            return { success: true };
         } catch {
             toast.error('Feil ved forhåndsvisning');
+            return { success: false };
         } finally {
-            setLoading(false);
+            setLoadingForhandsvisning(false);
         }
     };
 
     const opprett = async (dto: OpprettArrangementDto) => {
         if (!slug) return;
-        setLoading(true);
+        setLoadingForhandsvisning(true);
         try {
             const result = await opprettArrangement(slug, dto);
             setForhandsvisning({ ledige: [], konflikter: [] });
-
             toast.success(`${result.opprettet.length} bookinger opprettet`);
-            
-            // Reload arrangementer etter opprettelse
             await lastArrangementer();
-
-            return result;
+            return { success: true, result };
         } catch {
             toast.error('Feil ved oppretting');
+            return { success: false };
         } finally {
-            setLoading(false);
+            setLoadingForhandsvisning(false);
         }
     };
 
     return {
         klubb,
         baner,
-        loading: loading || loadingKlubb || loadingBaner,
+        isLoading: loadingKlubb || loadingBaner || loadingArrangementer,
+        isLoadingForhandsvisning: loadingForhandsvisning,
         tilgjengeligeTidspunkter,
         forhandsvisning,
         setForhandsvisning,
         forhandsvis,
         opprett,
-        arrangementer,        
-        lastArrangementer
+        arrangementer,
+        lastArrangementer,
     };
 }

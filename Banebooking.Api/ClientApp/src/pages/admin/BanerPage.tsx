@@ -27,7 +27,7 @@ type BaneFormData = {
 const STORAGE_KEY = 'rediger.valgtBaneId';
 
 export default function BanerPage() {
-    const { baner, loading, oppdaterBane, opprettBane, deaktiverBane, aktiverBane } = useBaner(true);
+    const { baner, isLoading, oppdaterBane, opprettBane, deaktiverBane, aktiverBane } = useBaner(true);
     const [redigerte, setRedigerte] = useState<Record<string, BaneFormData>>({});
     const [nyBane, setNyBane] = useState<BaneFormData>({ navn: '', beskrivelse: '' });
     const [valgtBaneId, setValgtBaneId] = useState<string | null>(() => {
@@ -117,7 +117,7 @@ export default function BanerPage() {
                 </TabsList>
 
                 <TabsContent value="rediger">
-                    {loading ? (
+                    {isLoading ? (
                         <p className="text-sm text-muted-foreground text-center py-4">Laster...</p>
                     ) : (
                         <>

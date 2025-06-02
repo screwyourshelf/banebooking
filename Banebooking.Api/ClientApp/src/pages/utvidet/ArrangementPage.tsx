@@ -1,23 +1,39 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ukedager, dagNavnTilEnum, tilDatoTekst, enumTilDagNavn, dagIndexTilBackendUkedag, finnUkedagerIDatoPeriode, formatDatoKort } from '../../utils/datoUtils.js';
+import {
+    ukedager,
+    dagNavnTilEnum,
+    tilDatoTekst,
+    enumTilDagNavn,
+    dagIndexTilBackendUkedag,
+    finnUkedagerIDatoPeriode,
+    formatDatoKort,
+} from '../../utils/datoUtils.js';
 import { useArrangement } from '../../hooks/useArrangement.js';
 import type { OpprettArrangementDto } from '../../types/index.js';
 
 import {
-    Table, TableHeader, TableRow, TableHead, TableBody, TableCell
-} from "@/components/ui/table.js";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.js';
+    Table,
+    TableHeader,
+    TableRow,
+    TableHead,
+    TableBody,
+    TableCell,
+} from '@/components/ui/table.js';
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+} from '@/components/ui/tabs.js';
 import { Button } from '@/components/ui/button.js';
 import { Checkbox } from '@/components/ui/checkbox.js';
 import { Label } from '@/components/ui/label.js';
-import Spinner from '../../components/ui/spinner.js';
 import DatoVelger from '../../components/DatoVelger.js';
-import { Input } from "@/components/ui/input.js";
-
+import { Input } from '@/components/ui/input.js';
 import { toast } from 'sonner';
-
-
+import LoaderSkeleton from '../../components/LoaderSkeleton.js';
+ 
 export default function ArrangementPage() {
     const { slug } = useParams<{ slug: string }>();
     const {
@@ -27,7 +43,7 @@ export default function ArrangementPage() {
         setForhandsvisning,
         forhandsvis,
         opprett,
-        loading,
+        isLoading,
     } = useArrangement(slug);
 
     const [valgteBaner, setValgteBaner] = useState<string[]>([]);
@@ -42,33 +58,46 @@ export default function ArrangementPage() {
     const [beskrivelse, setBeskrivelse] = useState('');
     const [activeTab, setActiveTab] = useState('oppsett');
 
-    const nullstillForhandsvisning = () => setForhandsvisning({ ledige: [], konflikter: [] });
+    const nullstillForhandsvisning = () =>
+        setForhandsvisning({ ledige: [], konflikter: [] });
 
     const tilgjengeligeUkedager = useMemo(() => {
         if (!datoFra || !datoTil) return ukedager;
 
         const dager = new Set<string>();
-        const fra = new Date(datoFra.getFullYear(), datoFra.getMonth(), datoFra.getDate());
-        const til = new Date(datoTil.getFullYear(), datoTil.getMonth(), datoTil.getDate());
+        const fra = new Date(datoFra);
+        const til = new Date(datoTil);
 
         for (let d = new Date(fra); d <= til; d.setDate(d.getDate() + 1)) {
-            const dayIndex = d.getDay(); // 0–6
-            const backendUkedag = dagIndexTilBackendUkedag[dayIndex];
-            const norskKortform = enumTilDagNavn[backendUkedag];
-            if (norskKortform) dager.add(norskKortform);
+            const idx = d.getDay();
+            const backendUkedag = dagIndexTilBackendUkedag[idx];
+            const norskKort = enumTilDagNavn[backendUkedag];
+            if (norskKort) dager.add(norskKort);
         }
 
-        return ukedager.filter(d => dager.has(d)); // korrekt rekkefølge
+        return ukedager.filter((d) => dager.has(d));
     }, [datoFra, datoTil]);
 
     useEffect(() => {
-        if (alleBaner) setValgteBaner(baner.map(b => b.id));
+        if (alleBaner) setValgteBaner(baner.map((b) => b.id));
         if (alleUkedager) setValgteUkedager(tilgjengeligeUkedager);
         if (alleTidspunkter) setValgteTidspunkter(tilgjengeligeTidspunkter);
-    }, [alleBaner, alleUkedager, alleTidspunkter, baner, tilgjengeligeUkedager, tilgjengeligeTidspunkter]);
+    }, [
+        alleBaner,
+        alleUkedager,
+        alleTidspunkter,
+        baner,
+        tilgjengeligeUkedager,
+        tilgjengeligeTidspunkter,
+    ]);
 
-    const toggle = (item: string, set: React.Dispatch<React.SetStateAction<string[]>>) => {
-        set(prev => (prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]));
+    const toggle = (
+        item: string,
+        set: React.Dispatch<React.SetStateAction<string[]>>
+    ) => {
+        set((prev) =>
+            prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+        );
     };
 
     function byggDto(): OpprettArrangementDto | null {
@@ -92,13 +121,10 @@ export default function ArrangementPage() {
             return null;
         }
 
-        // Finner faktiske backend-ukedager i perioden
         const faktiskeUkedager = finnUkedagerIDatoPeriode(datoFra, datoTil);
-
-        // Oversett fra norsk kortform → backend-format og filtrer
         const backendUkedager = valgteUkedager
-            .map(d => dagNavnTilEnum[d])
-            .filter(d => faktiskeUkedager.has(d));
+            .map((d) => dagNavnTilEnum[d])
+            .filter((d) => faktiskeUkedager.has(d));
 
         if (backendUkedager.length === 0) {
             toast.warning('Ingen av de valgte ukedagene finnes i datointervallet');
@@ -134,22 +160,17 @@ export default function ArrangementPage() {
         }
     };
 
-    const alleSlots = [...forhandsvisning.ledige, ...forhandsvisning.konflikter].sort((a, b) => {
-        if (a.dato !== b.dato) {
-            return a.dato.localeCompare(b.dato);
-        }
-        if (a.startTid !== b.startTid) {
-            return a.startTid.localeCompare(b.startTid);
-        }
-        return a.baneId.localeCompare(b.baneId);
-    });
+    const alleSlots = [...forhandsvisning.ledige, ...forhandsvisning.konflikter].sort(
+        (a, b) =>
+            a.dato.localeCompare(b.dato) ||
+            a.startTid.localeCompare(b.startTid) ||
+            a.baneId.localeCompare(b.baneId)
+    );
 
     return (
         <div className="max-w-screen-md mx-auto px-1 py-1">
-            {loading ? (
-                <div className="text-center py-10">
-                    <Spinner />
-                </div>
+            {isLoading ? (
+                <LoaderSkeleton />
             ) : (
                 <Tabs value={activeTab} onValueChange={håndterTabChange}>
                     <TabsList className="mb-4">
@@ -165,18 +186,24 @@ export default function ArrangementPage() {
                             <select
                                 className="w-full border rounded text-sm px-3 py-2 mt-1"
                                 value={kategori}
-                                onChange={e => setKategori(e.target.value)}
+                                onChange={(e) => setKategori(e.target.value)}
                             >
-                                <option value="Trening">Trening</option>
-                                <option value="Turnering">Turnering</option>
-                                <option value="Klubbmersterskap">Klubbmersterskap</option>
-                                <option value="Kurs">Kurs</option>
-                                <option value="Lagkamp">Lagkamp</option>
-                                <option value="Stigespill">Stigespill</option>
-                                <option value="Dugnad">Dugnad</option>
-                                <option value="Vedlikehold">Vedlikehold</option>
-                                <option value="Sosialt">Sosialt</option>
-                                <option value="Annet">Annet</option>
+                                {[
+                                    'Trening',
+                                    'Turnering',
+                                    'Klubbmersterskap',
+                                    'Kurs',
+                                    'Lagkamp',
+                                    'Stigespill',
+                                    'Dugnad',
+                                    'Vedlikehold',
+                                    'Sosialt',
+                                    'Annet',
+                                ].map((k) => (
+                                    <option key={k} value={k}>
+                                        {k}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -186,27 +213,27 @@ export default function ArrangementPage() {
                                 type="text"
                                 className="w-full text-sm mt-1"
                                 value={beskrivelse}
-                                onChange={e => setBeskrivelse(e.target.value)}
+                                onChange={(e) => setBeskrivelse(e.target.value)}
                             />
                         </div>
 
                         <div>
                             <Label>Fra</Label>
-                            <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering={true} />
+                            <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering />
                         </div>
 
                         <div>
                             <Label>Til</Label>
-                            <DatoVelger value={datoTil} onChange={setDatoTil} minDate={new Date()} visNavigering={true} />
+                            <DatoVelger value={datoTil} onChange={setDatoTil} visNavigering />
                         </div>
 
                         <div>
                             <Label className="inline-flex items-center gap-2">
-                                <Checkbox checked={alleBaner} onCheckedChange={val => setAlleBaner(!!val)} />
+                                <Checkbox checked={alleBaner} onCheckedChange={(val) => setAlleBaner(!!val)} />
                                 Alle baner
                             </Label>
                             <div className="flex flex-wrap gap-2 mt-2">
-                                {baner.map(b => (
+                                {baner.map((b) => (
                                     <Button
                                         key={b.id}
                                         variant={valgteBaner.includes(b.id) ? 'default' : 'outline'}
@@ -222,16 +249,16 @@ export default function ArrangementPage() {
 
                         <div>
                             <Label className="inline-flex items-center gap-2">
-                                <Checkbox checked={alleUkedager} onCheckedChange={val => setAlleUkedager(!!val)} />
+                                <Checkbox checked={alleUkedager} onCheckedChange={(val) => setAlleUkedager(!!val)} />
                                 Alle gyldige dager
                             </Label>
                             <div className="flex flex-wrap gap-2 mt-2">
-                                {ukedager.map(dag => (
+                                {ukedager.map((dag) => (
                                     <Button
                                         key={dag}
                                         variant={valgteUkedager.includes(dag) ? 'default' : 'outline'}
                                         size="sm"
-                                        onClick={e => {
+                                        onClick={(e) => {
                                             e.preventDefault();
                                             toggle(dag, setValgteUkedager);
                                         }}
@@ -245,11 +272,14 @@ export default function ArrangementPage() {
 
                         <div>
                             <Label className="inline-flex items-center gap-2">
-                                <Checkbox checked={alleTidspunkter} onCheckedChange={val => setAlleTidspunkter(!!val)} />
+                                <Checkbox
+                                    checked={alleTidspunkter}
+                                    onCheckedChange={(val) => setAlleTidspunkter(!!val)}
+                                />
                                 Alle tidspunkter
                             </Label>
                             <div className="flex flex-wrap gap-2 mt-2">
-                                {tilgjengeligeTidspunkter.map(tid => (
+                                {tilgjengeligeTidspunkter.map((tid) => (
                                     <Button
                                         key={tid}
                                         variant={valgteTidspunkter.includes(tid) ? 'default' : 'outline'}
@@ -265,8 +295,10 @@ export default function ArrangementPage() {
                     </TabsContent>
 
                     <TabsContent value="forhandsvisning">
-                        {forhandsvisning.ledige.length === 0 ? (
-                            <p className="text-sm text-muted-foreground italic">Ingen bookinger tilgjengelig.</p>
+                        {alleSlots.length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic">
+                                Ingen bookinger tilgjengelig.
+                            </p>
                         ) : (
                             <>
                                 <div className="overflow-auto max-h-[60vh] border rounded-md">
@@ -282,11 +314,12 @@ export default function ArrangementPage() {
                                         <TableBody>
                                             {alleSlots.map((slot) => {
                                                 const bane = baner.find((b) => b.id === slot.baneId);
-                                                const erKonflikt = forhandsvisning.konflikter.some(k =>
-                                                    k.baneId === slot.baneId &&
-                                                    k.dato === slot.dato &&
-                                                    k.startTid === slot.startTid &&
-                                                    k.sluttTid === slot.sluttTid
+                                                const erKonflikt = forhandsvisning.konflikter.some(
+                                                    (k) =>
+                                                        k.baneId === slot.baneId &&
+                                                        k.dato === slot.dato &&
+                                                        k.startTid === slot.startTid &&
+                                                        k.sluttTid === slot.sluttTid
                                                 );
 
                                                 return (
@@ -295,8 +328,10 @@ export default function ArrangementPage() {
                                                         className={erKonflikt ? 'bg-yellow-100' : ''}
                                                     >
                                                         <TableCell>{formatDatoKort(slot.dato)}</TableCell>
-                                                        <TableCell>{slot.startTid} – {slot.sluttTid}</TableCell>
-                                                        <TableCell>{bane?.navn ?? "(ukjent bane)"}</TableCell>
+                                                        <TableCell>
+                                                            {slot.startTid} – {slot.sluttTid}
+                                                        </TableCell>
+                                                        <TableCell>{bane?.navn ?? '(ukjent bane)'}</TableCell>
                                                         <TableCell>
                                                             {beskrivelse}
                                                             {erKonflikt && (
@@ -312,7 +347,7 @@ export default function ArrangementPage() {
                                     </Table>
                                 </div>
                                 <div className="flex justify-end mt-3">
-                                    <Button type="button" onClick={håndterOpprett} disabled={loading}>
+                                    <Button type="button" onClick={håndterOpprett} disabled={isLoading}>
                                         Opprett {forhandsvisning.ledige.length} bookinger
                                     </Button>
                                 </div>

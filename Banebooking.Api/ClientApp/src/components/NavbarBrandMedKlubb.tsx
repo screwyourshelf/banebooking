@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 type Props = {
     slug?: string;
-    klubbnavn: string;
+    klubbnavn: React.ReactNode;
 };
 
 export default function NavbarBrandMedKlubb({ slug, klubbnavn }: Props) {
