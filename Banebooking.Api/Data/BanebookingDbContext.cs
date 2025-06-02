@@ -99,8 +99,17 @@ namespace Banebooking.Api.Data
                 .HasOne(b => b.Arrangement)
                 .WithMany(a => a.Bookinger)
                 .HasForeignKey(b => b.ArrangementId)
-                .OnDelete(DeleteBehavior.SetNull); 
+                .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<Bruker>()
+                .HasIndex(b => b.Sub)
+                .IsUnique()
+                .HasDatabaseName("IX_Bruker_Sub");
+
+            modelBuilder.Entity<Bruker>()
+                .HasIndex(b => b.Epost)
+                .IsUnique()
+                .HasDatabaseName("IX_Bruker_Epost");
         }
     }
 }

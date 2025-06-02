@@ -7,7 +7,9 @@ export async function hentBookinger(
     dato: string
 ): Promise<BookingSlot[]> {
     const res = await fetchWithAuth(
-        `/api/klubb/${slug}/bookinger?baneId=${baneId}&dato=${dato}`
+        `/api/klubb/${slug}/bookinger?baneId=${baneId}&dato=${dato}`,
+        {},
+        true
     );
 
     const data = await res.json();

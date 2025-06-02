@@ -43,16 +43,15 @@ public partial class KlubberController(IKlubbService klubbService, IBrukerServic
     [HttpPut("{slug}")]
     public async Task<IActionResult> OppdaterKlubb(string slug, [FromBody] OppdaterKlubbDto dto)
     {
+        var klubb = await klubbService.HentKlubbAsync(slug);
+
+        if (klubb == null) return NotFound();
         var bruker = User.Identity?.IsAuthenticated == true
-                 ? await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User)
+                 ? await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User)
                  : null;
 
         if (bruker == null)
             return Unauthorized("Bruker ikke autentisert eller token ugyldig.");
-
-        var klubb = await klubbService.HentKlubbAsync(slug);
-        if (klubb == null)
-            return NotFound();
 
         var erAdmin = bruker.Roller.Any(r =>
             r.KlubbId == klubb.Id &&

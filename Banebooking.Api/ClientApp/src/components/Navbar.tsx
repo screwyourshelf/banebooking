@@ -115,6 +115,11 @@ export default function Navbar() {
                                                     <FaWrench className="mr-2" />Baner
                                                 </Link>
                                             </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link to={`/${slug}/admin/brukere`}>
+                                                    <FaWrench className="mr-2" />Brukere
+                                                </Link>
+                                            </DropdownMenuItem>
                                         </>
                                     )}
 

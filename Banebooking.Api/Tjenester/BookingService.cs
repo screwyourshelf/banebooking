@@ -196,6 +196,7 @@ public class BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker,
         }
 
         await beriker.BerikAsync(slots, klubb, dato);
+
         return slots;
     }
 

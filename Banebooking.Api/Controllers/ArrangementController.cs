@@ -34,7 +34,7 @@ public class ArrangementController(
         if (klubb == null)
             return NotFound("Klubb ikke funnet.");
 
-        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User);
         if (bruker == null)
             return Unauthorized();
 
@@ -50,10 +50,10 @@ public class ArrangementController(
         if (klubb == null)
             return NotFound("Klubb ikke funnet.");
 
-        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User);
         if (bruker == null)
             return Unauthorized();
-
+            
         var resultat = await arrangementService.OpprettArrangementAsync(klubb, dto, bruker);
 
         return Ok(resultat);

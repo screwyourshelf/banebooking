@@ -28,7 +28,7 @@ public class BookingerController(
             return NotFound("Bane ikke funnet i klubben.");
 
         var bruker = User.Identity?.IsAuthenticated == true
-            ? await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User)
+            ? await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User)
             : null;
 
         var slots = await bookingService.HentBookingerForDatoAsync(klubb, bane, dato, bruker);
@@ -44,7 +44,7 @@ public class BookingerController(
         if (klubb == null)
             return NotFound("Klubb ikke funnet.");
 
-        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User);
 
         var mineBookinger = await bookingService.HentMineBookingerAsync(klubb, false, bruker);
         return Ok(mineBookinger);
@@ -63,7 +63,7 @@ public class BookingerController(
         if (bane == null)
             return NotFound("Bane ikke funnet i klubben.");
 
-        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User);
 
         var resultat = await bookingService.ForsøkOpprettBookingAsync(klubb, bane, dto, bruker);
 
@@ -85,7 +85,7 @@ public class BookingerController(
         if (bane == null)
             return NotFound("Bane ikke funnet i klubben.");
 
-        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(slug, User);
+        var bruker = await brukerService.HentEllerOpprettBrukerMedRolleAsync(klubb, User);
 
         var resultat = await bookingService.ForsøkAvbestillBookingAsync(klubb, bane, dto, bruker);
 
