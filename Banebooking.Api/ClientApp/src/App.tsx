@@ -35,7 +35,7 @@ export default function App() {
                         <Route path="admin/baner" element={<Protected><BanerPage /></Protected>} />
                     </Route>
 
-                    <Route path="*" element={<div className="p-4 text-center">404 – Fant ikke siden</div>} />
+                    <Route path="*" element={<div className="p-4 text-center">404 â€“ Fant ikke siden</div>} />
                 </Routes>
             </Suspense>
         </BrowserRouter>

@@ -18,8 +18,9 @@ public static class CacheKeys
     public static string Klubb(string slug) =>
         $"klubb:{slug.ToLowerInvariant()}:full";
 
-    public static string Vaer(Guid klubbId, DateOnly dato) =>
-        $"vaer:{klubbId}:{dato:yyyy-MM-dd}";
+    // Cache-nøkkel for værdata for en klubb (inkluderer både kort- og langtidsvarsel)
+    public static string VaerLangtids(Guid klubbId) =>
+        $"vaer:langtids:{klubbId}";
 }
 
 
