@@ -56,7 +56,7 @@ export default function FeedAlerts() {
                         key={idx}
                         className="relative pr-10 bg-orange-50 border border-orange-200 shadow-md rounded-md animate__animated animate__fadeIn"
                     >
-                        <BellRing className="text-orange-600" />
+                        <BellRing className="text-orange-600 w-5 h-5 animate__animated animate__swing animate__slower" stroke="currentColor" fill="currentColor" />
                         <div>
                             <AlertTitle className="font-semibold text-orange-800">{item.title}</AlertTitle>
                             <AlertDescription>
