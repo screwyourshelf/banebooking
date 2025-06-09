@@ -21,25 +21,17 @@ public class KlubbService : IKlubbService
         _cache = cache;
     }
 
-    public async Task<Klubb?> HentKlubbAsync(string slug)
+    public Task<Klubb?> HentKlubbAsync(string slug)
     {
         var key = CacheKeys.Klubb(slug);
 
-        var cached = _cache.Get<Klubb>(key);
-        if (cached != null)
-            return cached;
-
-        var klubb = await _db.Klubber
-            .Include(k => k.Baner)
-            .Include(k => k.BookingRegel)
-            .FirstOrDefaultAsync(k => k.Slug == slug);
-
-        if (klubb != null)
+        return _cache.HentEllerSettAsync(key, async () =>
         {
-            _cache.Set(key, klubb);
-        }
-
-        return klubb;
+            return await _db.Klubber
+                .Include(k => k.Baner)
+                .Include(k => k.BookingRegel)
+                .FirstOrDefaultAsync(k => k.Slug == slug);
+        }, TimeSpan.FromHours(6));
     }
 
     public async Task<bool> OppdaterKlubbAsync(string slug, OppdaterKlubbDto dto, Bruker bruker)
@@ -55,6 +47,7 @@ public class KlubbService : IKlubbService
         klubb.Banereglement = dto.Banereglement;
         klubb.Latitude = dto.Latitude;
         klubb.Longitude = dto.Longitude;
+        klubb.FeedUrl = dto.FeedUrl;
 
         if (klubb.BookingRegel != null)
         {
@@ -67,6 +60,8 @@ public class KlubbService : IKlubbService
         await _db.SaveChangesAsync();
 
         _cache.Invalider(CacheKeys.Klubb(slug));
+        _cache.Invalider(CacheKeys.Feed(slug));
+        _cache.Invalider(CacheKeys.VaerLangtids(slug));
 
         return true;
     }

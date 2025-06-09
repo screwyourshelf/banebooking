@@ -4,6 +4,7 @@ export type OppdaterKlubb = {
     banereglement: string;
     latitude: number;
     longitude: number;
+    feedUrl?: string,
     bookingRegel: {
         maksPerDag: number;
         maksTotalt: number;

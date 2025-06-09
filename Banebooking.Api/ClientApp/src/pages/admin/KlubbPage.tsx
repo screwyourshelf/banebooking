@@ -29,6 +29,7 @@ export default function KlubbPage() {
         banereglement: '',
         latitude: '',
         longitude: '',
+        feedUrl: '', // ← denne må legges til
         bookingRegel: {
             maksPerDag: 1,
             maksTotalt: 2,
@@ -47,6 +48,7 @@ export default function KlubbPage() {
                 banereglement: klubb.banereglement ?? '',
                 latitude: klubb.latitude?.toString() ?? '',
                 longitude: klubb.longitude?.toString() ?? '',
+                feedUrl: klubb.feedUrl ?? '',
                 bookingRegel: {
                     maksPerDag: klubb.bookingRegel?.maksPerDag ?? 1,
                     maksTotalt: klubb.bookingRegel?.maksTotalt ?? 2,
@@ -76,6 +78,7 @@ export default function KlubbPage() {
                 banereglement: verdier.banereglement,
                 latitude: parseFloat(verdier.latitude),
                 longitude: parseFloat(verdier.longitude),
+                feedUrl: verdier.feedUrl,
                 bookingRegel: { ...verdier.bookingRegel },
             });
             toast.success('Endringer lagret');
@@ -147,6 +150,15 @@ export default function KlubbPage() {
                                 id="longitude"
                                 value={form.longitude}
                                 onChange={e => setForm(f => ({ ...f, longitude: e.target.value }))}
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="feedUrl">RSS-feed (valgfritt)</Label>
+                            <Input
+                                id="feedUrl"
+                                value={form.feedUrl}
+                                onChange={e => setForm(f => ({ ...f, feedUrl: e.target.value }))}
                             />
                         </div>
 

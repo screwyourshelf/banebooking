@@ -6,6 +6,7 @@ export type KlubbDetaljer = {
     banereglement?: string;
     latitude?: number;
     longitude?: number;
+    feedUrl?: string;
     bookingRegel: {
         maksPerDag: number;
         maksTotalt: number;

@@ -23,9 +23,10 @@ public static class Testdata
                 Slug = slug,
                 Navn = "Ås tennisklubb",
                 KontaktEpost = adminEpost,
-                Latitude = 59.6552,
-                Longitude = 10.7769,
+                Latitude = 59.65,
+                Longitude = 10.77,
                 Banereglement = "... Reglement",
+                FeedUrl = "http://www.aastk.no/?tag=obs,permanent&feed=rss2",
                 BookingRegel = new BestemmelseForBooking
                 {
                     Åpningstid = new TimeOnly(7, 0),

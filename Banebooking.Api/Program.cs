@@ -47,6 +47,7 @@ builder.Services.AddScoped<ITidProvider, NorskTidProvider>();
 builder.Services.AddScoped<IBrukerService, BrukerService>();
 builder.Services.AddScoped<IBaneService, BaneService>();
 builder.Services.AddScoped<IArrangementService, ArrangementService>();
+builder.Services.AddScoped<IFeedService, FeedService>();
 
 
 var app = builder.Build();

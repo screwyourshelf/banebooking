@@ -25,6 +25,7 @@ public partial class KlubberController(IKlubbService klubbService, IBrukerServic
             Banereglement = klubb.Banereglement,
             Latitude = klubb.Latitude,
             Longitude = klubb.Longitude,
+            FeedUrl = klubb.FeedUrl,
             BookingRegel = new BookingRegelDto
             {
                 MaksPerDag = klubb.BookingRegel?.MaksBookingerPerDagPerBruker ?? 1,

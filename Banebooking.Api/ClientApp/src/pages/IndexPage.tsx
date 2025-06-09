@@ -9,8 +9,6 @@ import { useAuth } from '../hooks/useAuth.js';
 import { SlugContext } from '../layouts/Layout.js';
 import LoaderSkeleton from '../components/LoaderSkeleton.js';
 
-import 'animate.css';
-
 export default function IndexPage() {
     const { baner, isLoading: loadingBaner } = useBaner();
     const [valgtBaneId, setValgtBaneId] = useState('');

@@ -20,7 +20,7 @@ public class VaerService(
         if (klubb == null || klubb.Latitude == null || klubb.Longitude == null)
             return new();
 
-        var key = CacheKeys.VaerLangtids(klubb.Id);
+        var key = CacheKeys.VaerLangtids(klubb.Slug);
         var cached = cache.Get<CachedVaerLangtidsData>(key);
 
         if (cached == null || cached.BorOppdateres)

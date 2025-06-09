@@ -3,11 +3,16 @@ import { Toaster } from 'sonner';
 import React from 'react';
 import Navbar from '../components/Navbar.js';
 import BreadcrumbMedSti from '../components/BreadcrumbMedSti.js';
+import { useFeed } from '../hooks/useFeed.js';
+import FeedAlerts from '../components/Feed/FeedAlerts.js';
+import 'animate.css';
+
 
 export const SlugContext = React.createContext<string | undefined>(undefined);
 
 export default function Layout() {
     const { slug } = useParams<{ slug: string }>();
+    const { feed } = useFeed(slug);
 
     return (
         <SlugContext.Provider value={slug}>
@@ -20,6 +25,12 @@ export default function Layout() {
 
                         <BreadcrumbMedSti />
 
+                        {feed.length > 0 && (
+                            <div className="mx-1">
+                                <FeedAlerts />
+                            </div>
+                        )}
+
                         <main className="py-1 px-1 min-h-[60vh]">
                             <div className="animate__animated animate__fadeIn animate__faster">
                                 <Outlet />
@@ -28,7 +39,13 @@ export default function Layout() {
                     </div>
                 </div>
 
-                <Toaster position="bottom-center" closeButton />
+                <Toaster
+                    position="top-center"
+                    mobileOffset={{ top: '35vh' }}
+                    offset={{ top: '35vh' }}
+                    duration={1500}
+                />
+
             </div>
         </SlugContext.Provider>
     );

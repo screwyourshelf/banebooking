@@ -8,6 +8,7 @@ public interface ICacheService
     void Set<T>(string key, T data, TimeSpan? levetid = null);
     void Invalider(params string[] keys);
     IReadOnlyDictionary<string, DateTimeOffset> GetAllKeysWithTimestamps();
+    Task<T> HentEllerSettAsync<T>(string key, Func<Task<T>> factory, TimeSpan levetid);
 }
 
 public static class CacheKeys
@@ -18,9 +19,11 @@ public static class CacheKeys
     public static string Klubb(string slug) =>
         $"klubb:{slug.ToLowerInvariant()}:full";
 
-    // Cache-nøkkel for værdata for en klubb (inkluderer både kort- og langtidsvarsel)
-    public static string VaerLangtids(Guid klubbId) =>
-        $"vaer:langtids:{klubbId}";
+    public static string VaerLangtids(string slug) =>
+        $"vaer:langtids:{slug}";
+
+    public static string Feed(string slug) =>
+    $"feed:{slug.ToLowerInvariant()}";
 }
 
 
@@ -57,6 +60,16 @@ public class CacheService : ICacheService
     public IReadOnlyDictionary<string, DateTimeOffset> GetAllKeysWithTimestamps()
     {
         return new Dictionary<string, DateTimeOffset>(_lastUpdated);
+    }
+
+    public async Task<T> HentEllerSettAsync<T>(string key, Func<Task<T>> factory, TimeSpan levetid)
+    {
+        if (_cache.TryGetValue(key, out var cached))
+            return (T)cached!;
+
+        var result = await factory();
+        Set(key, result, levetid);
+        return result;
     }
 }
 

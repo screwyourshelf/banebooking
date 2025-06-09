@@ -27,29 +27,29 @@ public class BaneService : IBaneService
     public async Task<List<BaneDto>> HentBanerForKlubbAsync(string slug, bool inkluderInaktive = false)
     {
         var cacheKey = CacheKeys.Baner(slug, inkluderInaktive);
-        var cached = _cache.Get<List<BaneDto>>(cacheKey);
-        if (cached != null)
-            return cached;
 
-        var query = _db.Baner.Where(b => b.Klubb.Slug == slug);
+        return await _cache.HentEllerSettAsync(cacheKey, async () =>
+        {
+            var query = _db.Baner.Where(b => b.Klubb.Slug == slug);
 
-        if (!inkluderInaktive)
-            query = query.Where(b => b.Aktiv);
+            if (!inkluderInaktive)
+                query = query.Where(b => b.Aktiv);
 
-        var baner = await query
-            .OrderBy(b => b.Navn)
-            .Select(b => new BaneDto
-            {
-                Id = b.Id,
-                Navn = b.Navn,
-                Beskrivelse = b.Beskrivelse,
-                Aktiv = b.Aktiv
-            })
-            .ToListAsync();
+            var baner = await query
+                .OrderBy(b => b.Navn)
+                .Select(b => new BaneDto
+                {
+                    Id = b.Id,
+                    Navn = b.Navn,
+                    Beskrivelse = b.Beskrivelse,
+                    Aktiv = b.Aktiv
+                })
+                .ToListAsync();
 
-        _cache.Set(cacheKey, baner);
-        return baner;
+            return baner;
+        }, TimeSpan.FromHours(6));
     }
+
 
     public async Task<bool> OpprettBaneAsync(string slug, NyBaneDto dto)
     {

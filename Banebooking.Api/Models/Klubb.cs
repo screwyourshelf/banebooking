@@ -15,6 +15,8 @@ public class Klubb
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
 
+    public string? FeedUrl { get; set; }
+
     public virtual BestemmelseForBooking BookingRegel { get; set; } = null!;
     public virtual ICollection<Bane> Baner { get; set; } = [];
     public virtual ICollection<BrukerRolle> Roller { get; set; } = [];

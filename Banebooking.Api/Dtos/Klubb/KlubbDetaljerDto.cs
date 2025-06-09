@@ -11,6 +11,8 @@
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
+        public string? FeedUrl { get; set; }
+
         public BookingRegelDto BookingRegel { get; set; } = default!;
     }
 
