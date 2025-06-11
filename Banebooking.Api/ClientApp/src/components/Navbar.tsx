@@ -33,10 +33,14 @@ export default function Navbar() {
     const {
         email,
         setEmail,
+        otp,
+        setOtp,
         status,
+        step,
         handleGoogleLogin,
-        /*handleFacebookLogin,*/
-        handleMagicLink
+        handleFacebookLogin,
+        sendOtp,
+        verifyOtp
     } = useLogin(window.location.origin + (slug ? `/${slug}` : ''));
 
     const erAdmin = bruker?.roller.includes('KlubbAdmin') ?? false;
@@ -140,42 +144,76 @@ export default function Navbar() {
                             <DropdownMenuItem onClick={handleGoogleLogin} disabled={status === 'sending'}>
                                 <FcGoogle size={18} className="mr-2" />Logg inn med Google
                             </DropdownMenuItem>
-                            {/*
+
                             <DropdownMenuItem onClick={handleFacebookLogin} disabled={status === 'sending'}>
                                 <FaFacebook size={18} className="mr-2" />Logg inn med Facebook
-                                </DropdownMenuItem>
-                            */}
-                            <DropdownMenuSeparator /> 
-                            
-                            <form onSubmit={handleMagicLink} className="space-y-1 px-2 w-full">
-                                <label htmlFor="email" className="text-xs text-gray-600">
-                                    Logg inn med e-post
-                                </label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="din@epost.no"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    className="text-sm h-8"
-                                />
-                                <Button
-                                    type="submit"
-                                    size="sm"
-                                    disabled={status === 'sending'}
-                                    className="w-full h-8 text-sm"
-                                >
-                                    {status === 'sending' ? (
-                                        <>
-                                            <Spinner />
-                                            <span className="ml-2">Sender...</span>
-                                        </>
-                                    ) : (
-                                        'Send lenke'
-                                    )}
-                                </Button>
-                            </form>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {step === 'input' && (
+                                <form onSubmit={sendOtp} className="space-y-1 px-2 w-full">
+                                    <label htmlFor="email" className="text-xs text-gray-600">
+                                        Logg inn med e-post
+                                    </label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="din@epost.no"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        className="text-sm h-8"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        disabled={status === 'sending'}
+                                        className="w-full h-8 text-sm"
+                                    >
+                                        {status === 'sending' ? (
+                                            <>
+                                                <Spinner />
+                                                <span className="ml-2">Sender...</span>
+                                            </>
+                                        ) : (
+                                            'Send kode'
+                                        )}
+                                    </Button>
+                                </form>
+                            )}
+
+                            {step === 'verify' && (
+                                <form onSubmit={verifyOtp} className="space-y-1 px-2 w-full">
+                                    <label htmlFor="otp" className="text-xs text-gray-600">
+                                        Skriv inn koden fra e-posten
+                                    </label>
+                                    <Input
+                                        id="otp"
+                                        type="text"
+                                        maxLength={6}
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        required
+                                        className="text-sm h-8"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        disabled={status === 'verifying'}
+                                        className="w-full h-8 text-sm"
+                                    >
+                                        {status === 'verifying' ? (
+                                            <>
+                                                <Spinner />
+                                                <span className="ml-2">Verifiserer...</span>
+                                            </>
+                                        ) : (
+                                            'Verifiser kode'
+                                        )}
+                                    </Button>
+                                </form>
+                            )}
                         </>
                     )}
                 </DropdownMenuContent>

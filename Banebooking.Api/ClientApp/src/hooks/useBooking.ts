@@ -45,8 +45,7 @@ export function useBooking(slug: string | undefined, valgtDato: string, valgtBan
 
         try {
             await avbestillBooking(slug, valgtBaneId, valgtDato, slot.startTid, slot.sluttTid);
-            const tid = `${slot.startTid.slice(0, 2)}:${slot.startTid.slice(2, 4)}–${slot.sluttTid.slice(0, 2)}:${slot.sluttTid.slice(2, 4)}`;
-            toast.info(`${slot.baneNavn ?? 'valgt bane'}, ${valgtDato} kl. ${tid} er avbestilt.`);
+            toast.info('Bookingen er avbestilt.');
             await hent();
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Kunne ikke avbestille slot.');

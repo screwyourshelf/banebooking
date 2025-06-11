@@ -1,16 +1,17 @@
-// src/hooks/useLogin.ts
 import { useState } from 'react';
-import { supabase } from '../supabase.js'
+import { supabase } from '../supabase.js';
 import { toast } from 'sonner';
 
 export function useLogin(redirectTo: string) {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+    const [otp, setOtp] = useState('');
+    const [step, setStep] = useState<'input' | 'verify'>('input');
+    const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'verifying' | 'done' | 'error'>('idle');
 
     const handleGoogleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo }
+            options: { redirectTo },
         });
         if (error) toast.error(error.message);
     };
@@ -18,7 +19,7 @@ export function useLogin(redirectTo: string) {
     const handleFacebookLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'facebook',
-            options: { redirectTo }
+            options: { redirectTo },
         });
         if (error) toast.error(error.message);
     };
@@ -28,7 +29,7 @@ export function useLogin(redirectTo: string) {
         setStatus('sending');
         const { error } = await supabase.auth.signInWithOtp({
             email,
-            options: { emailRedirectTo: redirectTo }
+            options: { emailRedirectTo: redirectTo },
         });
         setStatus(error ? 'error' : 'sent');
         if (error) {
@@ -38,12 +39,55 @@ export function useLogin(redirectTo: string) {
         }
     };
 
+    const sendOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus('sending');
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: { shouldCreateUser: true },
+        });
+        if (error) {
+            toast.error('Kunne ikke sende kode: ' + error.message);
+            setStatus('error');
+        } else {
+            toast.success('Kode sendt - sjekk e-posten din');
+            setStep('verify');
+            setStatus('idle');
+        }
+    };
+
+    const verifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus('verifying');
+        const { error } = await supabase.auth.verifyOtp({
+            email,
+            token: otp,
+            type: 'email',
+        });
+
+        if (error) {
+            toast.error('Feil kode: ' + error.message);
+            setStatus('error');
+        } else {
+            toast.success('Innlogging fullført!');
+            setStatus('done');
+            window.location.reload(); // eller redirect
+        }
+    };
+
     return {
         email,
         setEmail,
+        otp,
+        setOtp,
         status,
+        setStatus,
+        step,
+        setStep,
         handleGoogleLogin,
         handleFacebookLogin,
-        handleMagicLink
+        handleMagicLink,
+        sendOtp,
+        verifyOtp,
     };
 }
