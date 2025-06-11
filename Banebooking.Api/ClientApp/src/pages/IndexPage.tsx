@@ -12,10 +12,7 @@ import LoaderSkeleton from '../components/LoaderSkeleton.js';
 export default function IndexPage() {
     const { baner, isLoading: loadingBaner } = useBaner();
     const [valgtBaneId, setValgtBaneId] = useState('');
-    const [valgtDato, setValgtDato] = useState<Date | null>(() => {
-        const lagret = localStorage.getItem('valgtDato');
-        return lagret ? new Date(lagret) : new Date();
-    });
+    const [valgtDato, setValgtDato] = useState<Date | null>(new Date());
 
     const { currentUser } = useAuth();
     const slug = useContext(SlugContext);
