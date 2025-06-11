@@ -26,7 +26,7 @@ public class BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker,
 
         var eksisterendeBookinger = await db.Bookinger
             .Include(b => b.Bane)
-            .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id)
+            .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id && b.ArrangementId == null) // vi unntar arrangement når vi ser på brukerens eksisterende bookinger
             .ToListAsync();
 
         var eksisterende = await db.Bookinger

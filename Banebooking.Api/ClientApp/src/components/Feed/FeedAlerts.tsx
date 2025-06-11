@@ -50,11 +50,12 @@ export default function FeedAlerts() {
         <div className="max-w-screen-sm mx-auto">
             {activeFeed.map((item, idx) => {
                 const itemId = item.link || item.title;
+                const rotation = Math.random() > 0.5 ? 'rotate-[1deg]' : 'rotate-[-1deg]';
 
                 return (
                     <Alert
                         key={idx}
-                        className="relative pr-10 bg-orange-50 border border-orange-200 shadow-md rounded-md animate__animated animate__fadeIn"
+                        className={`relative pr-10 bg-orange-50 border border-orange-200 shadow-md rounded-md animate__animated animate__fadeIn transform ${rotation}`}
                     >
                         <BellRing className="text-orange-600 w-5 h-5 animate__animated animate__swing animate__slower" stroke="currentColor" fill="currentColor" />
                         <div>
