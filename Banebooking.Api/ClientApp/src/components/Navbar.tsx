@@ -35,7 +35,7 @@ export default function Navbar() {
         setEmail,
         status,
         handleGoogleLogin,
-        handleFacebookLogin,
+        /*handleFacebookLogin,*/
         handleMagicLink
     } = useLogin(window.location.origin + (slug ? `/${slug}` : ''));
 
@@ -140,10 +140,13 @@ export default function Navbar() {
                             <DropdownMenuItem onClick={handleGoogleLogin} disabled={status === 'sending'}>
                                 <FcGoogle size={18} className="mr-2" />Logg inn med Google
                             </DropdownMenuItem>
+                            {/*
                             <DropdownMenuItem onClick={handleFacebookLogin} disabled={status === 'sending'}>
                                 <FaFacebook size={18} className="mr-2" />Logg inn med Facebook
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
+                                </DropdownMenuItem>
+                            */}
+                            <DropdownMenuSeparator /> 
+                            
                             <form onSubmit={handleMagicLink} className="space-y-1 px-2 w-full">
                                 <label htmlFor="email" className="text-xs text-gray-600">
                                     Logg inn med e-post
