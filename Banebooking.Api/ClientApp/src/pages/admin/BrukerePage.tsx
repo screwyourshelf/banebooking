@@ -39,6 +39,14 @@ export default function BrukerePage() {
         }));
     };
 
+    const handleAvbryt = (id: string) => {
+        setEndringer((prev) => {
+            const ny = { ...prev };
+            delete ny[id];
+            return ny;
+        });
+    };
+
     const handleLagre = async (id: string) => {
         if (!slug) return;
         const valgtRolle = endringer[id];
@@ -47,10 +55,12 @@ export default function BrukerePage() {
         try {
             await oppdaterRolle(slug, id, valgtRolle);
             toast.success('Rolle oppdatert');
+
             setLagretRolle((prev) => ({
                 ...prev,
                 [id]: valgtRolle,
             }));
+
             setEndringer((prev) => {
                 const ny = { ...prev };
                 delete ny[id];
@@ -70,6 +80,7 @@ export default function BrukerePage() {
     }, [query]);
 
     if (lasterBruker) return <LoaderSkeleton />;
+
     if (!erKlubbAdmin) {
         return (
             <p className="text-sm text-destructive px-2 py-2 text-center">
@@ -83,12 +94,17 @@ export default function BrukerePage() {
             <Card>
                 <CardContent className="p-4 space-y-4">
                     <div>
-                        <Label htmlFor="sok">Søk etter bruker (e-post)</Label>
+                        <Label htmlFor="sok">Søk etter bruker</Label>
                         <Input
                             id="sok"
-                            placeholder="ola@norge.no"
+                            placeholder="f.eks. navn eller e-post"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                }
+                            }}
                         />
                     </div>
 
@@ -102,17 +118,15 @@ export default function BrukerePage() {
 
                     {brukere.map((b) => {
                         const erMeg = b.id === bruker?.id;
-                        const gjeldende = endringer[b.id] ?? lagretRolle[b.id] ?? b.roller[0] ?? 'Medlem';
+                        const lagret = lagretRolle[b.id] ?? b.roller[0] ?? 'Medlem';
+                        const valgt = endringer[b.id] ?? lagret;
+                        const erEndret = valgt !== lagret;
 
                         return (
-                            <div
-                                key={b.id}
-                                className="border rounded p-3 space-y-2"
-                            >
+                            <div key={b.id} className="border rounded p-3 space-y-2">
                                 <div className="font-medium">{b.epost}</div>
                                 <div className="text-sm text-muted-foreground">
-                                    Nåværende rolle:{' '}
-                                    <strong>{gjeldende}</strong>
+                                    Nåværende rolle: <strong>{lagret}</strong>
                                 </div>
 
                                 <Label htmlFor={`rolle-${b.id}`} className="text-sm">
@@ -121,9 +135,9 @@ export default function BrukerePage() {
                                         : 'Endre rolle'}
                                 </Label>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                     <Select
-                                        value={gjeldende}
+                                        value={valgt}
                                         onValueChange={(val) =>
                                             handleRolleChange(b.id, val as RolleType)
                                         }
@@ -140,16 +154,23 @@ export default function BrukerePage() {
                                     </Select>
 
                                     {!erMeg && (
-                                        <Button
-                                            size="sm"
-                                            disabled={
-                                                !endringer[b.id] ||
-                                                endringer[b.id] === (lagretRolle[b.id] ?? b.roller[0])
-                                            }
-                                            onClick={() => handleLagre(b.id)}
-                                        >
-                                            Lagre
-                                        </Button>
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleLagre(b.id)}
+                                                disabled={!erEndret}
+                                            >
+                                                Lagre
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => handleAvbryt(b.id)}
+                                                disabled={!erEndret}
+                                            >
+                                                Avbryt
+                                            </Button>
+                                        </>
                                     )}
                                 </div>
                             </div>

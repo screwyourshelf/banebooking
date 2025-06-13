@@ -211,7 +211,6 @@ export default function BanerPage() {
                     )}
                 </TabsContent>
 
-
                 <TabsContent value="ny">
                     <Card>
                         <CardContent className="p-4 space-y-3">

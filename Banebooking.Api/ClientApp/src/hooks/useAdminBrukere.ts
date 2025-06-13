@@ -12,7 +12,7 @@ export function useAdminBrukere(slug?: string, query: string = '') {
     const [debouncedQuery] = useDebounce(query.trim(), 300);
 
     useEffect(() => {
-        if (!slug || !debouncedQuery.includes('@')) return;
+        if (!slug || debouncedQuery.length < 2) return;
 
         const abort = new AbortController();
         setLaster(true);

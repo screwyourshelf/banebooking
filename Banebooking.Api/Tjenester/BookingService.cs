@@ -16,8 +16,6 @@ public interface IBookingService
     Task<BookingResultatDto> ForsøkAvbestillBookingAsync(Klubb klubb, Bane bane, NyBookingDto dto, Bruker bruker);
 }
 
-
-
 public class BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker, ITidProvider tidProvider) : IBookingService
 {
     public async Task<BookingResultatDto> ForsøkOpprettBookingAsync(Klubb klubb, Bane bane, NyBookingDto dto, Bruker bruker)
@@ -26,7 +24,7 @@ public class BookingService(BanebookingDbContext db, SlotBerikerMedVaer beriker,
 
         var eksisterendeBookinger = await db.Bookinger
             .Include(b => b.Bane)
-            .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id)
+            .Where(b => b.BrukerId == bruker.Id && b.Aktiv && b.Bane.KlubbId == klubb.Id && b.ArrangementId == null)
             .ToListAsync();
 
         var eksisterende = await db.Bookinger
