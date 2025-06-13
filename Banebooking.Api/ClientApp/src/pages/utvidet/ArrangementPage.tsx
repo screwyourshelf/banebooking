@@ -33,7 +33,8 @@ import DatoVelger from '../../components/DatoVelger.js';
 import { Input } from '@/components/ui/input.js';
 import { toast } from 'sonner';
 import LoaderSkeleton from '../../components/LoaderSkeleton.js';
- 
+import { Card, CardContent } from '@/components/ui/card.js';
+
 export default function ArrangementPage() {
     const { slug } = useParams<{ slug: string }>();
     const {
@@ -180,180 +181,201 @@ export default function ArrangementPage() {
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="oppsett" className="space-y-4">
-                        <div>
-                            <Label>Kategori</Label>
-                            <select
-                                className="w-full border rounded text-sm px-3 py-2 mt-1"
-                                value={kategori}
-                                onChange={(e) => setKategori(e.target.value)}
-                            >
-                                {[
-                                    'Trening',
-                                    'Turnering',
-                                    'Klubbmersterskap',
-                                    'Kurs',
-                                    'Lagkamp',
-                                    'Stigespill',
-                                    'Dugnad',
-                                    'Vedlikehold',
-                                    'Sosialt',
-                                    'Annet',
-                                ].map((k) => (
-                                    <option key={k} value={k}>
-                                        {k}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <Label>Beskrivelse</Label>
-                            <Input
-                                type="text"
-                                className="w-full text-sm mt-1"
-                                value={beskrivelse}
-                                onChange={(e) => setBeskrivelse(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <Label>Fra</Label>
-                            <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering />
-                        </div>
-
-                        <div>
-                            <Label>Til</Label>
-                            <DatoVelger value={datoTil} onChange={setDatoTil} visNavigering />
-                        </div>
-
-                        <div>
-                            <Label className="inline-flex items-center gap-2">
-                                <Checkbox checked={alleBaner} onCheckedChange={(val) => setAlleBaner(!!val)} />
-                                Alle baner
-                            </Label>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {baner.map((b) => (
-                                    <Button
-                                        key={b.id}
-                                        variant={valgteBaner.includes(b.id) ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => toggle(b.id, setValgteBaner)}
-                                        disabled={alleBaner}
+                    <TabsContent value="oppsett">
+                        <Card>
+                            <CardContent className="p-4 space-y-4">
+                                <div>
+                                    <Label>Kategori</Label>
+                                    <select
+                                        className="w-full border rounded text-sm px-3 py-2 mt-1"
+                                        value={kategori}
+                                        onChange={(e) => setKategori(e.target.value)}
                                     >
-                                        {b.navn}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
+                                        {[
+                                            'Trening',
+                                            'Turnering',
+                                            'Klubbmersterskap',
+                                            'Kurs',
+                                            'Lagkamp',
+                                            'Stigespill',
+                                            'Dugnad',
+                                            'Vedlikehold',
+                                            'Sosialt',
+                                            'Annet',
+                                        ].map((k) => (
+                                            <option key={k} value={k}>
+                                                {k}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <div>
-                            <Label className="inline-flex items-center gap-2">
-                                <Checkbox checked={alleUkedager} onCheckedChange={(val) => setAlleUkedager(!!val)} />
-                                Alle gyldige dager
-                            </Label>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {ukedager.map((dag) => (
-                                    <Button
-                                        key={dag}
-                                        variant={valgteUkedager.includes(dag) ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            toggle(dag, setValgteUkedager);
-                                        }}
-                                        disabled={alleUkedager || !tilgjengeligeUkedager.includes(dag)}
-                                    >
-                                        {dag}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
+                                <div>
+                                    <Label>Beskrivelse</Label>
+                                    <Input
+                                        type="text"
+                                        className="w-full text-sm mt-1"
+                                        value={beskrivelse}
+                                        onChange={(e) => setBeskrivelse(e.target.value)}
+                                    />
+                                </div>
 
-                        <div>
-                            <Label className="inline-flex items-center gap-2">
-                                <Checkbox
-                                    checked={alleTidspunkter}
-                                    onCheckedChange={(val) => setAlleTidspunkter(!!val)}
-                                />
-                                Alle tidspunkter
-                            </Label>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {tilgjengeligeTidspunkter.map((tid) => (
-                                    <Button
-                                        key={tid}
-                                        variant={valgteTidspunkter.includes(tid) ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => toggle(tid, setValgteTidspunkter)}
-                                        disabled={alleTidspunkter}
-                                    >
-                                        {tid}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
+                                <div>
+                                    <Label>Fra</Label>
+                                    <DatoVelger value={datoFra} onChange={setDatoFra} visNavigering />
+                                </div>
+
+                                <div>
+                                    <Label>Til</Label>
+                                    <DatoVelger value={datoTil} onChange={setDatoTil} visNavigering />
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="alleBaner"
+                                            checked={alleBaner}
+                                            onCheckedChange={(val) => setAlleBaner(!!val)}
+                                        />
+                                        <Label htmlFor="alleBaner">Alle baner</Label>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {baner.map((b) => (
+                                            <Button
+                                                key={b.id}
+                                                variant={valgteBaner.includes(b.id) ? 'default' : 'outline'}
+                                                size="sm"
+                                                onClick={() => toggle(b.id, setValgteBaner)}
+                                                disabled={alleBaner}
+                                            >
+                                                {b.navn}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="alleUkedager"
+                                            checked={alleUkedager}
+                                            onCheckedChange={(val) => setAlleUkedager(!!val)}
+                                        />
+                                        <Label htmlFor="alleUkedager">Alle gyldige dager</Label>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {ukedager.map((dag) => (
+                                            <Button
+                                                key={dag}
+                                                variant={valgteUkedager.includes(dag) ? 'default' : 'outline'}
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toggle(dag, setValgteUkedager);
+                                                }}
+                                                disabled={alleUkedager || !tilgjengeligeUkedager.includes(dag)}
+                                            >
+                                                {dag}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="alleTidspunkter"
+                                            checked={alleTidspunkter}
+                                            onCheckedChange={(val) => setAlleTidspunkter(!!val)}
+                                        />
+                                        <Label htmlFor="alleTidspunkter">Alle tidspunkter</Label>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {tilgjengeligeTidspunkter.map((tid) => (
+                                            <Button
+                                                key={tid}
+                                                variant={valgteTidspunkter.includes(tid) ? 'default' : 'outline'}
+                                                size="sm"
+                                                onClick={() => toggle(tid, setValgteTidspunkter)}
+                                                disabled={alleTidspunkter}
+                                            >
+                                                {tid}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     <TabsContent value="forhandsvisning">
-                        {alleSlots.length === 0 ? (
-                            <p className="text-sm text-muted-foreground italic">
-                                Ingen bookinger tilgjengelig.
-                            </p>
-                        ) : (
-                            <>
-                                <div className="overflow-auto max-h-[60vh] border rounded-md">
-                                    <Table className="text-sm">
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Dato</TableHead>
-                                                <TableHead>Klokkeslett</TableHead>
-                                                <TableHead>Bane</TableHead>
-                                                <TableHead>Beskrivelse</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {alleSlots.map((slot) => {
-                                                const bane = baner.find((b) => b.id === slot.baneId);
-                                                const erKonflikt = forhandsvisning.konflikter.some(
-                                                    (k) =>
-                                                        k.baneId === slot.baneId &&
-                                                        k.dato === slot.dato &&
-                                                        k.startTid === slot.startTid &&
-                                                        k.sluttTid === slot.sluttTid
-                                                );
-
-                                                return (
-                                                    <TableRow
-                                                        key={`${slot.dato}-${slot.baneId}-${slot.startTid}`}
-                                                        className={erKonflikt ? 'bg-yellow-100' : ''}
-                                                    >
-                                                        <TableCell>{formatDatoKort(slot.dato)}</TableCell>
-                                                        <TableCell>
-                                                            {slot.startTid} – {slot.sluttTid}
-                                                        </TableCell>
-                                                        <TableCell>{bane?.navn ?? '(ukjent bane)'}</TableCell>
-                                                        <TableCell>
-                                                            {beskrivelse}
-                                                            {erKonflikt && (
-                                                                <span className="ml-2 text-yellow-700 text-xs italic">
-                                                                    (Konflikt)
-                                                                </span>
-                                                            )}
-                                                        </TableCell>
+                        <Card>
+                            <CardContent className="p-4 space-y-4">
+                                {alleSlots.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground italic">
+                                        Ingen bookinger tilgjengelig.
+                                    </p>
+                                ) : (
+                                    <>
+                                        <div className="overflow-auto max-h-[60vh] border rounded-md">
+                                            <Table className="text-sm">
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Dato</TableHead>
+                                                        <TableHead>Klokkeslett</TableHead>
+                                                        <TableHead>Bane</TableHead>
+                                                        <TableHead>Beskrivelse</TableHead>
                                                     </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                                <div className="flex justify-end mt-3">
-                                    <Button type="button" onClick={håndterOpprett} disabled={isLoading}>
-                                        Opprett {forhandsvisning.ledige.length} bookinger
-                                    </Button>
-                                </div>
-                            </>
-                        )}
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {alleSlots.map((slot) => {
+                                                        const bane = baner.find((b) => b.id === slot.baneId);
+                                                        const erKonflikt = forhandsvisning.konflikter.some(
+                                                            (k) =>
+                                                                k.baneId === slot.baneId &&
+                                                                k.dato === slot.dato &&
+                                                                k.startTid === slot.startTid &&
+                                                                k.sluttTid === slot.sluttTid
+                                                        );
+
+                                                        return (
+                                                            <TableRow
+                                                                key={`${slot.dato}-${slot.baneId}-${slot.startTid}`}
+                                                                className={erKonflikt ? 'bg-yellow-100' : ''}
+                                                            >
+                                                                <TableCell>{formatDatoKort(slot.dato)}</TableCell>
+                                                                <TableCell>
+                                                                    {slot.startTid} – {slot.sluttTid}
+                                                                </TableCell>
+                                                                <TableCell>{bane?.navn ?? '(ukjent bane)'}</TableCell>
+                                                                <TableCell>
+                                                                    {beskrivelse}
+                                                                    {erKonflikt && (
+                                                                        <span className="ml-2 text-yellow-700 text-xs italic">
+                                                                            (Konflikt)
+                                                                        </span>
+                                                                    )}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                        <div className="flex justify-end mt-3">
+                                            <Button type="button" onClick={håndterOpprett} disabled={isLoading}>
+                                                Opprett {forhandsvisning.ledige.length} bookinger
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
+
                 </Tabs>
             )}
         </div>
