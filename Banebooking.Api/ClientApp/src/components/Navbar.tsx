@@ -162,6 +162,9 @@ export default function Navbar() {
                                         placeholder="din@epost.no"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key.length === 1) e.stopPropagation();
+                                        }}
                                         required
                                         className="text-sm h-8"
                                     />
@@ -194,6 +197,9 @@ export default function Navbar() {
                                         maxLength={6}
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key.length === 1) e.stopPropagation();
+                                        }}
                                         required
                                         className="text-sm h-8"
                                     />
