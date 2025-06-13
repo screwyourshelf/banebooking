@@ -120,28 +120,29 @@ export default function BanerPage() {
                     {isLoading ? (
                         <p className="text-sm text-muted-foreground text-center py-4">Laster...</p>
                     ) : (
-                        <>
-                            <section className="mb-4">
-                                <Label className="mb-1 block text-sm font-medium">
-                                    Velg bane
-                                </Label>
-                                <Select value={valgtBaneId ?? ''} onValueChange={value => setValgtBaneId(value || null)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="— Velg bane —" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {baner.map(b => (
-                                            <SelectItem key={b.id} value={b.id}>
-                                                {b.navn} {b.aktiv ? '' : '(inaktiv)'}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </section>
+                        <Card>
+                            <CardContent className="p-4 space-y-4">
+                                <div>
+                                    <Label className="mb-1 block text-sm font-medium">Velg bane</Label>
+                                    <Select
+                                        value={valgtBaneId ?? ''}
+                                        onValueChange={value => setValgtBaneId(value || null)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="— Velg bane —" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {baner.map(b => (
+                                                <SelectItem key={b.id} value={b.id}>
+                                                    {b.navn} {b.aktiv ? '' : '(inaktiv)'}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                            {valgtBane && (
-                                <Card>
-                                    <CardContent className="p-4 space-y-3">
+                                {valgtBane && (
+                                    <>
                                         <div>
                                             <Label htmlFor="navn" className="block mb-1">Navn</Label>
                                             <Input
@@ -203,12 +204,13 @@ export default function BanerPage() {
                                                 </Button>
                                             )}
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
                     )}
                 </TabsContent>
+
 
                 <TabsContent value="ny">
                     <Card>
